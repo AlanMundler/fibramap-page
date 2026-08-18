@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-const API_KEY = import.meta.env.PUBLIC_GEMINI_API_KEY || "AIzaSyCakhv_Iow9z_nmjDHtPoyM-LjdPo75XrU";
+const API_KEY = import.meta.env.PUBLIC_GEMINI_API_KEY || "";
 const MODEL = "gemini-2.5-flash";
 const SYSTEM = `Sos un asistente de FibraMap, un portal independiente sobre fibra óptica en Córdoba, Argentina.
 Respondés en español, de forma breve y directa.
