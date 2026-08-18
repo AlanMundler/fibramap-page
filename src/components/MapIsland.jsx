@@ -1,124 +1,84 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { Map, Marker, Overlay } from 'pigeon-maps';
 
-const CENTER = [-31.4220, -64.1860];
+const CENTER = [-31.4200, -64.1900];
 const base = '/fibramap-page';
 
 const barrios = [
-  // ── Internet Córdoba (67 barrios confirmados) ──────────────
-  { name: 'General Paz', pos: [-31.4130, -64.1715], providers: ['Internet Córdoba'] },
-  { name: 'Colón', pos: [-31.3970, -64.1830], providers: ['Internet Córdoba'] },
-  { name: 'Maipú S1', pos: [-31.4065, -64.1755], providers: ['Internet Córdoba'] },
-  { name: 'Maipú S2', pos: [-31.4040, -64.1730], providers: ['Internet Córdoba'] },
-  { name: 'Villa Boedo', pos: [-31.4280, -64.1945], providers: ['Internet Córdoba'] },
-  { name: 'Renacimiento', pos: [-31.4505, -64.1880], providers: ['Internet Córdoba'] },
-  { name: 'Empalme', pos: [-31.3920, -64.1830], providers: ['Internet Córdoba'] },
-  { name: 'Bajo General Paz', pos: [-31.4410, -64.1770], providers: ['Internet Córdoba'] },
-  { name: 'Deán Funes', pos: [-31.4350, -64.1895], providers: ['Internet Córdoba'] },
-  { name: 'Emaús', pos: [-31.4455, -64.1850], providers: ['Internet Córdoba'] },
-  { name: 'Las Lilas', pos: [-31.4430, -64.1735], providers: ['Internet Córdoba'] },
-  { name: 'Los Ceibos', pos: [-31.4410, -64.1975], providers: ['Internet Córdoba'] },
-  { name: 'General Pueyrredón', pos: [-31.4380, -64.1830], providers: ['Internet Córdoba'] },
-  { name: 'Rivadavia', pos: [-31.4485, -64.1760], providers: ['Internet Córdoba'] },
-  { name: 'Sarmiento', pos: [-31.4150, -64.1730], providers: ['Internet Córdoba'] },
-  { name: 'Villa Argentina', pos: [-31.4525, -64.2005], providers: ['Internet Córdoba'] },
-  { name: '1° de Mayo', pos: [-31.4340, -64.1680], providers: ['Internet Córdoba'] },
-  { name: 'Yapeyú', pos: [-31.4480, -64.1820], providers: ['Internet Córdoba'] },
-  { name: 'Los Artesanos', pos: [-31.4350, -64.1755], providers: ['Internet Córdoba'] },
-  { name: 'Los Josefinos', pos: [-31.4435, -64.1780], providers: ['Internet Córdoba'] },
-  { name: 'Crisol Norte', pos: [-31.4395, -64.1725], providers: ['Internet Córdoba'] },
-  { name: 'Crisol Sud', pos: [-31.4435, -64.1700], providers: ['Internet Córdoba'] },
-  { name: 'Miralta', pos: [-31.4465, -64.1740], providers: ['Internet Córdoba'] },
-  { name: 'Mirador', pos: [-31.4455, -64.1770], providers: ['Internet Córdoba'] },
-  { name: 'La Tablita', pos: [-31.4375, -64.1710], providers: ['Internet Córdoba'] },
-  { name: 'Altamira', pos: [-31.4365, -64.1810], providers: ['Internet Córdoba'] },
-  { name: 'San Cayetano', pos: [-31.4310, -64.1815], providers: ['Internet Córdoba'] },
-  { name: 'Urquiza', pos: [-31.4265, -64.1780], providers: ['Internet Córdoba'] },
-  { name: 'San Javier', pos: [-31.4470, -64.1910], providers: ['Internet Córdoba'] },
-  { name: 'Nicolás Avellaneda', pos: [-31.4420, -64.1860], providers: ['Internet Córdoba'] },
-  { name: 'Ferroviario Mitre', pos: [-31.4320, -64.1770], providers: ['Internet Córdoba'] },
+  // ── Internet Córdoba ─────────────────────────────────────
+  { name: 'General Paz', pos: [-31.4144, -64.1706], providers: ['Internet Córdoba'] },
+  { name: 'Colón', pos: [-31.3998, -64.1830], providers: ['Internet Córdoba'] },
+  { name: 'Empalme', pos: [-31.3935, -64.1810], providers: ['Internet Córdoba'] },
+  { name: 'Maipú', pos: [-31.4065, -64.1755], providers: ['Internet Córdoba'] },
+  { name: 'Sarmiento', pos: [-31.4090, -64.1750], providers: ['Internet Córdoba'] },
+  { name: 'Deán Funes', pos: [-31.4350, -64.1890], providers: ['Internet Córdoba'] },
+  { name: 'General Pueyrredón', pos: [-31.4330, -64.1860], providers: ['Internet Córdoba'] },
+  { name: 'Bajo General Paz', pos: [-31.4410, -64.1800], providers: ['Internet Córdoba'] },
+  { name: 'Emaús', pos: [-31.4430, -64.1820], providers: ['Internet Córdoba'] },
+  { name: 'Renacimiento', pos: [-31.4470, -64.1830], providers: ['Internet Córdoba'] },
+  { name: 'Rivadavia', pos: [-31.4480, -64.1790], providers: ['Internet Córdoba'] },
+  { name: 'Yapeyú', pos: [-31.4460, -64.1800], providers: ['Internet Córdoba'] },
+  { name: 'Las Lilas', pos: [-31.4430, -64.1730], providers: ['Internet Córdoba'] },
+  { name: 'Los Ceibos', pos: [-31.4400, -64.1980], providers: ['Internet Córdoba'] },
+  { name: 'Villa Argentina', pos: [-31.4510, -64.1950], providers: ['Internet Córdoba'] },
+  { name: '1° de Mayo', pos: [-31.4320, -64.1700], providers: ['Internet Córdoba'] },
+  { name: 'Los Artesanos', pos: [-31.4370, -64.1770], providers: ['Internet Córdoba'] },
+  { name: 'Los Josefinos', pos: [-31.4390, -64.1750], providers: ['Internet Córdoba'] },
+  { name: 'Crisol Norte', pos: [-31.4360, -64.1740], providers: ['Internet Córdoba'] },
+  { name: 'Crisol Sud', pos: [-31.4400, -64.1710], providers: ['Internet Córdoba'] },
+  { name: 'Miralta', pos: [-31.4440, -64.1760], providers: ['Internet Córdoba'] },
+  { name: 'Mirador', pos: [-31.4430, -64.1790], providers: ['Internet Córdoba'] },
+  { name: 'La Tablita', pos: [-31.4350, -64.1710], providers: ['Internet Córdoba'] },
+  { name: 'San Cayetano', pos: [-31.4300, -64.1820], providers: ['Internet Córdoba'] },
+  { name: 'Altamira', pos: [-31.4340, -64.1820], providers: ['Internet Córdoba'] },
+  { name: 'Urquiza', pos: [-31.4290, -64.1840], providers: ['Internet Córdoba'] },
+  { name: 'San Javier', pos: [-31.4450, -64.1900], providers: ['Internet Córdoba'] },
+  { name: 'Nicolás Avellaneda', pos: [-31.4390, -64.1810], providers: ['Internet Córdoba'] },
+  { name: 'Ferroviario Mitre', pos: [-31.4310, -64.1780], providers: ['Internet Córdoba'] },
 
-  // ── Claro (barrios reportados por distribuidor) ────────────
+  // ── Claro ────────────────────────────────────────────────
   { name: 'Nueva Córdoba', pos: [-31.4255, -64.1865], providers: ['Claro', 'Personal Fibra'] },
   { name: 'Alta Córdoba', pos: [-31.3985, -64.1807], providers: ['Claro'] },
-  { name: 'Cerro de las Rosas', pos: [-31.3960, -64.2090], providers: ['Claro'] },
-  { name: 'Güemes', pos: [-31.4250, -64.1930], providers: ['Claro'] },
-  { name: 'Barrio Parque', pos: [-31.4155, -64.2040], providers: ['Claro'] },
-  { name: 'Tablada', pos: [-31.4050, -64.2010], providers: ['Claro'] },
-  { name: 'San Vicente', pos: [-31.4035, -64.1895], providers: ['Claro'] },
-  { name: 'Jardín', pos: [-31.4105, -64.1815], providers: ['Claro'] },
-  { name: 'San Carlos', pos: [-31.3995, -64.1785], providers: ['Claro'] },
-  { name: 'Oña', pos: [-31.4015, -64.1955], providers: ['Claro'] },
-  { name: 'Ayacucho', pos: [-31.4085, -64.1925], providers: ['Claro'] },
-  { name: 'Cofico', pos: [-31.4210, -64.2040], providers: ['Claro'] },
-  { name: 'Comercial', pos: [-31.4180, -64.1810], providers: ['Claro'] },
-  { name: 'Independencia', pos: [-31.4190, -64.1960], providers: ['Claro'] },
+  { name: 'Cerro de las Rosas', pos: [-31.3721, -64.2326], providers: ['Claro'] },
+  { name: 'Güemes', pos: [-31.4215, -64.1935], providers: ['Claro'] },
+  { name: 'Barrio Parque', pos: [-31.4175, -64.2030], providers: ['Claro'] },
+  { name: 'Tablada', pos: [-31.4080, -64.2000], providers: ['Claro'] },
+  { name: 'San Vicente', pos: [-31.4050, -64.1860], providers: ['Claro'] },
+  { name: 'Jardín', pos: [-31.4471, -64.1817], providers: ['Claro'] },
+  { name: 'San Carlos', pos: [-31.4010, -64.1820], providers: ['Claro'] },
+  { name: 'Oña', pos: [-31.4050, -64.1960], providers: ['Claro'] },
+  { name: 'Ayacucho', pos: [-31.4080, -64.1920], providers: ['Claro'] },
+  { name: 'Cofico', pos: [-31.4230, -64.2070], providers: ['Claro'] },
+  { name: 'Comercial', pos: [-31.4165, -64.1830], providers: ['Claro'] },
+  { name: 'Independencia', pos: [-31.4180, -64.1930], providers: ['Claro'] },
 
-  // ── IPLAN (Córdoba Centro confirmado) ──────────────────────
-  { name: 'Centro', pos: [-31.4170, -64.1835], providers: ['IPLAN', 'Personal Fibra'] },
-  { name: 'Alberdi', pos: [-31.4135, -64.1970], providers: ['IPLAN'] },
+  // ── IPLAN ────────────────────────────────────────────────
+  { name: 'Centro', pos: [-31.4172, -64.1848], providers: ['IPLAN', 'Personal Fibra'] },
+  { name: 'Alberdi', pos: [-31.4135, -64.1960], providers: ['IPLAN'] },
 
-  // ── Batcom (barrios Gran Córdoba + Capital) ────────────────
-  { name: 'Los Boulevares', pos: [-31.3860, -64.2200], providers: ['Batcom'] },
-  { name: 'Valle Escondido', pos: [-31.3810, -64.2140], providers: ['Batcom'] },
-  { name: 'Chacra del Norte', pos: [-31.3885, -64.2090], providers: ['Batcom'] },
-  { name: 'Malvinas Argentinas', pos: [-31.3830, -64.2240], providers: ['Batcom'] },
+  // ── Batcom ───────────────────────────────────────────────
+  { name: 'Los Boulevares', pos: [-31.3490, -64.2270], providers: ['Batcom'] },
+  { name: 'Valle Escondido', pos: [-31.3650, -64.2250], providers: ['Batcom'] },
+  { name: 'Chacra del Norte', pos: [-31.3570, -64.2240], providers: ['Batcom'] },
+  { name: 'Malvinas Argentinas', pos: [-31.3500, -64.2300], providers: ['Batcom'] },
 
-  // ── Guabi (verificar zona: fibra = azul) ───────────────────
-  { name: 'San Martín', pos: [-31.4185, -64.1765], providers: ['Guabi'] },
-  { name: 'Villa Allende', pos: [-31.3935, -64.1985], providers: ['Guabi'] },
-  { name: 'La Cañada', pos: [-31.4285, -64.2085], providers: ['Guabi'] },
+  // ── Guabi ────────────────────────────────────────────────
+  { name: 'San Martín', pos: [-31.4155, -64.1780], providers: ['Guabi'] },
+  { name: 'Villa Allende', pos: [-31.3860, -64.2070], providers: ['Guabi'] },
+  { name: 'La Cañada', pos: [-31.4250, -64.2100], providers: ['Guabi'] },
 ];
 
 const providers = [
-  { name: 'Internet Córdoba', color: '#f59e0b', zone: { n: -31.388, s: -31.455, e: -64.165, w: -64.205 } },
-  { name: 'Claro', color: '#dc2626', zone: { n: -31.395, s: -34.425, e: -64.175, w: -64.210 } },
-  { name: 'Personal Fibra', color: '#2563eb', zone: { n: -31.415, s: -31.430, e: -64.182, w: -64.195 } },
-  { name: 'IPLAN', color: '#ec4899', zone: { n: -31.410, s: -31.420, e: -64.178, w: -64.200 } },
-  { name: 'Batcom', color: '#8b5cf6', zone: { n: -31.378, s: -31.392, e: -64.205, w: -64.228 } },
-  { name: 'Guabi', color: '#06b6d4', zone: { n: -31.388, s: -31.432, e: -64.170, w: -64.212 } },
+  { name: 'Internet Córdoba', color: '#f59e0b' },
+  { name: 'Claro', color: '#dc2626' },
+  { name: 'Personal Fibra', color: '#3b82f6' },
+  { name: 'IPLAN', color: '#ec4899' },
+  { name: 'Batcom', color: '#8b5cf6' },
+  { name: 'Guabi', color: '#06b6d4' },
 ];
 
 const colorMap = Object.fromEntries(providers.map(p => [p.name, p.color]));
-const cartoDark = (x, y, z) => `https://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}{r}.png`;
-
-const toRad = d => d * Math.PI / 180;
-const toDeg = r => r * 180 / Math.PI;
-const R = 6371000;
-
-function project(lat, lng, center, zoom) {
-  const s = 256 * Math.pow(2, zoom);
-  const x = (lng + 180) / 360 * s;
-  const y = (1 - Math.log(Math.tan(toRad(lat)) + 1 / Math.cos(toRad(lat))) / Math.PI) / 2 * s;
-  return [x, y];
-}
-
-function PixelOverlay({ bounds, children }) {
-  const [size, setSize] = useState(null);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const el = ref.current?.parentElement;
-    if (!el) return;
-    const obs = new ResizeObserver(([e]) => setSize({ w: e.contentRect.width, h: e.contentRect.height }));
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  if (!bounds || !size) return <div ref={ref} />;
-
-  const zoom = Math.log2((size.w * 360) / ((bounds.e - bounds.w) * R * Math.PI / 180 * Math.cos(toRad(CENTER[0]))));
-  const [cx, cy] = project(bounds.n, bounds.w, CENTER, zoom);
-  const scale = size.w / (project(bounds.n, bounds.e, CENTER, zoom)[0] - cx);
-
-  return (
-    <div ref={ref} className="absolute inset-0 pointer-events-none" style={{ width: size.w, height: size.h }}>
-      <svg width={size.w} height={size.h} className="absolute inset-0">
-        {children({ cx, cy, scale })}
-      </svg>
-    </div>
-  );
-}
+const cartoPositron = (x, y, z) => `https://a.basemaps.cartocdn.com/light_all/${z}/${x}/${y}{r}.png`;
 
 export default function MapIsland() {
   const [activeFilter, setActiveFilter] = useState(null);
@@ -133,15 +93,13 @@ export default function MapIsland() {
     providerCounts[p] = (providerCounts[p] || 0) + 1;
   }));
 
-  const allBounds = { n: -31.375, s: -31.458, e: -64.160, w: -64.230 };
-
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => { setActiveFilter(null); setActivePopup(null); }}
           className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-            !activeFilter ? 'bg-gray-700 shadow' : 'bg-gray-700/50'
+            !activeFilter ? 'bg-gray-200 text-gray-800' : 'bg-gray-100 text-gray-500 border border-gray-300'
           }`}
         >
           Todos ({barrios.length})
@@ -162,59 +120,40 @@ export default function MapIsland() {
         ))}
       </div>
 
-      <div className="w-full h-[55vh] min-h-[350px] rounded-lg overflow-hidden relative">
+      <div className="w-full h-[55vh] min-h-[350px] rounded-lg overflow-hidden border border-gray-200">
         <Map
           height="100%"
           defaultCenter={CENTER}
-          defaultZoom={13}
-          provider={cartoDark}
+          defaultZoom={12}
+          provider={cartoPositron}
           onClick={() => setActivePopup(null)}
         >
-          <PixelOverlay bounds={allBounds}>
-            {({ cx, cy, scale }) => (
-              <>
-                {providers.map(p => {
-                  const x1 = (project(p.zone.n, p.zone.w, CENTER, 13)[0] - cx) * scale;
-                  const y1 = (project(p.zone.n, p.zone.w, CENTER, 13)[1] - cy) * scale;
-                  const x2 = (project(p.zone.s, p.zone.e, CENTER, 13)[0] - cx) * scale;
-                  const y2 = (project(p.zone.s, p.zone.e, CENTER, 13)[1] - cy) * scale;
-                  return (
-                    <rect
-                      key={p.name}
-                      x={Math.min(x1, x2)}
-                      y={Math.min(y1, y2)}
-                      width={Math.abs(x2 - x1)}
-                      height={Math.abs(y2 - y1)}
-                      fill={p.color}
-                      fillOpacity={0.08}
-                      stroke={p.color}
-                      strokeWidth={1.5}
-                      strokeOpacity={0.25}
-                      strokeDasharray="6 3"
-                      rx={4}
-                    />
-                  );
-                })}
-              </>
-            )}
-          </PixelOverlay>
-
           {filtered.map((b, i) => (
-            <Marker
-              key={`${b.name}-${i}`}
-              anchor={b.pos}
-              onClick={() => setActivePopup(activePopup === i ? null : i)}
-              color={b.providers.length > 1 ? '#ffffff' : colorMap[b.providers[0]]}
-            />
+            <Overlay key={`${b.name}-${i}`} anchor={b.pos} offset={[0, 0]}>
+              <div
+                className="cursor-pointer group"
+                onClick={(e) => { e.stopPropagation(); setActivePopup(activePopup === i ? null : i); }}
+              >
+                <div
+                  className="w-3 h-3 rounded-full border-2 border-white shadow-md -translate-x-1.5 -translate-y-1.5"
+                  style={{ backgroundColor: b.providers.length > 1 ? '#374151' : colorMap[b.providers[0]] }}
+                />
+                <div className="absolute left-1.5 top-0 -translate-y-full mb-0.5 whitespace-nowrap pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity">
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-white/90 shadow-sm border border-gray-200" style={{ color: '#1f2937' }}>
+                    {b.name}
+                  </span>
+                </div>
+              </div>
+            </Overlay>
           ))}
 
           {activePopup !== null && (
-            <Overlay anchor={filtered[activePopup].pos} offset={[0, -20]}>
+            <Overlay anchor={filtered[activePopup].pos} offset={[6, 6]}>
               <div
-                className="bg-gray-800 rounded-lg shadow-xl p-3 text-sm min-w-[160px] border border-gray-700 cursor-pointer"
+                className="bg-white rounded-lg shadow-xl p-3 text-sm min-w-[160px] border border-gray-200 cursor-pointer z-10"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="font-bold mb-1.5">{filtered[activePopup].name}</div>
+                <div className="font-bold text-gray-900 mb-1.5">{filtered[activePopup].name}</div>
                 <div className="space-y-0.5">
                   {filtered[activePopup].providers.map(p => (
                     <a
@@ -234,7 +173,7 @@ export default function MapIsland() {
       </div>
 
       <p className="text-xs text-gray-500 text-center">
-        Polígonos: zonas aproximadas de cobertura por proveedor. Barrios: solo cobertura confirmada (18/08/2026).
+        Barrios con cobertura confirmada de fibra óptica en Córdoba Capital (18/08/2026).
         La disponibilidad real depende de calle, altura y factibilidad técnica.
       </p>
     </div>
