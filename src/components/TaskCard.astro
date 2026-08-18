@@ -16,23 +16,30 @@ interface Props {
     descripcion?: string;
   };
 }
-const { servicio } = Astro.props;
-const base = '/fibramap-page';
+const { servicio: s } = Astro.props;
+const campos = [
+  ['Plan', s.plan],
+  ['Velocidad', s.velocidad],
+  ['Subida', s.velocidadSub],
+  ['Bajada', s.velocidadBaj],
+  ['Tecnología', s.tecnologia],
+  ['IP', s.ip],
+  ['Instalación', s.instalacion],
+  ['Precio lista', s.precioLista],
+  ['Precio c/descuento', s.precioDesc],
+  ['Atención al cliente', s.atencionCl],
+  ['Descripción', s.descripcion],
+];
 ---
 
-<section class="sm:inline-block">
-  <div class="cursor-pointer mt-4 ml-4 mr-4 text-xl font-semibold dark:text-white px-3 py-4 bg-gray-50 dark:bg-gray-800 hover:bg-slate-200 dark:hover:bg-slate-950">
-    <h1 class="mb-4 text-xl font-semibold dark:text-white">{servicio.proveedor}</h1>
-    <p class="font-thin"><span class="font-semibold">Plan: </span>{servicio.plan}</p>
-    <p class="font-thin"><span class="font-semibold">Velocidad: </span>{servicio.velocidad}</p>
-    <p class="font-thin"><span class="font-semibold">Velocidad bajada: </span>{servicio.velocidadSub}</p>
-    <p class="font-thin"><span class="font-semibold">Velocidad subida: </span>{servicio.velocidadBaj}</p>
-    <p class="font-thin"><span class="font-semibold">Tecnologia: </span>{servicio.tecnologia}</p>
-    <p class="font-thin"><span class="font-semibold">Tipo IP: </span>{servicio.ip}</p>
-    <p class="font-thin"><span class="font-semibold">Precio de instalacion: </span>{servicio.instalacion}</p>
-    <p class="font-thin"><span class="font-semibold">Precio de lista: </span>{servicio.precioLista}</p>
-    <p class="font-thin"><span class="font-semibold">Precio con descuento: </span>{servicio.precioDesc}</p>
-    <p class="font-thin"><span class="font-semibold">Atencion al cliente: </span>{servicio.atencionCl}</p>
-    <p class="font-thin"><span class="font-semibold">Datos extra: </span>{servicio.descripcion}</p>
-  </div>
-</section>
+<div class="bg-white dark:bg-gray-800 rounded-lg p-4 hover:shadow-md transition-shadow">
+  <h2 class="font-semibold text-lg mb-3">{s.proveedor}</h2>
+  <dl class="space-y-1 text-sm">
+    {campos.map(([label, value]) => value && (
+      <div class="flex justify-between gap-2">
+        <dt class="text-gray-500 dark:text-gray-400 shrink-0">{label}</dt>
+        <dd class="text-right font-medium">{value}</dd>
+      </div>
+    ))}
+  </dl>
+</div>

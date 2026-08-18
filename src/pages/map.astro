@@ -4,5 +4,11 @@ import MapIsland from '../components/MapIsland.jsx';
 ---
 
 <Layout title="FibraMap - Mapa">
-  <MapIsland client:load />
+  <div class="px-4 space-y-4">
+    <h1 class="text-xl font-semibold">Mapa de Proveedores</h1>
+    <p class="dark:text-gray-300 max-w-2xl">
+      Hacé click en un barrio para ver qué proveedores lo cubren.
+    </p>
+    <MapIsland client:load />
+  </div>
 </Layout>

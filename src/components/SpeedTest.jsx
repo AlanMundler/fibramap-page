@@ -1,29 +1,39 @@
 import { useState } from 'react';
 
 export default function SpeedTest() {
-  const [speeds, setSpeeds] = useState({ download: 0, upload: 0, ping: 0 });
+  const [speeds, setSpeeds] = useState({ download: '--', upload: '--', ping: '--' });
   const [testing, setTesting] = useState(false);
 
-  const runSpeedTest = async () => {
+  const run = async () => {
     setTesting(true);
     try {
-      const response = await fetch('https://api-fast.com/api/speed-test?token=YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm');
-      const data = await response.json();
-      setSpeeds({ download: data.download || 0, upload: data.upload || 0, ping: data.ping || 0 });
+      const r = await fetch('https://api-fast.com/api/speed-test?token=YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm');
+      const d = await r.json();
+      setSpeeds({ download: d.download || '--', upload: d.upload || '--', ping: d.ping || '--' });
     } catch {
       setSpeeds({ download: '--', upload: '--', ping: '--' });
     }
     setTesting(false);
   };
 
+  const items = [
+    { label: 'Descarga', value: speeds.download, unit: 'Mbps' },
+    { label: 'Subida', value: speeds.upload, unit: 'Mbps' },
+    { label: 'Ping', value: speeds.ping, unit: 'ms' },
+  ];
+
   return (
-    <div className="relative overflow-x-auto h-full sm:ml-64 sm:mr-36">
-      <h1 className="mb-4 ml-4 mr-4 relative overflow-x-auto text-xl font-semibold dark:text-white h-full px-3 py-4 bg-gray-50 dark:bg-gray-800">Test de Velocidad</h1>
-      <p className="ml-4 mr-4 relative overflow-x-auto text-xl font-semibold dark:text-white h-full px-3 py-4 bg-gray-50 dark:bg-gray-800">Download Speed: {speeds.download} Mbps</p>
-      <p className="ml-4 mr-4 relative overflow-x-auto text-xl font-semibold dark:text-white h-full px-3 py-4 bg-gray-50 dark:bg-gray-800">Upload Speed: {speeds.upload} Mbps</p>
-      <p className="ml-4 mr-4 relative overflow-x-auto text-xl font-semibold dark:text-white h-full px-3 py-4 bg-gray-50 dark:bg-gray-800">Ping: {speeds.ping} ms</p>
-      <button className="mt-2 mb-2 ml-4 mr-4 px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 hover:bg-gray-100 hover:text-red-700 focus:z-10 focus:ring-2 focus:ring-red-700 focus:text-red-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-red-700 dark:hover:bg-gray-700 dark:focus:ring-red-500 dark:focus:text-white" onClick={runSpeedTest} disabled={testing}>
-        {testing ? 'Testing...' : 'Run'}
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 space-y-4">
+      <div className="grid grid-cols-3 gap-4 text-center">
+        {items.map(({ label, value, unit }) => (
+          <div key={label}>
+            <p className="text-2xl font-bold">{value}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{label} ({unit})</p>
+          </div>
+        ))}
+      </div>
+      <button onClick={run} disabled={testing} className="w-full py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
+        {testing ? 'Midiendo...' : 'Medir velocidad'}
       </button>
     </div>
   );

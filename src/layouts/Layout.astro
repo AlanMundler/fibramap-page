@@ -4,7 +4,7 @@ interface Props {
   title: string;
   description?: string;
 }
-const { title, description = 'Encontra tu solucion' } = Astro.props;
+const { title, description = 'Fibra optica en Cordoba, Argentina' } = Astro.props;
 ---
 <!doctype html>
 <html lang="es">
@@ -15,14 +15,14 @@ const { title, description = 'Encontra tu solucion' } = Astro.props;
     <meta name="description" content={description} />
     <title>{title}</title>
     <script is:inline>
-      const theme = localStorage.getItem('theme') || 'light';
-      if (theme === 'dark') document.documentElement.classList.add('dark');
+      if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
     </script>
   </head>
-  <body class="bg-gray-300 dark:bg-gray-900 min-h-screen">
+  <body class="bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white">
     <NavBar />
-    <slot />
-    <script is:inline id="dsq-count-scr" src="//fibramap.disqus.com/count.js" async></script>
+    <main class="pt-4 pb-8 sm:ml-56 min-h-screen">
+      <slot />
+    </main>
   </body>
 </html>
 <style is:global>

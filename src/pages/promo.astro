@@ -1,16 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import DisqusCommentsPromo from '../components/DisqusCommentsPromo.jsx';
+import DisqusComments from '../components/DisqusComments.jsx';
 ---
 
 <Layout title="FibraMap - Promociones">
-  <section class="relative overflow-x-auto h-full sm:ml-64 sm:mr-36">
-    <h1 class="ml-4 mr-4 mb-4 text-xl font-semibold dark:text-white px-3 py-4 bg-gray-50 dark:bg-gray-800">Promociones</h1>
-    <div class="ml-4 mr-4 px-3 py-4 bg-gray-50 dark:bg-gray-800">
-      <p class="mb-4 text-l font-semibold dark:text-white">
-        En esta sección se espera que compartan las promociones que lograron y así que las demás personas puedan acceder a dichos beneficios.
-      </p>
-      <DisqusCommentsPromo client:load />
+  <div class="px-4 space-y-4">
+    <h1 class="text-xl font-semibold">Promociones</h1>
+    <p class="dark:text-gray-300 max-w-2xl">
+      Si te enteraste de una promo, compartila acá así otros pueden aprovecharla.
+    </p>
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-4">
+      <DisqusComments client:load identifier="promo" title="Promociones FibraMap" />
     </div>
-  </section>
+  </div>
 </Layout>

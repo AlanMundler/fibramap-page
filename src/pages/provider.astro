@@ -12,12 +12,10 @@ const servicios = [
 ---
 
 <Layout title="FibraMap - Proveedores">
-  <section class="container sm:ml-64">
-    <h1 class="ml-4 mr-4 relative overflow-x-auto text-xl font-semibold dark:text-white h-full px-3 py-4 bg-gray-50 dark:bg-gray-800">Proveedores</h1>
-    <div>
-      {servicios.map((servicio) => (
-        <TaskCard servicio={servicio} />
-      ))}
+  <div class="px-4 space-y-4">
+    <h1 class="text-xl font-semibold">Proveedores</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {servicios.map(s => <TaskCard servicio={s} />)}
     </div>
-  </section>
+  </div>
 </Layout>
