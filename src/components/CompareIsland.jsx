@@ -1,24 +1,24 @@
 import { useState } from 'react';
 
 const servicios = [
-  { id: 'claro-500', proveedor: 'Claro', plan: 'Fibra 500 MB', velocidad: '500 Mbps', velocidadSub: '500 Mbps', velocidadBaj: '500 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$65.289', precioDesc: '$21.999', atencionCl: '0800-123-5555', descripcion: 'Internet + teléfono fijo' },
-  { id: 'personal-600', proveedor: 'Personal', plan: 'Internet 600 MB', velocidad: '600 Mbps', velocidadSub: '600 Mbps', velocidadBaj: '600 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$103.360', precioDesc: '$30.000', atencionCl: '0800-444-0800', descripcion: 'Internet + Backup celular' },
-  { id: 'iplan-800', proveedor: 'Iplan', plan: '800 Megas', velocidad: '800 Mbps', velocidadSub: '800 Mbps', velocidadBaj: '800 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (CG-NAT)', instalacion: '$0', precioLista: '+$45.000', precioDesc: '$37.533', atencionCl: '0800-345-1111', descripcion: 'Fibra soterrada WiFi 6' },
-  { id: 'movistar-600', proveedor: 'Movistar', plan: 'Fibra 600', velocidad: '600 Mbps', velocidadSub: '600 Mbps', velocidadBaj: '600 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (CGNAT)', instalacion: '$0', precioLista: '$25.500', precioDesc: '$21.500', atencionCl: '0800-MOVISTAR', descripcion: 'Internet simétrico' },
-  { id: 'icba-300', proveedor: 'Internet Córdoba', plan: 'Plan 300 Megas', velocidad: '300 Mbps', velocidadSub: '60 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$26.800', precioDesc: '$26.800', atencionCl: '0800-345-5858', descripcion: 'ISP local, precio fijo' },
+  { id: 'claro-800', proveedor: 'Claro', plan: 'Fibra 800', velocidad: '800 Mbps', velocidadSub: '800 Mbps', download: 800, tecnologia: 'FTTH', precioDesc: '$26.999', precioLista: '', instalacion: '$0', observaciones: '70% OFF x5 meses + 1 mes gratis. Simétrico.' },
+  { id: 'personal-600', proveedor: 'Personal Fibra', plan: '600 Mbps', velocidad: '600 Mbps', velocidadSub: '600 Mbps', download: 600, tecnologia: 'FTTH', precioDesc: '$31.000', precioLista: '$101.540', instalacion: '$0', observaciones: '70% OFF x6 meses. Internet Backup.' },
+  { id: 'personal-300', proveedor: 'Personal Fibra', plan: '300 Mbps', velocidad: '300 Mbps', velocidadSub: '300 Mbps', download: 300, tecnologia: 'FTTH', precioDesc: '$23.000', precioLista: '$86.610', instalacion: '$0', observaciones: '74% OFF x6 meses. WiFi Backup incluido.' },
+  { id: 'guabi-600', proveedor: 'Guabi', plan: '600 Mbps', velocidad: '600 Mbps', velocidadSub: '200 Mbps', download: 600, tecnologia: 'FTTH', precioDesc: '$35.750', precioLista: '$55.000', instalacion: '$0', observaciones: '35% OFF x6 meses. Verificar zona fibra.' },
+  { id: 'batcom-500', proveedor: 'Batcom', plan: '500 Mbps', velocidad: '500 Mbps', velocidadSub: '250 Mbps', download: 500, tecnologia: 'FTTH', precioDesc: '$45.280', precioLista: '$56.600', instalacion: '$0', observaciones: '20% OFF x12 meses. Router comodato.' },
+  { id: 'guabi-300', proveedor: 'Guabi', plan: '300 Mbps', velocidad: '300 Mbps', velocidadSub: '100 Mbps', download: 300, tecnologia: 'FTTH', precioDesc: '$31.707', precioLista: '$48.780', instalacion: '$0', observaciones: '35% OFF x6 meses. Verificar zona fibra.' },
+  { id: 'icba-100', proveedor: 'Internet Córdoba', plan: '100 Megas', velocidad: '100 Mbps', velocidadSub: '30 Mbps', download: 100, tecnologia: 'FTTH', precioDesc: '$24.100', precioLista: '$24.100', instalacion: '$0', observaciones: '67 barrios. Precio fijo. WiFi incluido.' },
+  { id: 'krill-100', proveedor: 'Krillcom', plan: '100 Mbps', velocidad: '100 Mbps', velocidadSub: '50 Mbps', download: 100, tecnologia: 'FTTH', precioDesc: '$36.200', precioLista: '$56.700', instalacion: '$70.000', observaciones: 'Con IVA. Router: $75.000 aparte.' },
 ];
 
 const campos = [
-  ['Velocidad', 'velocidad'],
-  ['Subida', 'velocidadSub'],
-  ['Bajada', 'velocidadBaj'],
+  ['Velocidad ↓', 'velocidad'],
+  ['Velocidad ↑', 'velocidadSub'],
   ['Tecnología', 'tecnologia'],
-  ['IP', 'ip'],
-  ['Instalación', 'instalacion'],
-  ['Precio lista', 'precioLista'],
   ['Precio promo', 'precioDesc'],
-  ['Atención', 'atencionCl'],
-  ['Incluye', 'descripcion'],
+  ['Precio lista', 'precioLista'],
+  ['Instalación', 'instalacion'],
+  ['Detalles', 'observaciones'],
 ];
 
 function Select({ value, onChange, children }) {
@@ -34,6 +34,16 @@ export default function CompareIsland() {
   const [id2, setId2] = useState("");
   const s1 = servicios.find(s => s.id === id1);
   const s2 = servicios.find(s => s.id === id2);
+
+  const precio = (s) => {
+    const n = parseInt(s.precioDesc.replace(/[^0-9]/g, ''));
+    return isNaN(n) ? null : n;
+  };
+  const precio100 = (s) => {
+    const p = precio(s);
+    if (!p || !s.download) return null;
+    return (p / (s.download / 100)).toFixed(0);
+  };
 
   return (
     <div className="space-y-4">
@@ -67,6 +77,11 @@ export default function CompareIsland() {
                     <td className="py-2 px-3">{s2[key]}</td>
                   </tr>
                 ))}
+                <tr className="border-b border-gray-800">
+                  <td className="py-2 px-3 text-gray-400 font-medium">Precio/100 Mbps</td>
+                  <td className="py-2 px-3 font-medium">${precio100(s1) ?? '—'}</td>
+                  <td className="py-2 px-3 font-medium">${precio100(s2) ?? '—'}</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -81,6 +96,10 @@ export default function CompareIsland() {
                     <span className="text-right">{s[key]}</span>
                   </div>
                 ))}
+                <div className="flex justify-between text-xs gap-2 border-t border-gray-700 pt-2">
+                  <span className="text-gray-400 shrink-0">Precio/100 Mbps</span>
+                  <span className="text-right font-medium">${precio100(s) ?? '—'}</span>
+                </div>
               </div>
             ))}
           </div>

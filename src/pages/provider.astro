@@ -3,31 +3,69 @@ import Layout from '../layouts/Layout.astro';
 import TaskCard from '../components/TaskCard.astro';
 
 const servicios = [
-  { id: 'claro-200', proveedor: 'Claro', plan: 'Fibra 200 MB', velocidad: '200 Mbps', velocidadSub: '200 Mbps', velocidadBaj: '200 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (estática +$1.399/mes)', instalacion: '$0', precioLista: '$55.289', precioDesc: '$18.999', precioDetalle: '70% OFF por 5 meses, 1er mes gratis', atencionCl: '0800-123-5555', descripcion: 'Internet + teléfono fijo. Llamadas ilimitadas a fijos Claro.', destacado: false },
-  { id: 'claro-500', proveedor: 'Claro', plan: 'Fibra 500 MB', velocidad: '500 Mbps', velocidadSub: '500 Mbps', velocidadBaj: '500 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (estática +$1.399/mes)', instalacion: '$0', precioLista: '$65.289', precioDesc: '$21.999', precioDetalle: '70% OFF por 5 meses, 1er mes gratis. Más elegido.', atencionCl: '0800-123-5555', descripcion: 'Internet + teléfono fijo. Llamadas ilimitadas a fijos Claro.', destacado: true },
-  { id: 'claro-800', proveedor: 'Claro', plan: 'Fibra 800 MB', velocidad: '800 Mbps', velocidadSub: '800 Mbps', velocidadBaj: '800 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (estática +$1.399/mes)', instalacion: '$0', precioLista: '$81.956', precioDesc: '$26.999', precioDetalle: '70% OFF por 5 meses, 1er mes gratis.', atencionCl: '0800-123-5555', descripcion: 'Internet + teléfono fijo. Llamadas ilimitadas a fijos Claro.', destacado: false },
-  { id: 'personal-300', proveedor: 'Personal', plan: 'Internet 300 MB', velocidad: '300 Mbps', velocidadSub: '300 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$88.160', precioDesc: '$23.000', precioDetalle: '74% OFF por 6 meses. Módem WiFi en comodato.', atencionCl: '0800-444-0800', descripcion: 'Internet simétrico. WiFi Backup y Video Pass incluidos.', destacado: false },
-  { id: 'personal-300-flow', proveedor: 'Personal', plan: 'Internet 300 MB + Flow Full', velocidad: '300 Mbps', velocidadSub: '300 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$127.800', precioDesc: '$31.000', precioDetalle: '76% OFF por 6 meses. Incluye Flow Full (150+ canales).', atencionCl: '0800-444-0800', descripcion: 'Internet + TV por Flow. 2 pantallas simultáneas.', destacado: false },
-  { id: 'personal-600', proveedor: 'Personal', plan: 'Internet 600 MB', velocidad: '600 Mbps', velocidadSub: '600 Mbps', velocidadBaj: '600 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$103.360', precioDesc: '$30.000', precioDetalle: '71% OFF por 6 meses. Incluye Internet Backup.', atencionCl: '0800-444-0800', descripcion: 'Internet simétrico. Internet Backup (respaldo celular si se corta la fibra).', destacado: true },
-  { id: 'iplan-500', proveedor: 'Iplan', plan: '500 Megas', velocidad: '500 Mbps', velocidadSub: '500 Mbps', velocidadBaj: '500 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (CG-NAT)', instalacion: '$0', precioLista: '+$45.000', precioDesc: '$21.383', precioDetalle: '44% OFF por 12 meses. 1er mes gratis. WiFi 5.', atencionCl: '0800-345-1111', descripcion: 'Fibra 100% soterrada. WiFi 5 (ac). Débito automático requerido.', destacado: false },
-  { id: 'iplan-800', proveedor: 'Iplan', plan: '800 Megas', velocidad: '800 Mbps', velocidadSub: '800 Mbps', velocidadBaj: '800 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (CG-NAT)', instalacion: '$0', precioLista: '+$45.000', precioDesc: '$37.533', precioDetalle: '40% OFF por 12 meses. 1er mes gratis. WiFi 6.', atencionCl: '0800-345-1111', descripcion: 'Fibra 100% soterrada. WiFi 6 (ax). Débito automático requerido.', destacado: true },
-  { id: 'iplan-1000', proveedor: 'Iplan', plan: '1.000 Megas', velocidad: '1.000 Mbps', velocidadSub: '1.000 Mbps', velocidadBaj: '1.000 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (CG-NAT)', instalacion: '$0', precioLista: '+$45.000', precioDesc: 'Consultar', precioDetalle: 'Nuevo. Descuento disponible. WiFi 6.', atencionCl: '0800-345-1111', descripcion: 'Fibra 100% soterrada. Velocidad máxima. WiFi 6 (ax).', destacado: false },
-  { id: 'movistar-300', proveedor: 'Movistar', plan: 'Fibra 300', velocidad: '300 Mbps', velocidadSub: '300 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (CGNAT)', instalacion: '$0', precioLista: '$25.500', precioDesc: '$21.500', precioDetalle: '$25.500 sin línea Movistar. 1 mes gratis.', atencionCl: '0800-MOVISTAR', descripcion: 'Internet simétrico. Descuento con línea Movistar.', destacado: false },
-  { id: 'movistar-600', proveedor: 'Movistar', plan: 'Fibra 600', velocidad: '600 Mbps', velocidadSub: '600 Mbps', velocidadBaj: '600 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (CGNAT)', instalacion: '$0', precioLista: '$25.500', precioDesc: '$21.500', precioDetalle: 'Promo vigente. 1 mes gratis.', atencionCl: '0800-MOVISTAR', descripcion: 'Internet simétrico. Misma promo que Fibra 300.', destacado: true },
-  { id: 'movistar-1000', proveedor: 'Movistar', plan: 'Fibra GIGA', velocidad: '1.000 Mbps', velocidadSub: '1.000 Mbps', velocidadBaj: '1.000 Mbps', tecnologia: 'FTTH', ip: 'Dinámica (CGNAT)', instalacion: '$0', precioLista: '$38.058', precioDesc: '$34.058', precioDetalle: '$34.058 con línea Movistar. 1 mes gratis.', atencionCl: '0800-MOVISTAR', descripcion: 'Internet simétrico. Plan máximo.', destacado: false },
-  { id: 'icba-100', proveedor: 'Internet Córdoba', plan: 'Plan 100 Megas', velocidad: '100 Mbps', velocidadSub: '30 Mbps', velocidadBaj: '100 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$24.100', precioDesc: '$24.100', precioDetalle: 'Precio fijo, sin promociones temporales.', atencionCl: '0800-345-5858', descripcion: 'ISP local. 67+ barrios. WiFi 2.4/5 GHz incluido.', destacado: false },
-  { id: 'icba-150', proveedor: 'Internet Córdoba', plan: 'Plan 150 Megas', velocidad: '150 Mbps', velocidadSub: '40 Mbps', velocidadBaj: '150 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$25.400', precioDesc: '$25.400', precioDetalle: 'Precio fijo, sin promociones temporales.', atencionCl: '0800-345-5858', descripcion: 'ISP local. 67+ barrios. WiFi 2.4/5 GHz incluido.', destacado: false },
-  { id: 'icba-300', proveedor: 'Internet Córdoba', plan: 'Plan 300 Megas', velocidad: '300 Mbps', velocidadSub: '60 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$26.800', precioDesc: '$26.800', precioDetalle: 'Precio fijo, sin promociones temporales.', atencionCl: '0800-345-5858', descripcion: 'ISP local. 67+ barrios. WiFi 2.4/5 GHz incluido.', destacado: true },
+  // ── Personal Fibra ──────────────────────────────────────────
+  { id: 'personal-300', proveedor: 'Personal Fibra', plan: '300 Mbps', velocidad: '300 Mbps', velocidadSub: '300 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$86.610', precioDesc: '$23.000', precioDetalle: '74% OFF x 6 meses. WiFi Backup y Video Pass incluidos.', atencionCl: '0800-444-0800', descripcion: 'Internet simétrico. Soporte 24/7.', destacado: false },
+  { id: 'personal-300-flow', proveedor: 'Personal Fibra', plan: '300 Mbps + Flow Full', velocidad: '300 Mbps', velocidadSub: '300 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$125.480', precioDesc: '$31.000', precioDetalle: '76% OFF x 6 meses. Incluye Flow Full (150+ canales).', atencionCl: '0800-444-0800', descripcion: 'Internet + TV por Flow. 2 pantallas simultáneas.', destacado: false },
+  { id: 'personal-600', proveedor: 'Personal Fibra', plan: '600 Mbps', velocidad: '600 Mbps', velocidadSub: '600 Mbps', velocidadBaj: '600 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$101.540', precioDesc: '$31.000', precioDetalle: '70% OFF x 6 meses. Internet Backup incluido.', atencionCl: '0800-444-0800', descripcion: 'Internet simétrico. Internet Backup (respaldo celular).', destacado: true },
+
+  // ── Claro ───────────────────────────────────────────────────
+  { id: 'claro-200', proveedor: 'Claro', plan: 'Fibra 200', velocidad: '200 Mbps', velocidadSub: '200 Mbps', velocidadBaj: '200 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: '$18.999', precioDetalle: '70% OFF x 5 meses + 1 mes gratis. Simétrico.', atencionCl: '0800-123-5555', descripcion: 'Internet simétrico.', destacado: false },
+  { id: 'claro-500', proveedor: 'Claro', plan: 'Fibra 500', velocidad: '500 Mbps', velocidadSub: '500 Mbps', velocidadBaj: '500 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: '$21.999', precioDetalle: '70% OFF x 5 meses + 1 mes gratis. Simétrico.', atencionCl: '0800-123-5555', descripcion: 'Internet simétrico.', destacado: false },
+  { id: 'claro-800', proveedor: 'Claro', plan: 'Fibra 800', velocidad: '800 Mbps', velocidadSub: '800 Mbps', velocidadBaj: '800 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: '$26.999', precioDetalle: '70% OFF x 5 meses + 1 mes gratis. Simétrico.', atencionCl: '0800-123-5555', descripcion: 'Internet simétrico. Mejor precio/velocidad.', destacado: true },
+
+  // ── IPLAN ───────────────────────────────────────────────────
+  { id: 'iplan-500', proveedor: 'IPLAN', plan: '500 Megas', velocidad: '500 Mbps', velocidadSub: '500 Mbps', velocidadBaj: '500 Mbps', tecnologia: 'FTTH', ip: 'CG-NAT (verificar)', instalacion: '$0', precioLista: 'Consultar', precioDesc: 'Consultar', precioDetalle: 'Córdoba Centro confirmado. WiFi 6. Precio tras validación de factibilidad.', atencionCl: '0800-345-1111', descripcion: 'Fibra directa al hogar. Velocidad simétrica.', destacado: false },
+  { id: 'iplan-800', proveedor: 'IPLAN', plan: '800 Megas', velocidad: '800 Mbps', velocidadSub: '800 Mbps', velocidadBaj: '800 Mbps', tecnologia: 'FTTH', ip: 'CG-NAT (verificar)', instalacion: '$0', precioLista: 'Consultar', precioDesc: 'Consultar', precioDetalle: 'Córdoba Centro confirmado. WiFi 6.', atencionCl: '0800-345-1111', descripcion: 'Fibra directa al hogar. Velocidad simétrica.', destacado: false },
+  { id: 'iplan-1000', proveedor: 'IPLAN', plan: '1.000 Megas', velocidad: '1.000 Mbps', velocidadSub: '1.000 Mbps', velocidadBaj: '1.000 Mbps', tecnologia: 'FTTH', ip: 'CG-NAT (verificar)', instalacion: '$0', precioLista: 'Consultar', precioDesc: 'Consultar', precioDetalle: 'Córdoba Centro confirmado. Máxima velocidad. WiFi 6.', atencionCl: '0800-345-1111', descripcion: 'Fibra directa al hogar. Plan máximo.', destacado: true },
+
+  // ── Internet Córdoba ────────────────────────────────────────
+  { id: 'icba-100', proveedor: 'Internet Córdoba', plan: '100 Megas', velocidad: '100 Mbps', velocidadSub: '30 Mbps', velocidadBaj: '100 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$24.100', precioDesc: '$24.100', precioDetalle: '67 barrios confirmados. WiFi 2.4/5 GHz incluido.', atencionCl: '0800-345-5858', descripcion: 'ISP local. Precio fijo sin promociones.', destacado: false },
+  { id: 'icba-150', proveedor: 'Internet Córdoba', plan: '150 Megas', velocidad: '150 Mbps', velocidadSub: '40 Mbps', velocidadBaj: '150 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: '', precioDetalle: '67 barrios confirmados. WiFi 2.4/5 GHz incluido. Precios en revisión.', atencionCl: '0800-345-5858', descripcion: 'ISP local. Precios sujetos a confirmación.', destacado: false },
+  { id: 'icba-300', proveedor: 'Internet Córdoba', plan: '300 Megas', velocidad: '300 Mbps', velocidadSub: '60 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: '', precioDetalle: '67 barrios confirmados. WiFi 2.4/5 GHz incluido. Precios en revisión.', atencionCl: '0800-345-5858', descripcion: 'ISP local. Mayor velocidad del catálogo.', destacado: true },
+
+  // ── Batcom ──────────────────────────────────────────────────
+  { id: 'batcom-100', proveedor: 'Batcom', plan: '100 Mbps', velocidad: '100 Mbps', velocidadSub: '50 Mbps', velocidadBaj: '100 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$44.200', precioDesc: '$35.360', precioDetalle: '20% OFF x12 meses. 1er mes gratis. Router en comodato.', atencionCl: 'Consultar', descripcion: 'ISP local. WiFi de cortesía.', destacado: false },
+  { id: 'batcom-300', proveedor: 'Batcom', plan: '300 Mbps', velocidad: '300 Mbps', velocidadSub: '150 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$49.300', precioDesc: '$39.440', precioDetalle: '20% OFF x12 meses. 1er mes gratis. Router en comodato.', atencionCl: 'Consultar', descripcion: 'ISP local. WiFi de cortesía.', destacado: false },
+  { id: 'batcom-500', proveedor: 'Batcom', plan: '500 Mbps', velocidad: '500 Mbps', velocidadSub: '250 Mbps', velocidadBaj: '500 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$56.600', precioDesc: '$45.280', precioDetalle: '20% OFF x12 meses. 1er mes gratis. Router en comodato.', atencionCl: 'Consultar', descripcion: 'ISP local. WiFi de cortesía. Mayor velocidad.', destacado: true },
+
+  // ── Guabi ───────────────────────────────────────────────────
+  { id: 'guabi-100', proveedor: 'Guabi', plan: '100 Mbps', velocidad: '100 Mbps', velocidadSub: '50 Mbps', velocidadBaj: '100 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$36.830', precioDesc: '$23.940', precioDetalle: '35% OFF x6 meses nuevos clientes. Zona fibra (azul).', atencionCl: 'Consultar', descripcion: 'ISP local. Verificar zona (fibra vs aire).', destacado: false },
+  { id: 'guabi-300', proveedor: 'Guabi', plan: '300 Mbps', velocidad: '300 Mbps', velocidadSub: '100 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$48.780', precioDesc: '$31.707', precioDetalle: '35% OFF x6 meses nuevos clientes. Zona fibra (azul).', atencionCl: 'Consultar', descripcion: 'ISP local. Verificar zona (fibra vs aire).', destacado: false },
+  { id: 'guabi-600', proveedor: 'Guabi', plan: '600 Mbps', velocidad: '600 Mbps', velocidadSub: '200 Mbps', velocidadBaj: '600 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$55.000', precioDesc: '$35.750', precioDetalle: '35% OFF x6 meses nuevos clientes. Zona fibra (azul).', atencionCl: 'Consultar', descripcion: 'ISP local. Mayor velocidad. Verificar zona.', destacado: true },
+
+  // ── Krillcom ────────────────────────────────────────────────
+  { id: 'krill-50', proveedor: 'Krillcom', plan: '50 Mbps', velocidad: '50 Mbps', velocidadSub: '4 Mbps', velocidadBaj: '50 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$70.000', precioLista: '$36.200', precioDesc: '$29.900', precioDetalle: 'Precios con IVA. Router no incluido. Disponibilidad sujeta a factibilidad.', atencionCl: 'Consultar', descripcion: 'ISP local. Verificar condiciones vigentes.', destacado: false },
+  { id: 'krill-100', proveedor: 'Krillcom', plan: '100 Mbps', velocidad: '100 Mbps', velocidadSub: '50 Mbps', velocidadBaj: '100 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$70.000', precioLista: '$56.700', precioDesc: '$36.200', precioDetalle: 'Precios con IVA. Router Wi-Fi: $75.000 aparte. Disponibilidad sujeta a factibilidad.', atencionCl: 'Consultar', descripcion: 'ISP local. Verificar condiciones vigentes.', destacado: false },
+
+  // ── MetroWL ─────────────────────────────────────────────────
+  { id: 'metro-50', proveedor: 'MetroWL', plan: '50 Mbps', velocidad: '50 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '50 Mbps', tecnologia: 'FTTH/GPON', ip: 'NO INFORMADO', instalacion: 'NO INFORMADO', precioLista: 'NO INFORMADO', precioDesc: 'NO INFORMADO', precioDetalle: 'FTTH confirmado. Equipos Huawei/ZTE. Router Wi-Fi 6 opcional. Soporte 24hs.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios y cobertura no informados.', destacado: false },
+  { id: 'metro-100', proveedor: 'MetroWL', plan: '100 Mbps', velocidad: '100 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '100 Mbps', tecnologia: 'FTTH/GPON', ip: 'NO INFORMADO', instalacion: 'NO INFORMADO', precioLista: 'NO INFORMADO', precioDesc: 'NO INFORMADO', precioDetalle: 'FTTH confirmado. Latencia <5ms anunciada.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios y cobertura no informados.', destacado: false },
+  { id: 'metro-300', proveedor: 'MetroWL', plan: '300 Mbps', velocidad: '300 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '300 Mbps', tecnologia: 'FTTH/GPON', ip: 'NO INFORMADO', instalacion: 'NO INFORMADO', precioLista: 'NO INFORMADO', precioDesc: 'NO INFORMADO', precioDetalle: 'FTTH confirmado. Velocidad máxima del catálogo.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios y cobertura no informados.', destacado: false },
+
+  // ── Trimotion ───────────────────────────────────────────────
+  { id: 'trimo-100', proveedor: 'Trimotion', plan: '100 Mbps', velocidad: '100 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '100 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$70.000', precioLista: '$28.900', precioDesc: '$28.900', precioDetalle: 'Precios julio 2026. Precio agosto NO CONFIRMADO. Verificar vigencia.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios sujetos a confirmación.', destacado: false },
+  { id: 'trimo-200', proveedor: 'Trimotion', plan: '200 Mbps', velocidad: '200 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '200 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$70.000', precioLista: '$31.900', precioDesc: '$31.900', precioDetalle: 'Precios julio 2026. Precio agosto NO CONFIRMADO.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios sujetos a confirmación.', destacado: false },
+  { id: 'trimo-300', proveedor: 'Trimotion', plan: '300 Mbps', velocidad: '300 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$70.000', precioLista: '$34.900', precioDesc: '$34.900', precioDetalle: 'Precios julio 2026. Precio agosto NO CONFIRMADO.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios sujetos a confirmación.', destacado: false },
 ];
 
-const proveedores = ['Claro', 'Personal', 'Iplan', 'Movistar', 'Internet Córdoba'];
+const proveedores = [
+  'Personal Fibra',
+  'Claro',
+  'IPLAN',
+  'Internet Córdoba',
+  'Batcom',
+  'Guabi',
+  'Krillcom',
+  'MetroWL',
+  'Trimotion',
+];
 ---
 
 <Layout title="FibraMap - Proveedores">
   <div class="space-y-8">
     <div>
-      <h1 class="text-xl font-semibold">Proveedores de fibra óptica en Córdoba</h1>
-      <p class="text-sm text-gray-400 mt-1">Precios julio 2026. Verificá cobertura en la página de cada proveedor.</p>
+      <h1 class="text-xl font-semibold">Proveedores FTTH en Córdoba Capital</h1>
+      <p class="text-sm text-gray-400 mt-1">Investigación verificada al 18/08/2026. La cobertura real depende de la dirección exacta.</p>
     </div>
 
     {proveedores.map(proveedor => (
@@ -40,5 +78,17 @@ const proveedores = ['Claro', 'Personal', 'Iplan', 'Movistar', 'Internet Córdob
         </div>
       </section>
     ))}
+
+    <div class="border-t border-gray-700 pt-6 space-y-3">
+      <h2 class="text-lg font-semibold">No confirmados como FTTH en Córdoba Capital</h2>
+      <p class="text-sm text-gray-400">Los siguientes proveedores no se encontraron con FTTH residencial activo en Córdoba Capital al 18/08/2026:</p>
+      <ul class="text-sm text-gray-400 list-disc list-inside space-y-1">
+        <li><strong class="text-gray-300">Movistar</strong> — la página oficial no incluye Córdoba en provincias con fibra</li>
+        <li><strong class="text-gray-300">Telecentro</strong> — sin evidencia de FTTH residencial activo en Córdoba Capital</li>
+        <li><strong class="text-gray-300">Iptel</strong> — FTTH confirmado solo en Villa Allende / Mendiolaza</li>
+        <li><strong class="text-gray-300">Integral Comunicaciones</strong> — FTTH en Punilla, no en Córdoba Capital</li>
+        <li><strong class="text-gray-300">Wisp-CBA</strong> — conexión inalámbrica (antena), no FTTH</li>
+      </ul>
+    </div>
   </div>
 </Layout>
