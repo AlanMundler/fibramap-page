@@ -12,6 +12,7 @@
   "dependencies": {
     "@astrojs/react": "^3.6.2",
     "@astrojs/tailwind": "^5.1.2",
+    "@cloudflare/speedtest": "^1.13.0",
     "@google/generative-ai": "^0.21.0",
     "astro": "^4.16.0",
     "disqus-react": "^1.1.5",
