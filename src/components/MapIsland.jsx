@@ -6,7 +6,7 @@ const base = '/fibramap-page';
 
 const barrios = [
   // ── Claro (verificados: distribuidor oficial + phontel) ──────
-  { name: 'Centro', pos: [-31.4182, -64.1871], providers: ['Claro', 'Personal Fibra', 'Movistar'] },
+  { name: 'Centro', pos: [-31.4182, -64.1871], providers: ['Claro', 'Personal Fibra'] },
   { name: 'General Paz', pos: [-31.4124, -64.1671], providers: ['Claro', 'Personal Fibra'] },
   { name: 'Cerro de las Rosas', pos: [-31.3767, -64.2341], providers: ['Claro', 'Personal Fibra'] },
   { name: 'Cofico', pos: [-31.4029, -64.1849], providers: ['Claro'] },
@@ -21,7 +21,7 @@ const barrios = [
   { name: 'Comercial', pos: [-31.4165, -64.1830], providers: ['Claro'] },
   { name: 'Nueva Córdoba', pos: [-31.4255, -64.1865], providers: ['Claro', 'Personal Fibra', 'IPLAN'] },
   { name: 'Alta Córdoba', pos: [-31.3982, -64.1803], providers: ['Claro'] },
-  { name: 'Güemes', pos: [-31.4243, -64.1913], providers: ['Claro', 'Movistar'] },
+  { name: 'Güemes', pos: [-31.4243, -64.1913], providers: ['Claro'] },
   { name: 'San Vicente', pos: [-31.4235, -64.1510], providers: ['Claro'] },
   { name: 'Jardín', pos: [-31.4471, -64.1817], providers: ['Claro'] },
   { name: 'San Carlos', pos: [-31.4010, -64.1820], providers: ['Claro'] },
@@ -61,8 +61,7 @@ const barrios = [
   // ── Personal Fibra (verificados: phontel, selectra) ─────────
   // (ya incluidos en Centro, General Paz, Cerro de las Rosas, Nueva Córdoba arriba)
 
-  // ── Movistar (verificados: phontel) ────────────────────────
-  // (ya incluidos en Centro y Güemes arriba)
+
 
   // ── IPLAN (verificados: iplan.com.ar, selectra) ────────────
   // Solo "Córdoba Centro" confirmado → ya incluido en Centro y Nueva Córdoba
@@ -92,7 +91,7 @@ const barrios = [
 const providers = [
   { name: 'Claro', color: '#dc2626' },
   { name: 'Personal Fibra', color: '#3b82f6' },
-  { name: 'Movistar', color: '#0ea5e9' },
+
   { name: 'IPLAN', color: '#ec4899' },
   { name: 'Internet Córdoba', color: '#f59e0b' },
   { name: 'Batcom', color: '#8b5cf6' },

@@ -43,9 +43,7 @@ const servicios = [
   { id: 'metro-100', proveedor: 'MetroWL', plan: '100 Mbps', velocidad: '100 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '100 Mbps', tecnologia: 'FTTH/GPON', ip: 'NO INFORMADO', instalacion: 'NO INFORMADO', precioLista: 'NO INFORMADO', precioDesc: 'NO INFORMADO', precioDetalle: 'FTTH confirmado. Latencia <5ms anunciada.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios y cobertura no informados.', destacado: false },
   { id: 'metro-300', proveedor: 'MetroWL', plan: '300 Mbps', velocidad: '300 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '300 Mbps', tecnologia: 'FTTH/GPON', ip: 'NO INFORMADO', instalacion: 'NO INFORMADO', precioLista: 'NO INFORMADO', precioDesc: 'NO INFORMADO', precioDetalle: 'FTTH confirmado. Velocidad máxima del catálogo.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios y cobertura no informados.', destacado: false },
 
-  // ── Movistar (verificados: phontel) ─────────────────────────
-  { id: 'movi-100', proveedor: 'Movistar', plan: 'Fibra 100', velocidad: '100 Mbps', velocidadSub: '100 Mbps', velocidadBaj: '100 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: 'Consultar', precioDetalle: 'FTTH confirmado en Centro y Güemes. Precios según página oficial. Verificar factibilidad.', atencionCl: '0800-300-1234', descripcion: 'Cobertura en expansión. Centro y Güemes confirmados.', destacado: false },
-  { id: 'movi-300', proveedor: 'Movistar', plan: 'Fibra 300', velocidad: '300 Mbps', velocidadSub: '300 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: 'Consultar', precioDetalle: 'FTTH confirmado en Centro y Güemes. Precios según página oficial.', atencionCl: '0800-300-1234', descripcion: 'Cobertura en expansión. Centro y Güemes confirmados.', destacado: false },
+
 
   // ── Trimotion ───────────────────────────────────────────────
   { id: 'trimo-100', proveedor: 'Trimotion', plan: '100 Mbps', velocidad: '100 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '100 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$70.000', precioLista: '$28.900', precioDesc: '$28.900', precioDetalle: 'Precios julio 2026. Precio agosto NO CONFIRMADO. Verificar vigencia.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios sujetos a confirmación.', destacado: false },
@@ -60,7 +58,6 @@ const proveedores = [
   'Internet Córdoba',
   'Batcom',
   'Guabi',
-  'Movistar',
   'Krillcom',
   'MetroWL',
   'Trimotion',
@@ -89,6 +86,7 @@ const proveedores = [
       <h2 class="text-lg font-semibold">No confirmados como FTTH en Córdoba Capital</h2>
       <p class="text-sm text-gray-400">Los siguientes proveedores no se encontraron con FTTH residencial activo en Córdoba Capital al 18/08/2026:</p>
       <ul class="text-sm text-gray-400 list-disc list-inside space-y-1">
+        <li><strong class="text-gray-300">Movistar</strong> — no se encontró FTTH residencial activo en Córdoba Capital</li>
         <li><strong class="text-gray-300">Telecentro</strong> — sin evidencia de FTTH residencial activo en Córdoba Capital</li>
         <li><strong class="text-gray-300">Iptel</strong> — FTTH confirmado solo en Villa Allende / Mendiolaza</li>
         <li><strong class="text-gray-300">Integral Comunicaciones</strong> — FTTH en Punilla, no en Córdoba Capital</li>
