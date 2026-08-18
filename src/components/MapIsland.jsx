@@ -6,7 +6,7 @@ const base = '/fibramap-page';
 
 const barrios = [
   // ── Claro (verificados: distribuidor oficial + phontel) ──────
-  { name: 'Centro', pos: [-31.4182, -64.1871], providers: ['Claro', 'Personal Fibra'] },
+  { name: 'Centro', pos: [-31.4182, -64.1871], providers: ['Claro', 'Personal Fibra', 'IPLAN', 'Telecentro'] },
   { name: 'General Paz', pos: [-31.4124, -64.1671], providers: ['Claro', 'Personal Fibra'] },
   { name: 'Cerro de las Rosas', pos: [-31.3767, -64.2341], providers: ['Claro', 'Personal Fibra'] },
   { name: 'Cofico', pos: [-31.4029, -64.1849], providers: ['Claro'] },
@@ -19,7 +19,7 @@ const barrios = [
   { name: 'Barrio Parque', pos: [-31.4160, -64.2030], providers: ['Claro'] },
   { name: 'Tablada', pos: [-31.3877, -64.2318], providers: ['Claro'] },
   { name: 'Comercial', pos: [-31.4165, -64.1830], providers: ['Claro'] },
-  { name: 'Nueva Córdoba', pos: [-31.4255, -64.1865], providers: ['Claro', 'Personal Fibra', 'IPLAN'] },
+  { name: 'Nueva Córdoba', pos: [-31.4255, -64.1865], providers: ['Claro', 'Personal Fibra', 'IPLAN', 'Telecentro'] },
   { name: 'Alta Córdoba', pos: [-31.3982, -64.1803], providers: ['Claro'] },
   { name: 'Güemes', pos: [-31.4243, -64.1913], providers: ['Claro'] },
   { name: 'San Vicente', pos: [-31.4235, -64.1510], providers: ['Claro'] },
@@ -93,6 +93,7 @@ const providers = [
   { name: 'Personal Fibra', color: '#3b82f6' },
 
   { name: 'IPLAN', color: '#ec4899' },
+  { name: 'Telecentro', color: '#f97316' },
   { name: 'Internet Córdoba', color: '#f59e0b' },
   { name: 'Batcom', color: '#8b5cf6' },
   { name: 'Guabi', color: '#06b6d4' },

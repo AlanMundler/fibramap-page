@@ -45,6 +45,11 @@ const servicios = [
 
 
 
+  // ── Telecentro (verificados: selectra, speedtest.net.ar) ──────
+  { id: 'tele-150', proveedor: 'Telecentro', plan: '150 MB + Fijo', velocidad: '150 Mbps', velocidadSub: '15 Mbps', velocidadBaj: '150 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: '$17.999', precioDetalle: 'Incluye telefónía fija (2.500 min). Primer mes bonificado. Solo Córdoba Centro.', atencionCl: '0800-222-0932', descripcion: 'Cobertura: Centro y Nueva Córdoba. Fibra óptica.', destacado: false },
+  { id: 'tele-300', proveedor: 'Telecentro', plan: '300 MB + Fijo', velocidad: '300 Mbps', velocidadSub: '20 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: '$13.999', precioDetalle: 'Incluye telefónía fija (2.500 min). Primer mes bonificado. Solo Córdoba Centro.', atencionCl: '0800-222-0932', descripcion: 'Cobertura: Centro y Nueva Córdoba. Fibra óptica.', destacado: true },
+  { id: 'tele-1000', proveedor: 'Telecentro', plan: '1000 MB + Fijo', velocidad: '1.000 Mbps', velocidadSub: '30 Mbps', velocidadBaj: '1.000 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '', precioDesc: '$26.999', precioDetalle: 'Incluye telefónía fija (2.500 min). Primer mes bonificado. Solo Córdoba Centro.', atencionCl: '0800-222-0932', descripcion: 'Cobertura: Centro y Nueva Córdoba. Mayor velocidad.', destacado: false },
+
   // ── Trimotion ───────────────────────────────────────────────
   { id: 'trimo-100', proveedor: 'Trimotion', plan: '100 Mbps', velocidad: '100 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '100 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$70.000', precioLista: '$28.900', precioDesc: '$28.900', precioDetalle: 'Precios julio 2026. Precio agosto NO CONFIRMADO. Verificar vigencia.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios sujetos a confirmación.', destacado: false },
   { id: 'trimo-200', proveedor: 'Trimotion', plan: '200 Mbps', velocidad: '200 Mbps', velocidadSub: 'NO INFORMADO', velocidadBaj: '200 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$70.000', precioLista: '$31.900', precioDesc: '$31.900', precioDetalle: 'Precios julio 2026. Precio agosto NO CONFIRMADO.', atencionCl: 'Consultar', descripcion: 'ISP local. Precios sujetos a confirmación.', destacado: false },
@@ -58,6 +63,7 @@ const proveedores = [
   'Internet Córdoba',
   'Batcom',
   'Guabi',
+  'Telecentro',
   'Krillcom',
   'MetroWL',
   'Trimotion',
@@ -87,7 +93,6 @@ const proveedores = [
       <p class="text-sm text-gray-400">Los siguientes proveedores no se encontraron con FTTH residencial activo en Córdoba Capital al 18/08/2026:</p>
       <ul class="text-sm text-gray-400 list-disc list-inside space-y-1">
         <li><strong class="text-gray-300">Movistar</strong> — no se encontró FTTH residencial activo en Córdoba Capital</li>
-        <li><strong class="text-gray-300">Telecentro</strong> — sin evidencia de FTTH residencial activo en Córdoba Capital</li>
         <li><strong class="text-gray-300">Iptel</strong> — FTTH confirmado solo en Villa Allende / Mendiolaza</li>
         <li><strong class="text-gray-300">Integral Comunicaciones</strong> — FTTH en Punilla, no en Córdoba Capital</li>
         <li><strong class="text-gray-300">Wisp-CBA</strong> — conexión inalámbrica (antena), no FTTH</li>
