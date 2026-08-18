@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 
 const servicios = [
   // ── Personal Fibra ──────────────────────────────────
@@ -11,13 +11,12 @@ const servicios = [
   { id: 'claro-500', proveedor: 'Claro', plan: 'Fibra 500', download: 500, upload: '500 Mbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 21999, precioLista: 0, instalacion: 0, descuento: '70% OFF x5 meses + 1 gratis', detalle: '64+ barrios. Simétrico.', cobertura: '64+ barrios' },
   { id: 'claro-800', proveedor: 'Claro', plan: 'Fibra 800', download: 800, upload: '800 Mbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 26999, precioLista: 0, instalacion: 0, descuento: '70% OFF x5 meses + 1 gratis', detalle: '64+ barrios. Simétrico.', cobertura: '64+ barrios' },
 
-  // ── Internet Córdoba (verificados: internetcordoba.com.ar) ──
+  // ── Internet Córdoba ────────────────────────────────
   { id: 'icba-100', proveedor: 'Internet Córdoba', plan: '100 Megas', download: 100, upload: '30 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 24100, precioLista: 24100, instalacion: 0, descuento: 'Precio fijo', detalle: '67 barrios. WiFi incluido.', cobertura: '67 barrios' },
   { id: 'icba-150', proveedor: 'Internet Córdoba', plan: '150 Megas', download: 150, upload: '40 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 25400, precioLista: 25400, instalacion: 0, descuento: 'Precio fijo', detalle: '67 barrios. WiFi incluido.', cobertura: '67 barrios' },
   { id: 'icba-300', proveedor: 'Internet Córdoba', plan: '300 Megas', download: 300, upload: '60 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 26800, precioLista: 26800, instalacion: 0, descuento: 'Precio fijo', detalle: '67 barrios. WiFi incluido.', cobertura: '67 barrios' },
 
-  // ── Batcom (verificados: batcom.com.ar) ──
-  // Subida NO publicada - no se confirma
+  // ── Batcom ───────────────────────────────────────────
   { id: 'batcom-100', proveedor: 'Batcom', plan: '100 Mbps', download: 100, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 36400, precioLista: 45500, instalacion: 0, descuento: '20% OFF x12 meses', detalle: 'WiFi de cortesía. Equipos comodato.', cobertura: 'Norte/Noroeste' },
   { id: 'batcom-300', proveedor: 'Batcom', plan: '300 Mbps', download: 300, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 40640, precioLista: 50800, instalacion: 0, descuento: '20% OFF x12 meses', detalle: 'WiFi de cortesía. Equipos comodato.', cobertura: 'Norte/Noroeste' },
   { id: 'batcom-500', proveedor: 'Batcom', plan: '500 Mbps', download: 500, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 45280, precioLista: 58300, instalacion: 0, descuento: '20% OFF x12 meses', detalle: 'WiFi de cortesía. Equipos comodato.', cobertura: 'Norte/Noroeste' },
@@ -37,12 +36,11 @@ const servicios = [
   { id: 'iplan-800', proveedor: 'IPLAN', plan: '800 Megas', download: 800, upload: '800 Mbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 0, precioLista: 0, instalacion: 0, descuento: '44% OFF x12 meses', detalle: 'SIMÉTRICO. Solo Centro. Precio: consultar.', cobertura: 'Centro/Nueva Córdoba' },
   { id: 'iplan-1000', proveedor: 'IPLAN', plan: '1000 Megas', download: 1000, upload: '1 Gbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 0, precioLista: 0, instalacion: 0, descuento: '44% OFF x12 meses', detalle: 'SIMÉTRICO. Solo Centro. Precio: consultar.', cobertura: 'Centro/Nueva Córdoba' },
 
-  // ── Krillcom (verificados: krillcom.com.ar/cordoba) ──
+  // ── Krillcom ────────────────────────────────────────
   { id: 'krill-50', proveedor: 'Krillcom', plan: '50 Mbps', download: 50, upload: '10 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 29900, precioLista: 36200, instalacion: 70000, descuento: 'Con IVA', detalle: 'Router no incluido.', cobertura: 'Periférico' },
   { id: 'krill-100', proveedor: 'Krillcom', plan: '100/50 + TV', download: 100, upload: '50 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 56700, precioLista: 56700, instalacion: 70000, descuento: 'Con IVA', detalle: 'Incluye TV. Router Wi-Fi: $75.000 aparte.', cobertura: 'Periférico' },
 
-  // ── Trimotion (verificados: trimotion.com.ar) ──
-  // Subida NO publicada para planes fibra
+  // ── Trimotion ───────────────────────────────────────
   { id: 'trimo-100', proveedor: 'Trimotion', plan: '100 Mbps', download: 100, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 28900, precioLista: 28900, instalacion: 70000, descuento: 'Precios julio 2026', detalle: 'Precio agosto NO confirmado.', cobertura: 'Variable' },
   { id: 'trimo-200', proveedor: 'Trimotion', plan: '200 Mbps', download: 200, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 31900, precioLista: 31900, instalacion: 70000, descuento: 'Precios julio 2026', detalle: 'Precio agosto NO confirmado.', cobertura: 'Variable' },
   { id: 'trimo-300', proveedor: 'Trimotion', plan: '300 Mbps', download: 300, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 34900, precioLista: 34900, instalacion: 70000, descuento: 'Precios julio 2026', detalle: 'Precio agosto NO confirmado.', cobertura: 'Variable' },
@@ -50,99 +48,106 @@ const servicios = [
 
 const fmt = (n) => n ? `$${n.toLocaleString('es-AR')}` : 'Consultar';
 const precio100 = (s) => s.precioDesc && s.download ? (s.precioDesc / (s.download / 100)).toFixed(0) : null;
-
 const proveedores = [...new Set(servicios.map(s => s.proveedor))];
 
-function Select({ value, onChange, children }) {
-  return (
-    <select value={value} onChange={e => onChange(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-      {children}
-    </select>
-  );
-}
-
 export default function CompareIsland() {
-  const [filter, setFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('download');
+  const [step, setStep] = useState('pick-providers');
+  const [sel1, setSel1] = useState('');
+  const [sel2, setSel2] = useState('');
   const [id1, setId1] = useState('');
   const [id2, setId2] = useState('');
-  const [id3, setId3] = useState('');
 
-  const filtered = filter === 'all' ? servicios : servicios.filter(s => s.proveedor === filter);
-
-  const sorted = useMemo(() => {
-    const arr = [...filtered];
-    if (sortBy === 'precio') arr.sort((a, b) => (a.precioDesc || 999999) - (b.precioDesc || 999999));
-    else if (sortBy === 'download') arr.sort((a, b) => b.download - a.download);
-    else if (sortBy === 'precio100') arr.sort((a, b) => (parseFloat(precio100(a)) || 999999) - (parseFloat(precio100(b)) || 999999));
-    return arr;
-  }, [filtered, sortBy]);
+  const plans1 = sel1 ? servicios.filter(s => s.proveedor === sel1) : [];
+  const plans2 = sel2 ? servicios.filter(s => s.proveedor === sel2) : [];
 
   const s1 = servicios.find(s => s.id === id1);
   const s2 = servicios.find(s => s.id === id2);
-  const s3 = servicios.find(s => s.id === id3);
-  const selected = [s1, s2, s3].filter(Boolean);
+  const showTable = s1 && s2;
+
+  const reset = () => { setStep('pick-providers'); setSel1(''); setSel2(''); setId1(''); setId2(''); };
+
+  if (step === 'pick-providers') {
+    return (
+      <div className="space-y-4">
+        <p className="text-gray-400 text-sm">Elegí dos proveedores para comparar:</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {proveedores.map(p => {
+            const count = servicios.filter(s => s.proveedor === p).length;
+            const active = sel1 === p || sel2 === p;
+            return (
+              <button
+                key={p}
+                onClick={() => {
+                  if (active) {
+                    if (sel1 === p) { setSel1(sel2); setSel2(''); setId1(id2); setId2(''); }
+                    else { setSel2(''); setId2(''); }
+                  } else if (!sel1) setSel1(p);
+                  else if (!sel2) setSel2(p);
+                }}
+                className={`p-3 rounded-lg border text-left transition-all ${
+                  active ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500' : 'border-gray-700 bg-gray-800 hover:border-gray-500'
+                }`}
+              >
+                <div className="font-semibold text-sm">{p}</div>
+                <div className="text-gray-500 text-xs">{count} plan{count > 1 ? 'es' : ''}</div>
+              </button>
+            );
+          })}
+        </div>
+        {sel1 && sel2 && (
+          <button onClick={() => setStep('pick-plans')} className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm font-medium transition-colors">
+            Comparar {sel1} vs {sel2}
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Select value={filter} onChange={setFilter}>
-          <option value="all">Todos los proveedores</option>
-          {proveedores.map(p => <option key={p} value={p}>{p}</option>)}
-        </Select>
-        <Select value={sortBy} onChange={setSortBy}>
-          <option value="download">Ordenar por velocidad ↓</option>
-          <option value="precio">Ordenar por precio ↑</option>
-          <option value="precio100">Ordenar por precio/100 Mbps ↑</option>
-        </Select>
+      <div className="flex items-center gap-3 flex-wrap">
+        <button onClick={reset} className="text-xs text-gray-400 hover:text-white transition-colors">← Elegir otros proveedores</button>
+        <span className="text-xs text-gray-500">|</span>
+        <span className="text-xs text-gray-400">{sel1} vs {sel2}</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-        {sorted.map(s => {
-          const isSelected = selected.some(x => x?.id === s.id);
-          const selIdx = selected.findIndex(x => x?.id === s.id);
-          return (
-            <button
-              key={s.id}
-              onClick={() => {
-                if (isSelected) {
-                  if (selIdx === 0) setId1(id2 || id3 || '');
-                  else if (selIdx === 1) setId2(id3 || '');
-                  else setId3('');
-                } else if (!id1) setId1(s.id);
-                else if (!id2) setId2(s.id);
-                else if (!id3) setId3(s.id);
-              }}
-              className={`text-left p-3 rounded-lg border text-xs transition-all ${
-                isSelected
-                  ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500'
-                  : 'border-gray-700 bg-gray-800 hover:border-gray-500'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-semibold text-sm">{s.proveedor}</span>
-                {s.simetrico && <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-600/20 text-green-400 font-medium">SIM</span>}
-              </div>
-              <div className="text-gray-400 mb-1">{s.plan}</div>
-              <div className="flex items-baseline gap-1">
-                <span className="font-bold text-sm">{s.precioDesc ? fmt(s.precioDesc) : 'Consultar'}</span>
-                {s.precioLista > 0 && <span className="line-through text-gray-500 text-[10px]">{fmt(s.precioLista)}</span>}
-              </div>
-              <div className="text-gray-500 text-[10px] mt-0.5">{s.download}↓ / {s.upload}↑</div>
-            </button>
-          );
-        })}
+      <div className="grid grid-cols-2 gap-4">
+        {[{ label: sel1, plans: plans1, sel: id1, set: setId1 }, { label: sel2, plans: plans2, sel: id2, set: setId2 }].map(({ label, plans, sel, set }) => (
+          <div key={label} className="space-y-2">
+            <div className="text-xs text-gray-400 font-medium">{label}</div>
+            <div className="space-y-1.5">
+              {plans.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => set(sel === s.id ? '' : s.id)}
+                  className={`w-full text-left p-2.5 rounded-lg border text-xs transition-all ${
+                    sel === s.id ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500' : 'border-gray-700 bg-gray-800 hover:border-gray-500'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{s.plan}</span>
+                    {s.simetrico && <span className="text-[10px] px-1.5 py-0.5 rounded bg-green-600/20 text-green-400 font-medium">SIM</span>}
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-0.5">
+                    <span className="font-bold">{s.precioDesc ? fmt(s.precioDesc) : 'Consultar'}</span>
+                    {s.precioLista > 0 && <span className="line-through text-gray-500 text-[10px]">{fmt(s.precioLista)}</span>}
+                  </div>
+                  <div className="text-gray-500 text-[10px]">{s.download}↓ / {s.upload}↑</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {selected.length >= 2 && (
-        <div className="overflow-x-auto">
+      {showTable && (
+        <div className="overflow-x-auto border-t border-gray-700 pt-4">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-700">
-                <th className="text-left py-2 px-2 text-gray-400 font-medium">Característica</th>
-                {selected.map((s, i) => (
-                  <th key={i} className="text-left py-2 px-2 font-semibold">{s.proveedor} — {s.plan}</th>
-                ))}
+                <th className="text-left py-2 px-2 text-gray-400 font-medium"></th>
+                <th className="text-left py-2 px-2 font-semibold">{s1.proveedor} — {s1.plan}</th>
+                <th className="text-left py-2 px-2 font-semibold">{s2.proveedor} — {s2.plan}</th>
               </tr>
             </thead>
             <tbody>
@@ -150,7 +155,6 @@ export default function CompareIsland() {
                 ['Velocidad ↓', s => `${s.download} Mbps`],
                 ['Velocidad ↑', s => s.upload],
                 ['Simétrico', s => s.simetrico ? '✓ Sí' : '✗ No'],
-                ['Tecnología', s => s.tecnologia],
                 ['Precio promo', s => fmt(s.precioDesc)],
                 ['Precio lista', s => s.precioLista > 0 ? fmt(s.precioLista) : '—'],
                 ['Instalación', s => s.instalacion > 0 ? fmt(s.instalacion) : 'Gratis'],
@@ -160,16 +164,14 @@ export default function CompareIsland() {
               ].map(([label, fn]) => (
                 <tr key={label} className="border-b border-gray-800">
                   <td className="py-2 px-2 text-gray-400">{label}</td>
-                  {selected.map((s, i) => (
-                    <td key={i} className="py-2 px-2">{fn(s)}</td>
-                  ))}
+                  <td className="py-2 px-2">{fn(s1)}</td>
+                  <td className="py-2 px-2">{fn(s2)}</td>
                 </tr>
               ))}
               <tr className="border-b border-gray-800 bg-gray-800/50">
                 <td className="py-2 px-2 text-gray-400 font-medium">Precio/100 Mbps</td>
-                {selected.map((s, i) => (
-                  <td key={i} className="py-2 px-2 font-bold">{precio100(s) ? `$${precio100(s)}` : '—'}</td>
-                ))}
+                <td className="py-2 px-2 font-bold">{precio100(s1) ? `$${precio100(s1)}` : '—'}</td>
+                <td className="py-2 px-2 font-bold">{precio100(s2) ? `$${precio100(s2)}` : '—'}</td>
               </tr>
             </tbody>
           </table>
