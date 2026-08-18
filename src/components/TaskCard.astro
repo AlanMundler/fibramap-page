@@ -1,0 +1,38 @@
+---
+interface Props {
+  servicio: {
+    id: number;
+    proveedor: string;
+    plan?: string;
+    velocidad?: string;
+    velocidadSub?: string;
+    velocidadBaj?: string;
+    tecnologia?: string;
+    ip?: string;
+    instalacion?: string;
+    precioLista?: string;
+    precioDesc?: string;
+    atencionCl?: string;
+    descripcion?: string;
+  };
+}
+const { servicio } = Astro.props;
+const base = '/fibramap-page';
+---
+
+<section class="sm:inline-block">
+  <div class="cursor-pointer mt-4 ml-4 mr-4 text-xl font-semibold dark:text-white px-3 py-4 bg-gray-50 dark:bg-gray-800 hover:bg-slate-200 dark:hover:bg-slate-950">
+    <h1 class="mb-4 text-xl font-semibold dark:text-white">{servicio.proveedor}</h1>
+    <p class="font-thin"><span class="font-semibold">Plan: </span>{servicio.plan}</p>
+    <p class="font-thin"><span class="font-semibold">Velocidad: </span>{servicio.velocidad}</p>
+    <p class="font-thin"><span class="font-semibold">Velocidad bajada: </span>{servicio.velocidadSub}</p>
+    <p class="font-thin"><span class="font-semibold">Velocidad subida: </span>{servicio.velocidadBaj}</p>
+    <p class="font-thin"><span class="font-semibold">Tecnologia: </span>{servicio.tecnologia}</p>
+    <p class="font-thin"><span class="font-semibold">Tipo IP: </span>{servicio.ip}</p>
+    <p class="font-thin"><span class="font-semibold">Precio de instalacion: </span>{servicio.instalacion}</p>
+    <p class="font-thin"><span class="font-semibold">Precio de lista: </span>{servicio.precioLista}</p>
+    <p class="font-thin"><span class="font-semibold">Precio con descuento: </span>{servicio.precioDesc}</p>
+    <p class="font-thin"><span class="font-semibold">Atencion al cliente: </span>{servicio.atencionCl}</p>
+    <p class="font-thin"><span class="font-semibold">Datos extra: </span>{servicio.descripcion}</p>
+  </div>
+</section>

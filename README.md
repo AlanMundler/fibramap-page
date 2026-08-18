@@ -1,27 +1,20 @@
-# Astro
+# FibraMap
 
-> 🧵 Bootstrapped from [FibraMap](https://github.com/AlanMundler/FibraMap) — migrated from Next.js to Astro.
+Portal informativo sobre la disponibilidad de fibra óptica domiciliaria en Córdoba, Argentina.
 
-## Getting Started
+Migrated from [BetaFibramap](https://github.com/AlanMundler/BetaFibramap) (Next.js) to Astro.
+
+## Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:4321](http://localhost:4321) with your browser.
+Open http://localhost:4321
 
-## Scripts
+## Deploy
 
-| Command           | Action                            |
-| :---------------- | :-------------------------------- |
-| `npm run dev`     | Start dev server at `localhost:4321` |
-| `npm run build`   | Build your production site to `./dist/` |
-| `npm run preview` | Preview your build locally        |
-| `npm run astro`   | Run Astro CLI commands            |
+Automatically deploys to GitHub Pages via GitHub Actions on push to `main`.
 
-## Tech Stack
-
-- [Astro](https://astro.build)
-- [Tailwind CSS](https://tailwindcss.com)
-- TypeScript
+URL: https://alanmundler.github.io/fibramap-page/

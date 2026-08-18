@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TaskCard from '../components/TaskCard.astro';
+
+const servicios = [
+  { id: 1, proveedor: 'Claro', plan: 'Fibra 300', velocidad: '300 Mbps', velocidadSub: '300 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$5.999', precioDesc: '$4.499', atencionCl: '104', descripcion: 'Fibra óptica domiciliaria' },
+  { id: 2, proveedor: 'Claro', plan: 'Fibra 600', velocidad: '600 Mbps', velocidadSub: '600 Mbps', velocidadBaj: '600 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$7.999', precioDesc: '$5.999', atencionCl: '104', descripcion: 'Fibra óptica domiciliaria' },
+  { id: 3, proveedor: 'Personal', plan: 'Fibra 300', velocidad: '300 Mbps', velocidadSub: '100 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Dinámica', instalacion: '$0', precioLista: '$6.299', precioDesc: '$4.999', atencionCl: '111', descripcion: 'Fibra óptica domiciliaria' },
+  { id: 4, proveedor: 'Iplan', plan: 'Fibra 300', velocidad: '300 Mbps', velocidadSub: '300 Mbps', velocidadBaj: '300 Mbps', tecnologia: 'FTTH', ip: 'Fija', instalacion: '$0', precioLista: '$5.499', precioDesc: '$4.299', atencionCl: '0800', descripcion: 'Fibra óptica domiciliaria' },
+  { id: 5, proveedor: 'Iplan', plan: 'Fibra 600', velocidad: '600 Mbps', velocidadSub: '600 Mbps', velocidadBaj: '600 Mbps', tecnologia: 'FTTH', ip: 'Fija', instalacion: '$0', precioLista: '$7.499', precioDesc: '$5.799', atencionCl: '0800', descripcion: 'Fibra óptica domiciliaria' },
+];
+---
+
+<Layout title="FibraMap - Proveedores">
+  <section class="container sm:ml-64">
+    <h1 class="ml-4 mr-4 relative overflow-x-auto text-xl font-semibold dark:text-white h-full px-3 py-4 bg-gray-50 dark:bg-gray-800">Proveedores</h1>
+    <div>
+      {servicios.map((servicio) => (
+        <TaskCard servicio={servicio} />
+      ))}
+    </div>
+  </section>
+</Layout>

@@ -1,8 +1,9 @@
 import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   site: 'https://alanmundler.github.io',
   base: '/fibramap-page',
-  integrations: [tailwind()],
+  integrations: [react(), tailwind()],
 });
