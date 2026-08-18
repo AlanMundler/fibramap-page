@@ -2,41 +2,28 @@ import { useState, useEffect, useRef } from 'react';
 
 const API_KEY = import.meta.env.PUBLIC_GEMINI_API_KEY || "";
 const MODEL = "gemini-2.5-flash";
-const SYSTEM = `Sos un asistente de FibraMap, un portal independiente sobre fibra óptica en Córdoba, Argentina.
-Respondés en español, de forma breve y directa.
-Tu conocimiento se centra en proveedores de internet (Claro, Personal, Iplan, Movistar, Internet Córdoba), planes, precios, cobertura por barrios, y consejos para elegir proveedor.
-Si te preguntan algo que no sabés, decilo honestamente.`;
+const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+const SYSTEM = "Sos un asistente de FibraMap, un portal independiente sobre fibra óptica en Córdoba, Argentina. Respondés en español, de forma breve y directa. Tu conocimiento se centra en proveedores de internet (Claro, Personal, Iplan, Movistar, Internet Córdoba), planes, precios, cobertura por barrios, y consejos para elegir proveedor. Si te preguntan algo que no sabés, decilo honestamente.";
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [ready, setReady] = useState(false);
-  const chatRef = useRef(null);
   const bottomRef = useRef(null);
-
-  useEffect(() => {
-    import("@google/generative-ai").then(({ GoogleGenerativeAI }) => {
-      const genAI = new GoogleGenerativeAI(API_KEY);
-      const model = genAI.getGenerativeModel({
-        model: MODEL,
-        systemInstruction: SYSTEM,
-      });
-      chatRef.current = model.startChat({
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
-      });
-      setReady(true);
-    }).catch(() => setError("No se pudo cargar el modelo de IA. Revisá la configuración."));
-  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
+  useEffect(() => {
+    if (!API_KEY) setError("API key no configurada.");
+  }, []);
+
   const send = async () => {
     const msg = input.trim();
-    if (!msg || loading || !chatRef.current) return;
+    if (!msg || loading) return;
+    if (!API_KEY) { setError("No hay API key configurada."); return; }
 
     setInput("");
     setError(null);
@@ -44,18 +31,36 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      const result = await chatRef.current.sendMessage(msg);
-      const text = result.response.text();
+      const contents = [...messages.map(m => ({
+        role: m.role === "user" ? "user" : "model",
+        parts: [{ text: m.text }],
+      })), { role: "user", parts: [{ text: msg }] }];
+
+      const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents,
+          systemInstruction: { parts: [{ text: SYSTEM }] },
+          generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const detail = err?.error?.message || `HTTP ${res.status}`;
+        if (res.status === 400) throw new Error(`Clave inválida o modelo no disponible: ${detail}`);
+        if (res.status === 403) throw new Error(`Acceso denegado: ${detail}`);
+        if (res.status === 429) throw new Error(`Cuota excedida: ${detail}`);
+        throw new Error(`Error ${res.status}: ${detail}`);
+      }
+
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) throw new Error("Respuesta vacía del modelo.");
       setMessages(prev => [...prev, { text, role: "bot", time: new Date() }]);
     } catch (e) {
-      const msg = e?.message || "";
-      if (msg.includes("429") || msg.includes("quota")) {
-        setError("Se acabó la cuota gratuita. Probá de nuevo en un rato.");
-      } else if (msg.includes("403") || msg.includes("API key")) {
-        setError("API key inválida. Generá una nueva en aistudio.google.com");
-      } else {
-        setError("No se pudo obtener respuesta. Intentá de nuevo.");
-      }
+      setError(e.message || "No se pudo obtener respuesta.");
     }
     setLoading(false);
   };
@@ -63,9 +68,9 @@ export default function ChatBot() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+        <div className={`w-2 h-2 rounded-full ${API_KEY ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
         <h2 className="font-semibold text-sm">Chat IA — Gemini {MODEL}</h2>
-        {!ready && <span className="text-xs text-gray-400 ml-auto">Conectando...</span>}
+        {!API_KEY && <span className="text-xs text-red-400 ml-auto">Sin API key</span>}
       </div>
 
       <div className="h-80 sm:h-96 overflow-y-auto px-4 py-3 space-y-3 scroll-smooth">
@@ -74,7 +79,7 @@ export default function ChatBot() {
             <p className="text-sm text-gray-400">Preguntá sobre fibra óptica en Córdoba</p>
             <div className="flex flex-wrap justify-center gap-2 mt-3">
               {["¿Qué proveedor me conviene?", "¿Claro tiene fibra en Nueva Córdoba?", "Compará Iplan y Movistar"].map(q => (
-                <button key={q} onClick={() => { setInput(q); }} className="text-xs px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-gray-600 dark:text-gray-300">
+                <button key={q} onClick={() => setInput(q)} className="text-xs px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-gray-600 dark:text-gray-300">
                   {q}
                 </button>
               ))}
@@ -123,14 +128,14 @@ export default function ChatBot() {
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
-          placeholder={ready ? "Escribí tu pregunta..." : "Cargando..."}
-          disabled={!ready || loading}
+          placeholder={API_KEY ? "Escribí tu pregunta..." : "API key no configurada"}
+          disabled={loading || !API_KEY}
           className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all"
           autoFocus
         />
         <button
           type="submit"
-          disabled={!ready || loading || !input.trim()}
+          disabled={loading || !input.trim() || !API_KEY}
           className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
           {loading ? (
