@@ -11,9 +11,9 @@ import MapIsland from '../components/MapIsland.jsx';
         Barrios con fibra óptica confirmada. Hacé click en un marcador para ver qué proveedores lo cubren.
       </p>
     </div>
-    <MapIsland client:load />
-    <div class="text-xs text-gray-400 dark:text-gray-500">
+    <MapIsland client:only="react" />
+    <p class="text-xs text-gray-400 dark:text-gray-500">
       La cobertura puede variar block a block. Verificá tu dirección en la página de cada proveedor.
-    </div>
+    </p>
   </div>
 </Layout>

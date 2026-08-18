@@ -8,36 +8,36 @@ const links = [
 ];
 ---
 
-<button id="sidebar-toggle" type="button" class="fixed top-3 left-3 z-50 p-2 rounded-lg bg-gray-200 dark:bg-gray-700 sm:hidden">
+<button id="sidebar-toggle" type="button" class="fixed top-3 left-3 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow sm:hidden border border-gray-200 dark:border-gray-700">
   <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z" clip-rule="evenodd" /></svg>
 </button>
 
-<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden sm:hidden"></div>
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden sm:hidden backdrop-blur-sm"></div>
 
-<aside id="sidebar" class="fixed top-0 left-0 z-40 w-56 h-screen -translate-x-full sm:translate-x-0 transition-transform bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+<aside id="sidebar" class="fixed top-0 left-0 z-40 w-56 h-screen -translate-x-full sm:translate-x-0 transition-transform duration-200 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg sm:shadow-none">
   <div class="h-full flex flex-col px-3 py-4">
     <a href={base + '/'} class="flex items-center gap-2 mb-8 px-2">
-      <span class="text-lg font-bold dark:text-white">FibraMap</span>
-      <button id="theme-toggle" type="button" class="ml-auto p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+      <span class="text-lg font-bold dark:text-white tracking-tight">FibraMap</span>
+      <button id="theme-toggle" type="button" class="ml-auto p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
         <svg class="w-4 h-4 dark:text-white" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M11.675 2.015a.998.998 0 0 0-.403.011C6.09 2.4 2 6.722 2 12c0 5.523 4.477 10 10 10 4.356 0 8.058-2.784 9.43-6.667a1 1 0 0 0-1.02-1.33c-.08.006-.105.005-.127.005h-.001l-.028-.002A5.227 5.227 0 0 0 20 14a8 8 0 0 1-8-8c0-.952.121-1.752.404-2.558a.996.996 0 0 0 .096-.428V3a1 1 0 0 0-.825-.985Z" clip-rule="evenodd" /></svg>
       </button>
     </a>
 
-    <nav class="flex-1 space-y-1">
+    <nav class="flex-1 space-y-0.5">
       {links.map(link => (
         <a href={base + link.href} class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-          <svg class="w-5 h-5 shrink-0 dark:text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d={link.icon} clip-rule="evenodd" /></svg>
+          <svg class="w-5 h-5 shrink-0 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d={link.icon} clip-rule="evenodd" /></svg>
           <span class="text-sm">{link.label}</span>
         </a>
       ))}
 
       <div>
         <button type="button" onclick="this.nextElementSibling.classList.toggle('hidden')" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-          <svg class="w-5 h-5 shrink-0 dark:text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M14 4.182A4.136 4.136 0 0 1 16.9 3c1.087 0 2.13.425 2.899 1.182A4.01 4.01 0 0 1 21 7.037c0 1.068-.43 2.092-1.194 2.849L18.5 11.214l-5.8-5.71 1.287-1.31.012-.012Zm-2.717 2.763L6.186 12.13l2.175 2.141 5.063-5.218-2.141-2.108Zm-6.25 6.886-1.98 5.849a.992.992 0 0 0 .245 1.026 1.03 1.03 0 0 0 1.043.242L10.282 19l-5.25-5.168Zm6.954 4.01 5.096-5.186-2.218-2.183-5.063 5.218 2.185 2.15Z" clip-rule="evenodd" /></svg>
+          <svg class="w-5 h-5 shrink-0 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M14 4.182A4.136 4.136 0 0 1 16.9 3c1.087 0 2.13.425 2.899 1.182A4.01 4.01 0 0 1 21 7.037c0 1.068-.43 2.092-1.194 2.849L18.5 11.214l-5.8-5.71 1.287-1.31.012-.012Zm-2.717 2.763L6.186 12.13l2.175 2.141 5.063-5.218-2.141-2.108Zm-6.25 6.886-1.98 5.849a.992.992 0 0 0 .245 1.026 1.03 1.03 0 0 0 1.043.242L10.282 19l-5.25-5.168Zm6.954 4.01 5.096-5.186-2.218-2.183-5.063 5.218 2.185 2.15Z" clip-rule="evenodd" /></svg>
           <span class="text-sm flex-1 text-left">Opiniones</span>
           <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 10 6"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" /></svg>
         </button>
-        <ul class="hidden ml-8 mt-1 space-y-1">
+        <ul class="hidden ml-8 mt-1 space-y-0.5">
           <li><a href={base + '/review'} class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Servicio</a></li>
           <li><a href={base + '/promo'} class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Promociones</a></li>
         </ul>
@@ -45,11 +45,11 @@ const links = [
 
       <div>
         <button type="button" onclick="this.nextElementSibling.classList.toggle('hidden')" class="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-          <svg class="w-5 h-5 shrink-0 dark:text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.586 2.586A2 2 0 0 1 11 2h2a2 2 0 0 1 2 2v.089l.473.196.063-.063a2.002 2.002 0 0 1 2.828 0l1.414 1.414a2 2 0 0 1 0 2.827l-.063.064.196.473H20a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.089l-.196.473.063.063a2.002 2.002 0 0 1 0 2.828l-1.414 1.414a2 2 0 0 1-2.828 0l-.063-.063-.473.196V20a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.089l-.473-.196-.063.063a2.002 2.002 0 0 1-2.828 0l-1.414-1.414a2 2 0 0 1 0-2.827l.063-.064L4.089 15H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09l.195-.473-.063-.063a2 2 0 0 1 0-2.828l1.414-1.414a2 2 0 0 1 2.827 0l.064.063L9 4.089V4a2 2 0 0 1 .586-1.414ZM8 12a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z" clip-rule="evenodd" /></svg>
+          <svg class="w-5 h-5 shrink-0 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M9.586 2.586A2 2 0 0 1 11 2h2a2 2 0 0 1 2 2v.089l.473.196.063-.063a2.002 2.002 0 0 1 2.828 0l1.414 1.414a2 2 0 0 1 0 2.827l-.063.064.196.473H20a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.089l-.196.473.063.063a2.002 2.002 0 0 1 0 2.828l-1.414 1.414a2 2 0 0 1-2.828 0l-.063-.063-.473.196V20a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.089l-.473-.196-.063.063a2.002 2.002 0 0 1-2.828 0l-1.414-1.414a2 2 0 0 1 0-2.827l.063-.064L4.089 15H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09l.195-.473-.063-.063a2 2 0 0 1 0-2.828l1.414-1.414a2 2 0 0 1 2.827 0l.064.063L9 4.089V4a2 2 0 0 1 .586-1.414ZM8 12a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z" clip-rule="evenodd" /></svg>
           <span class="text-sm flex-1 text-left">Herramientas</span>
           <svg class="w-3 h-3 shrink-0" fill="none" viewBox="0 0 10 6"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" /></svg>
         </button>
-        <ul class="hidden ml-8 mt-1 space-y-1">
+        <ul class="hidden ml-8 mt-1 space-y-0.5">
           <li><a href={base + '/velocidad'} class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">Velocidad</a></li>
         </ul>
       </div>
