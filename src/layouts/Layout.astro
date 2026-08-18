@@ -7,18 +7,15 @@ interface Props {
 const { title, description = 'Fibra optica en Cordoba, Argentina' } = Astro.props;
 ---
 <!doctype html>
-<html lang="es">
+<html lang="es" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="/fibramap-page/favicon.ico" />
     <meta name="description" content={description} />
     <title>{title}</title>
-    <script is:inline>
-      if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
-    </script>
   </head>
-  <body class="bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
+  <body class="bg-gray-900 min-h-screen text-gray-100">
     <NavBar />
     <main class="py-6 px-4 pl-14 sm:pl-6 sm:ml-56 min-h-screen max-w-5xl">
       <slot />

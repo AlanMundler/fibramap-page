@@ -23,7 +23,7 @@ const campos = [
 
 function Select({ value, onChange, children }) {
   return (
-    <select value={value} onChange={e => onChange(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+    <select value={value} onChange={e => onChange(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
       {children}
     </select>
   );
@@ -50,20 +50,19 @@ export default function CompareIsland() {
 
       {s1 && s2 && (
         <>
-          {/* Table — desktop */}
           <div className="overflow-x-auto hidden sm:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-2 px-3 text-gray-500 dark:text-gray-400 font-medium">Característica</th>
+                <tr className="border-b border-gray-700">
+                  <th className="text-left py-2 px-3 text-gray-400 font-medium">Característica</th>
                   <th className="text-left py-2 px-3 font-semibold">{s1.proveedor}</th>
                   <th className="text-left py-2 px-3 font-semibold">{s2.proveedor}</th>
                 </tr>
               </thead>
               <tbody>
                 {campos.map(([label, key]) => (
-                  <tr key={key} className="border-b border-gray-100 dark:border-gray-800">
-                    <td className="py-2 px-3 text-gray-500 dark:text-gray-400">{label}</td>
+                  <tr key={key} className="border-b border-gray-800">
+                    <td className="py-2 px-3 text-gray-400">{label}</td>
                     <td className="py-2 px-3">{s1[key]}</td>
                     <td className="py-2 px-3">{s2[key]}</td>
                   </tr>
@@ -72,14 +71,13 @@ export default function CompareIsland() {
             </table>
           </div>
 
-          {/* Cards — mobile */}
           <div className="grid grid-cols-1 gap-4 sm:hidden">
             {[s1, s2].map((s, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-4 space-y-2">
+              <div key={i} className="bg-gray-800 rounded-lg p-4 space-y-2">
                 <h3 className="font-semibold text-sm">{s.proveedor} — {s.plan}</h3>
                 {campos.map(([label, key]) => (
                   <div key={key} className="flex justify-between text-xs gap-2">
-                    <span className="text-gray-500 dark:text-gray-400 shrink-0">{label}</span>
+                    <span className="text-gray-400 shrink-0">{label}</span>
                     <span className="text-right">{s[key]}</span>
                   </div>
                 ))}

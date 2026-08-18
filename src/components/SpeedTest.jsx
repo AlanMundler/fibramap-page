@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 
 export default function SpeedTest() {
-  const [state, setState] = useState("idle"); // idle | running | done | error
+  const [state, setState] = useState("idle");
   const [progress, setProgress] = useState({ phase: "", pct: 0 });
   const [results, setResults] = useState(null);
   const engineRef = useRef(null);
@@ -75,8 +75,7 @@ export default function SpeedTest() {
   }, []);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-      {/* Results */}
+    <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
       {results && state === "done" && (
         <div className="px-6 pt-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
@@ -86,16 +85,16 @@ export default function SpeedTest() {
               { label: "Latencia", value: results.latency, unit: "ms", icon: "↔", color: "text-amber-500" },
               { label: "Jitter", value: results.jitter, unit: "ms", icon: "∿", color: "text-purple-500" },
             ].map(({ label, value, unit, icon, color }) => (
-              <div key={label} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+              <div key={label} className="p-3 rounded-lg bg-gray-700/50">
                 <span className={`text-lg ${color}`}>{icon}</span>
                 <p className="text-2xl font-bold mt-1">{value ?? "--"}</p>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">{label} ({unit})</p>
+                <p className="text-[11px] text-gray-400">{label} ({unit})</p>
               </div>
             ))}
           </div>
 
           {results.loadedLatencyDown && (
-            <div className="flex justify-center gap-6 mt-3 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex justify-center gap-6 mt-3 text-xs text-gray-400">
               <span>Latencia cargada ↓ {results.loadedLatencyDown} ms</span>
               <span>Latencia cargada ↑ {results.loadedLatencyUp} ms</span>
             </div>
@@ -103,45 +102,41 @@ export default function SpeedTest() {
         </div>
       )}
 
-      {/* Progress */}
       {state === "running" && (
         <div className="px-6 pt-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">{progress.phase}</span>
             <span className="text-xs text-gray-500">{progress.pct}%</span>
           </div>
-          <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${progress.pct}%` }}
             />
           </div>
-          <p className="text-xs text-gray-400 mt-2 text-center">No cierres esta página durante el test</p>
+          <p className="text-xs text-gray-500 mt-2 text-center">No cierres esta página durante el test</p>
         </div>
       )}
 
-      {/* Error */}
       {state === "error" && (
         <div className="px-6 pt-6">
           <p className="text-sm text-red-500 text-center">{progress.phase}</p>
         </div>
       )}
 
-      {/* Idle intro */}
       {state === "idle" && (
         <div className="px-6 pt-6 text-center">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-gray-400">
             Mide tu velocidad de descarga, subida y latencia usando los servidores de Cloudflare.
           </p>
         </div>
       )}
 
-      {/* Action button */}
       <div className="p-4">
         {state === "running" ? (
           <button
             onClick={stop}
-            className="w-full py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="w-full py-3 bg-gray-700 text-gray-300 text-sm font-medium rounded-xl hover:bg-gray-600 transition-colors"
           >
             Cancelar
           </button>

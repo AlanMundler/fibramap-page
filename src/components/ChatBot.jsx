@@ -66,8 +66,8 @@ export default function ChatBot() {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+    <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+      <div className="px-4 py-3 border-b border-gray-700 flex items-center gap-2">
         <div className={`w-2 h-2 rounded-full ${API_KEY ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
         <h2 className="font-semibold text-sm">Chat IA — Gemini {MODEL}</h2>
         {!API_KEY && <span className="text-xs text-red-400 ml-auto">Sin API key</span>}
@@ -79,7 +79,7 @@ export default function ChatBot() {
             <p className="text-sm text-gray-400">Preguntá sobre fibra óptica en Córdoba</p>
             <div className="flex flex-wrap justify-center gap-2 mt-3">
               {["¿Qué proveedor me conviene?", "¿Claro tiene fibra en Nueva Córdoba?", "Compará Iplan y Movistar"].map(q => (
-                <button key={q} onClick={() => setInput(q)} className="text-xs px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-gray-600 dark:text-gray-300">
+                <button key={q} onClick={() => setInput(q)} className="text-xs px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors text-gray-300">
                   {q}
                 </button>
               ))}
@@ -92,7 +92,7 @@ export default function ChatBot() {
             <div className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
               msg.role === "user"
                 ? "bg-blue-600 text-white rounded-br-md"
-                : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-bl-md"
+                : "bg-gray-700 text-gray-100 rounded-bl-md"
             }`}>
               <p className="whitespace-pre-wrap">{msg.text}</p>
               <p className={`text-[10px] mt-1 ${msg.role === "user" ? "text-blue-200" : "text-gray-400"}`}>
@@ -104,7 +104,7 @@ export default function ChatBot() {
 
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 dark:bg-gray-700 px-4 py-3 rounded-2xl rounded-bl-md">
+            <div className="bg-gray-700 px-4 py-3 rounded-2xl rounded-bl-md">
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
@@ -118,19 +118,19 @@ export default function ChatBot() {
       </div>
 
       {error && (
-        <div className="mx-4 mb-2 px-3 py-2 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-xs">
+        <div className="mx-4 mb-2 px-3 py-2 bg-red-900/30 border border-red-800 rounded-lg text-red-400 text-xs">
           {error}
         </div>
       )}
 
-      <form onSubmit={e => { e.preventDefault(); send(); }} className="flex gap-2 p-3 border-t border-gray-200 dark:border-gray-700">
+      <form onSubmit={e => { e.preventDefault(); send(); }} className="flex gap-2 p-3 border-t border-gray-700">
         <input
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={API_KEY ? "Escribí tu pregunta..." : "API key no configurada"}
           disabled={loading || !API_KEY}
-          className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all"
+          className="flex-1 px-4 py-2.5 rounded-xl bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all"
           autoFocus
         />
         <button

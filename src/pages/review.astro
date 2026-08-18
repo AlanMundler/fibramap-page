@@ -7,15 +7,15 @@ const base = '/fibramap-page';
 <Layout title="FibraMap - Opiniones">
   <div class="space-y-4">
     <h1 class="text-xl font-semibold">Opiniones</h1>
-    <p class="text-gray-600 dark:text-gray-400 max-w-2xl text-sm">
+    <p class="text-gray-400 max-w-2xl text-sm">
       Contanos sobre tu experiencia con el servicio: qué bien, qué mal, qué se podría mejorar.
     </p>
     <div class="flex gap-2 flex-wrap">
-      <a href={base + '/review'} class="px-4 py-2 text-sm font-medium rounded-lg bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900 transition-colors">Claro</a>
-      <a href={base + '/review'} class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900 transition-colors">Personal</a>
-      <a href={base + '/review'} class="px-4 py-2 text-sm font-medium rounded-lg bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300 hover:bg-pink-200 dark:hover:bg-pink-900 transition-colors">Iplan</a>
+      <a href={base + '/review'} class="px-4 py-2 text-sm font-medium rounded-lg bg-red-900/50 text-red-300 hover:bg-red-900 transition-colors">Claro</a>
+      <a href={base + '/review'} class="px-4 py-2 text-sm font-medium rounded-lg bg-blue-900/50 text-blue-300 hover:bg-blue-900 transition-colors">Personal</a>
+      <a href={base + '/review'} class="px-4 py-2 text-sm font-medium rounded-lg bg-pink-900/50 text-pink-300 hover:bg-pink-900 transition-colors">Iplan</a>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+    <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
       <DisqusComments client:load />
     </div>
   </div>

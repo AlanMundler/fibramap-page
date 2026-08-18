@@ -69,7 +69,7 @@ export default function MapIsland() {
         <button
           onClick={() => { setActiveFilter(null); setActivePopup(null); }}
           className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-            !activeFilter ? 'bg-white dark:bg-gray-700 shadow' : 'bg-gray-200 dark:bg-gray-700/50'
+            !activeFilter ? 'bg-gray-700 shadow' : 'bg-gray-700/50'
           }`}
         >
           Todos
@@ -110,7 +110,7 @@ export default function MapIsland() {
           {activePopup !== null && (
             <Overlay anchor={filtered[activePopup].pos} offset={[0, -20]}>
               <div
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-3 text-sm min-w-[160px] border border-gray-200 dark:border-gray-700 cursor-pointer"
+                className="bg-gray-800 rounded-lg shadow-xl p-3 text-sm min-w-[160px] border border-gray-700 cursor-pointer"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="font-bold mb-1.5">{filtered[activePopup].name}</div>
