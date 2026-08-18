@@ -4,11 +4,16 @@ import MapIsland from '../components/MapIsland.jsx';
 ---
 
 <Layout title="FibraMap - Mapa">
-  <div class="px-4 space-y-4">
-    <h1 class="text-xl font-semibold">Mapa de Proveedores</h1>
-    <p class="dark:text-gray-300 max-w-2xl">
-      Hacé click en un barrio para ver qué proveedores lo cubren.
-    </p>
+  <div class="space-y-4">
+    <div>
+      <h1 class="text-xl font-semibold">Mapa de cobertura</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Barrios con fibra óptica confirmada. Hacé click en un marcador para ver qué proveedores lo cubren.
+      </p>
+    </div>
     <MapIsland client:load />
+    <div class="text-xs text-gray-400 dark:text-gray-500">
+      La cobertura puede variar block a block. Verificá tu dirección en la página de cada proveedor.
+    </div>
   </div>
 </Layout>
