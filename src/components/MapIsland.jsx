@@ -5,10 +5,32 @@ const CENTER = [-31.405, -64.175];
 const base = '/fibramap-page';
 
 const barrios = [
-  // ── Internet Córdoba (verificados OSM) ──────────────────
-  { name: 'General Paz', pos: [-31.4124, -64.1671], providers: ['Internet Córdoba'] },
-  { name: 'Colón', pos: [-31.4030, -64.1750], providers: ['Internet Córdoba'] },
-  { name: 'Empalme', pos: [-31.4323, -64.1242], providers: ['Internet Córdoba'] },
+  // ── Claro (verificados: distribuidor oficial + phontel) ──────
+  { name: 'Centro', pos: [-31.4182, -64.1871], providers: ['Claro', 'Personal Fibra', 'Movistar'] },
+  { name: 'General Paz', pos: [-31.4124, -64.1671], providers: ['Claro', 'Personal Fibra'] },
+  { name: 'Cerro de las Rosas', pos: [-31.3767, -64.2341], providers: ['Claro', 'Personal Fibra'] },
+  { name: 'Cofico', pos: [-31.4029, -64.1849], providers: ['Claro'] },
+  { name: 'General Bustos', pos: [-31.4055, -64.1815], providers: ['Claro'] },
+  { name: 'Cerro Norte', pos: [-31.3720, -64.2280], providers: ['Claro'] },
+  { name: 'Barrio Providencia', pos: [-31.3960, -64.2050], providers: ['Claro'] },
+  { name: 'Müller', pos: [-31.4010, -64.1960], providers: ['Claro'] },
+  { name: 'Colón', pos: [-31.4030, -64.1750], providers: ['Claro'] },
+  { name: 'Empalme', pos: [-31.4323, -64.1242], providers: ['Claro'] },
+  { name: 'Barrio Parque', pos: [-31.4160, -64.2030], providers: ['Claro'] },
+  { name: 'Tablada', pos: [-31.3877, -64.2318], providers: ['Claro'] },
+  { name: 'Comercial', pos: [-31.4165, -64.1830], providers: ['Claro'] },
+  { name: 'Nueva Córdoba', pos: [-31.4255, -64.1865], providers: ['Claro', 'Personal Fibra', 'IPLAN'] },
+  { name: 'Alta Córdoba', pos: [-31.3982, -64.1803], providers: ['Claro'] },
+  { name: 'Güemes', pos: [-31.4243, -64.1913], providers: ['Claro', 'Movistar'] },
+  { name: 'San Vicente', pos: [-31.4235, -64.1510], providers: ['Claro'] },
+  { name: 'Jardín', pos: [-31.4471, -64.1817], providers: ['Claro'] },
+  { name: 'San Carlos', pos: [-31.4010, -64.1820], providers: ['Claro'] },
+  { name: 'Oña', pos: [-31.4495, -64.1662], providers: ['Claro'] },
+  { name: 'Ayacucho', pos: [-31.4080, -64.1920], providers: ['Claro'] },
+  { name: 'Independencia', pos: [-31.4015, -64.1890], providers: ['Claro'] },
+  { name: 'Alberdi', pos: [-31.4140, -64.1980], providers: ['Claro'] },
+
+  // ── Internet Córdoba (verificados: selectra, phontel) ───────
   { name: 'Maipú', pos: [-31.4360, -64.1594], providers: ['Internet Córdoba'] },
   { name: 'Sarmiento', pos: [-31.4080, -64.1720], providers: ['Internet Córdoba'] },
   { name: 'Deán Funes', pos: [-31.4447, -64.1195], providers: ['Internet Córdoba'] },
@@ -36,43 +58,43 @@ const barrios = [
   { name: 'Nicolás Avellaneda', pos: [-31.4380, -64.1750], providers: ['Internet Córdoba'] },
   { name: 'Ferroviario Mitre', pos: [-31.4341, -64.1377], providers: ['Internet Córdoba'] },
 
-  // ── Claro (verificados OSM) ────────────────────────────
-  { name: 'Nueva Córdoba', pos: [-31.4255, -64.1865], providers: ['Claro', 'Personal Fibra'] },
-  { name: 'Alta Córdoba', pos: [-31.3982, -64.1803], providers: ['Claro'] },
-  { name: 'Cerro de las Rosas', pos: [-31.3767, -64.2341], providers: ['Claro'] },
-  { name: 'Güemes', pos: [-31.4243, -64.1913], providers: ['Claro'] },
-  { name: 'Barrio Parque', pos: [-31.4160, -64.2030], providers: ['Claro'] },
-  { name: 'Tablada', pos: [-31.3877, -64.2318], providers: ['Claro'] },
-  { name: 'San Vicente', pos: [-31.4235, -64.1510], providers: ['Claro'] },
-  { name: 'Jardín', pos: [-31.4471, -64.1817], providers: ['Claro'] },
-  { name: 'San Carlos', pos: [-31.4010, -64.1820], providers: ['Claro'] },
-  { name: 'Oña', pos: [-31.4495, -64.1662], providers: ['Claro'] },
-  { name: 'Ayacucho', pos: [-31.4080, -64.1920], providers: ['Claro'] },
-  { name: 'Cofico', pos: [-31.4029, -64.1849], providers: ['Claro'] },
-  { name: 'Comercial', pos: [-31.4165, -64.1830], providers: ['Claro'] },
-  { name: 'Independencia', pos: [-31.4015, -64.1890], providers: ['Claro'] },
+  // ── Personal Fibra (verificados: phontel, selectra) ─────────
+  // (ya incluidos en Centro, General Paz, Cerro de las Rosas, Nueva Córdoba arriba)
 
-  // ── IPLAN (verificados OSM) ────────────────────────────
-  { name: 'Centro', pos: [-31.4182, -64.1871], providers: ['IPLAN', 'Personal Fibra'] },
-  { name: 'Alberdi', pos: [-31.4140, -64.1980], providers: ['IPLAN'] },
+  // ── Movistar (verificados: phontel) ────────────────────────
+  // (ya incluidos en Centro y Güemes arriba)
 
-  // ── Batcom (verificados OSM) ───────────────────────────
+  // ── IPLAN (verificados: iplan.com.ar, selectra) ────────────
+  // Solo "Córdoba Centro" confirmado → ya incluido en Centro y Nueva Córdoba
+
+  // ── Batcom (verificados: batcom.com.ar, 50+ barrios) ───────
   { name: 'Los Boulevares', pos: [-31.3449, -64.2322], providers: ['Batcom'] },
   { name: 'Valle Escondido', pos: [-31.3672, -64.2746], providers: ['Batcom'] },
   { name: 'Chacra del Norte', pos: [-31.3521, -64.2208], providers: ['Batcom'] },
   { name: 'Malvinas Argentinas', pos: [-31.3500, -64.2200], providers: ['Batcom'] },
+  { name: 'Juárez Celman', pos: [-31.3580, -64.2150], providers: ['Batcom'] },
+  { name: 'Lilí Benítez', pos: [-31.3490, -64.2180], providers: ['Batcom'] },
+  { name: 'Torres SUMMUM', pos: [-31.3540, -64.2250], providers: ['Batcom'] },
+  { name: 'Universitario de Horizonte', pos: [-31.3350, -64.2100], providers: ['Batcom'] },
+  { name: 'San Ignacio Horizonte', pos: [-31.3380, -64.2120], providers: ['Batcom'] },
+  { name: 'Cinco Lomas', pos: [-31.3470, -64.2280], providers: ['Batcom'] },
 
-  // ── Guabi (verificados OSM) ────────────────────────────
-  { name: 'San Martín', pos: [-31.3909, -64.1978], providers: ['Guabi'] },
-  { name: 'Villa Allende', pos: [-31.3400, -64.2400], providers: ['Guabi'] },
-  { name: 'La Cañada', pos: [-31.4250, -64.2080], providers: ['Guabi'] },
+  // ── Guabi (verificados: guabi.com.ar, Instagram, Reddit) ────
+  // ZONA SUR exclusivamente — "Llegamos al sur de Córdoba"
+  { name: 'Valle Cercano', pos: [-31.4520, -64.2100], providers: ['Guabi'] },
+  { name: 'Parque Futura', pos: [-31.4580, -64.2050], providers: ['Guabi'] },
+  { name: 'La Esperanza', pos: [-31.4620, -64.1980], providers: ['Guabi'] },
+  { name: 'Villa El Libertador', pos: [-31.4550, -64.2020], providers: ['Guabi'] },
+  { name: 'San Ignacio (Sur)', pos: [-31.4600, -64.1950], providers: ['Guabi'] },
+  { name: 'Procrear Liceo', pos: [-31.3530, -64.2210], providers: ['Batcom', 'Guabi'] },
 ];
 
 const providers = [
-  { name: 'Internet Córdoba', color: '#f59e0b' },
   { name: 'Claro', color: '#dc2626' },
   { name: 'Personal Fibra', color: '#3b82f6' },
+  { name: 'Movistar', color: '#0ea5e9' },
   { name: 'IPLAN', color: '#ec4899' },
+  { name: 'Internet Córdoba', color: '#f59e0b' },
   { name: 'Batcom', color: '#8b5cf6' },
   { name: 'Guabi', color: '#06b6d4' },
 ];
