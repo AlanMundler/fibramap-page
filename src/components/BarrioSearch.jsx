@@ -33,7 +33,7 @@ export default function BarrioSearch() {
   }, [selected]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 my-4">
       <div className="relative">
         <label htmlFor="barrio-search" className="sr-only">Buscar barrio</label>
         <div className="relative">
