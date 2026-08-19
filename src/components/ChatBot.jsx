@@ -70,16 +70,16 @@ export default function ChatBot() {
   };
 
   return (
-    <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30">
-      <div className="px-5 py-3.5 border-b border-gray-700/50 flex items-center gap-2.5">
+    <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30 flex flex-col h-full">
+      <div className="px-5 py-3.5 border-b border-gray-700/50 flex items-center gap-2.5 flex-shrink-0">
         <div className={`w-2.5 h-2.5 rounded-full ${API_KEY ? 'bg-emerald-400 animate-pulse shadow-lg shadow-emerald-500/50' : 'bg-red-500'}`} />
         <h2 className="font-semibold text-sm text-white">Chat IA — Gemini {MODEL}</h2>
         {!API_KEY && <span className="text-xs text-red-400 ml-auto">Sin API key</span>}
       </div>
 
-      <div className="h-72 sm:h-80 md:h-96 overflow-y-auto px-4 sm:px-5 py-4 space-y-3 scroll-smooth">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-5 py-4 space-y-3 scroll-smooth">
         {messages.length === 0 && !loading && (
-          <div className="text-center mt-10 sm:mt-12 space-y-2">
+          <div className="text-center h-full flex flex-col items-center justify-center space-y-2">
             <p className="text-sm text-gray-400">Preguntá sobre fibra óptica en Córdoba</p>
             <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-4">
               {["¿Qué proveedor me conviene?", "¿Claro tiene fibra en Nueva Córdoba?", "Compará Iplan y Movistar"].map(q => (
@@ -127,7 +127,7 @@ export default function ChatBot() {
         </div>
       )}
 
-      <form onSubmit={e => { e.preventDefault(); send(); }} className="flex gap-2 sm:gap-2.5 p-3 sm:p-4 border-t border-gray-700/50">
+      <form onSubmit={e => { e.preventDefault(); send(); }} className="flex gap-2 sm:gap-2.5 p-3 sm:p-4 border-t border-gray-700/50 flex-shrink-0">
         <input
           type="text"
           value={input}
