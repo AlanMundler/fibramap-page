@@ -8,7 +8,6 @@ const iplan = servicios.filter(s => s.proveedor === 'IPLAN');
 const icba = servicios.filter(s => s.proveedor === 'Internet Córdoba');
 const batcom = servicios.filter(s => s.proveedor === 'Batcom');
 const guabi = servicios.filter(s => s.proveedor === 'Guabi');
-const trimotion = servicios.filter(s => s.proveedor === 'Trimotion');
 ---
 
 <Layout title="FibraMap - Promociones">
@@ -137,51 +136,6 @@ const trimotion = servicios.filter(s => s.proveedor === 'Trimotion');
         </div>
       </div>
 
-      <!-- Trimotion -->
-      <div class="bg-gray-800/80 rounded-xl border border-gray-700/50 p-4 sm:p-5 space-y-3 backdrop-blur-sm">
-        <div class="flex items-center gap-2">
-          <h2 class="text-lg font-bold text-orange-400">Trimotion</h2>
-          <span class="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-300 border border-orange-500/30">Agosto 2026</span>
-        </div>
-        <p class="text-xs sm:text-sm text-gray-400">Precios julio 2026. Precio agosto NO CONFIRMADO. Verificar vigencia.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-          <div class="bg-gray-700/30 border border-gray-600/30 rounded-lg p-3">
-            <div class="text-[10px] sm:text-xs text-gray-400">Solo Internet</div>
-            <div class="space-y-1.5 mt-1.5">
-              {trimotion.map(s => (
-                <div class="flex justify-between text-xs sm:text-sm"><span>{s.plan}</span><span class="font-bold">{fmt(s.precioDesc)}</span></div>
-              ))}
-            </div>
-          </div>
-          <div class="bg-gray-700/30 border border-gray-600/30 rounded-lg p-3">
-            <div class="text-[10px] sm:text-xs text-gray-400">Instalación: $70.000</div>
-            <div class="text-[10px] text-gray-500 mt-1.5">Verificar precios agosto antes de contratar.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Krillcom -->
-      <div class="bg-gray-800/80 rounded-xl border border-gray-700/50 p-4 sm:p-5 space-y-3 backdrop-blur-sm">
-        <div class="flex items-center gap-2">
-          <h2 class="text-lg font-bold text-gray-400">Krillcom</h2>
-          <span class="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-gray-700/50 text-gray-300 border border-gray-600/50">Inalámbrico</span>
-        </div>
-        <p class="text-xs sm:text-sm text-gray-400">Solo inalámbrico (no fibra óptica). 50% OFF en instalación.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-          <div class="bg-gray-700/30 border border-gray-600/30 rounded-lg p-3">
-            <div class="text-[10px] sm:text-xs text-gray-400">Internet</div>
-            <div class="space-y-1.5 mt-1.5">
-              {servicios.filter(s => s.proveedor === 'Krillcom').map(s => (
-                <div class="flex justify-between text-xs sm:text-sm"><span>{s.plan}</span><span class="font-bold">{fmt(s.precioDesc)}</span></div>
-              ))}
-            </div>
-          </div>
-          <div class="bg-gray-700/30 border border-gray-600/30 rounded-lg p-3">
-            <div class="text-[10px] sm:text-xs text-gray-400">Cobertura: barrios periféricos</div>
-            <div class="text-[10px] text-gray-500 mt-1.5">Instalación: $70.000. Router Wi-Fi: $75.000 aparte.</div>
-          </div>
-        </div>
-      </div>
     </section>
 
     <div class="border-t border-gray-700 pt-4">
