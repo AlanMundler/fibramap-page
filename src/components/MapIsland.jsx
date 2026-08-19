@@ -98,8 +98,7 @@ export default function MapIsland() {
       </div>
 
       <p className="text-xs text-gray-500 text-center">
-        Zonas con cobertura confirmada de fibra óptica en Córdoba Capital (19/08/2026).
-        La disponibilidad real depende de calle, altura y factibilidad técnica.
+        ⚠️ Los polígonos indican <strong className="text-gray-400">presencia general del proveedor en el barrio</strong>, no garantizan servicio exacto en tu cuadra o dirección. La disponibilidad real depende de calle, altura y factibilidad técnica. Verificá disponibilidad directamente con cada proveedor.
       </p>
 
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] text-gray-500">
