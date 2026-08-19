@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Markdown from 'react-markdown';
 
-const API_URL = import.meta.env.PUBLIC_GEMINI_PROXY_URL || 'https://gemini-proxy.fibramap.workers.dev';
+const API_URL = 'https://quiet-bird-94ce.alan-mundler.workers.dev';
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
