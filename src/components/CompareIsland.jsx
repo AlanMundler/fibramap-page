@@ -44,7 +44,7 @@ export default function CompareIsland() {
 
   return (
     <div className="space-y-5">
-      <div className="flex gap-1.5 sm:gap-2 flex-wrap">
+      <div className="flex gap-1.5 sm:gap-2 flex-wrap justify-center">
         {proveedores.map(p => (
           <button key={p} onClick={() => setFilter(filter === p ? '' : p)} className={filter === p ? 'btn-pill-active' : 'btn-pill'}>{p}</button>
         ))}
@@ -54,11 +54,11 @@ export default function CompareIsland() {
         <p className="text-gray-500 text-sm text-center py-8">Elegí un proveedor para ver los planes</p>
       )}
 
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3 justify-items-center">
         {filtered.map(s => {
           const active = sel.includes(s.id);
           return (
-            <button key={s.id} onClick={() => toggle(s.id)} className={active ? 'card-interactive-active text-left p-3 sm:p-4' : 'card-interactive text-left p-3 sm:p-4'}>
+            <button key={s.id} onClick={() => toggle(s.id)} className={`w-full text-left p-3 sm:p-4 ${active ? 'card-interactive-active' : 'card-interactive'}`}>
               <div className="flex items-center justify-between gap-2 mb-1">
                 <span className="font-medium text-[10px] sm:text-[11px] text-gray-400 truncate">{s.proveedor}</span>
                 {s.simetrico && <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-medium border border-emerald-500/20">SIM</span>}
@@ -75,9 +75,8 @@ export default function CompareIsland() {
       </div>
 
       {sel.length >= 2 && (
-        <div className="overflow-x-auto border-t border-gray-700/50 pt-5 -mx-1 px-1">
-          <div className="min-w-[400px]">
-          <table className="w-full text-xs">
+        <div className="overflow-x-auto border-t border-gray-700/50 pt-5">
+          <table className="w-full text-xs min-w-[350px]">
             <thead>
               <tr className="border-b border-gray-700/50">
                 <th className="text-left py-2.5 px-2 text-gray-400"></th>
@@ -106,12 +105,13 @@ export default function CompareIsland() {
               </tr>
             </tbody>
           </table>
-          </div>
         </div>
       )}
 
       {sel.length >= 2 && (
-        <button onClick={() => setSel([])} className="btn-pill text-gray-500 hover:text-white">Limpiar selección</button>
+        <div className="flex justify-center">
+          <button onClick={() => setSel([])} className="btn-pill text-gray-500 hover:text-white">Limpiar selección</button>
+        </div>
       )}
     </div>
   );
