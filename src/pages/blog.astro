@@ -64,15 +64,22 @@ function parseRSSItems(xml: string): Article[] {
     let snippet = '';
     if (descMatch) {
       snippet = descMatch[1]
-        .replace(/<[^>]+>/g, '')
-        .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
         .replace(/&quot;/g, '"')
         .replace(/&#x27;/g, "'")
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&#160;/g, ' ')
+        .replace(/<[^>]+>/g, '')
         .replace(/\s+/g, ' ')
         .trim()
         .slice(0, 200);
+    }
+
+    const titleLower = title.toLowerCase().slice(0, 40);
+    if (!snippet || snippet.toLowerCase().startsWith(titleLower) || titleLower.startsWith(snippet.toLowerCase().slice(0, 40))) {
+      snippet = '';
     }
 
     items.push({
