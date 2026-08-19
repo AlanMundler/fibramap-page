@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import MapIsland from '../components/MapIsland.jsx';
-import BarrioSearch from '../components/BarrioSearch.jsx';
 ---
 
 <Layout
@@ -14,9 +13,6 @@ import BarrioSearch from '../components/BarrioSearch.jsx';
       <p class="text-gray-400 max-w-2xl">
         Buscá tu barrio o hacé click en el mapa para ver qué proveedores lo cubren.
       </p>
-    </div>
-    <div class="relative z-20">
-      <BarrioSearch client:load />
     </div>
     <MapIsland client:only="react" />
     <p class="text-[10px] sm:text-xs text-gray-500">

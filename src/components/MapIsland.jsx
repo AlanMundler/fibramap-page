@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { SITE_BASE as base } from '../data/constants';
 import barriosData from '../data/barrios-combined.json';
+import ispBarrios from '../data/isp-barrios.json';
 
 const CENTER = [-31.405, -64.175];
 
@@ -43,6 +44,19 @@ const voyager = (x, y, z) => `https://a.basemaps.cartocdn.com/rastertiles/voyage
 export default function MapIsland() {
   const [activeFilter, setActiveFilter] = useState(null);
   const [L, setL] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchSelected, setSearchSelected] = useState(null);
+
+  const allBarrios = useMemo(() => [...new Set(Object.values(ispBarrios).flat())].sort(), []);
+  const searchMatches = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.trim().toLowerCase();
+    return allBarrios.filter(b => b.toLowerCase().includes(q)).slice(0, 10);
+  }, [searchQuery, allBarrios]);
+  const providersForBarrio = useMemo(() => {
+    if (!searchSelected) return [];
+    return Object.entries(ispBarrios).filter(([_, barrios]) => barrios.includes(searchSelected)).map(([name]) => name);
+  }, [searchSelected]);
 
   useEffect(() => {
     (async () => {
@@ -86,7 +100,7 @@ export default function MapIsland() {
         ))}
       </div>
 
-      <div className="w-full h-[50vh] sm:h-[55vh] min-h-[300px] sm:min-h-[350px] rounded-xl overflow-hidden border border-gray-700/50 shadow-lg shadow-gray-900/30">
+      <div className="relative w-full h-[50vh] sm:h-[55vh] min-h-[300px] sm:min-h-[350px] rounded-xl overflow-hidden border border-gray-700/50 shadow-lg shadow-gray-900/30">
         <LeafletMap
           L={L}
           center={CENTER}
@@ -95,6 +109,51 @@ export default function MapIsland() {
           colorMap={colorMap}
           featuresByProvider={featuresByProvider}
         />
+
+        <div className="absolute top-3 left-3 right-3 z-[9999]">
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); setSearchSelected(null); }}
+              placeholder="Buscá tu barrio..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-800/90 border border-gray-600/50 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-sm shadow-lg"
+            />
+            {searchMatches.length > 0 && !searchSelected && (
+              <div className="absolute left-0 right-0 top-full mt-1 bg-gray-800/95 backdrop-blur-sm border border-gray-700 rounded-xl shadow-xl py-1.5 max-h-48 overflow-y-auto">
+                {searchMatches.map(b => (
+                  <button
+                    key={b}
+                    onClick={() => { setSearchSelected(b); setSearchQuery(b); }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors"
+                  >
+                    {b}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {searchSelected && (
+            <div className="mt-1.5 bg-gray-800/95 backdrop-blur-sm rounded-xl border border-gray-700 p-3 shadow-lg">
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-medium text-white text-sm">{searchSelected}</span>
+                <button onClick={() => { setSearchSelected(null); setSearchQuery(''); }} className="text-xs text-gray-500 hover:text-white">✕</button>
+              </div>
+              {providersForBarrio.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {providersForBarrio.map(name => (
+                    <span key={name} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/20">{name}</span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-500">Sin cobertura confirmada. Verificá con cada proveedor.</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <p className="text-xs text-gray-500 text-center">
