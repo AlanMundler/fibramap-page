@@ -282,7 +282,8 @@ for (const [provider, bounds] of Object.entries(ISP_BOUNDS)) {
   }
 
   // 2. Match by centroid within tight bounds (limited expansion)
-  const maxFromBounds = Math.ceil(knownNames.length * 0.15); // max 15% expansion
+  // IPLAN: no expansion — user-confirmed coverage only
+  const maxFromBounds = provider === 'IPLAN' ? 0 : Math.ceil(knownNames.length * 0.15);
   let boundsCount = 0;
   for (const [name, feature] of Object.entries(barrioByName)) {
     if (matchedBarrios.has(name)) continue;
