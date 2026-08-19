@@ -166,10 +166,10 @@ const lastUpdated = new Date().toLocaleDateString('es-AR', {
 ---
 
 <Layout title="FibraMap - Noticias del mercado de fibra óptica">
-  <div class="max-w-4xl mx-auto space-y-8">
-    <div class="space-y-2">
+  <div class="max-w-4xl mx-auto space-y-6">
+    <div class="space-y-1">
       <h1 class="text-2xl sm:text-3xl font-bold">Noticias</h1>
-      <p class="text-gray-400">
+      <p class="text-gray-400 text-sm sm:text-base">
         Novedades del mercado de fibra óptica e internet en Argentina. Actualizado automáticamente.
       </p>
       <p class="text-xs text-gray-500">
@@ -185,76 +185,84 @@ const lastUpdated = new Date().toLocaleDateString('es-AR', {
     )}
 
     {sortedArticles.length > 0 ? (
-      <div class="grid gap-4">
+      <div class="space-y-3">
         {sortedArticles.map((article) => (
           <a
             href={article.link}
             target="_blank"
             rel="noopener noreferrer"
-            class="block bg-gray-800/80 border border-gray-700/50 rounded-xl p-4 sm:p-5 space-y-3 hover:border-blue-500/40 hover:bg-gray-800 transition-all duration-200 group"
+            class="flex items-start gap-3 bg-gray-800/80 border border-gray-700/50 rounded-xl p-4 hover:border-blue-500/40 hover:bg-gray-800 transition-all duration-200 group"
           >
-            <div class="flex flex-wrap items-center gap-3">
-              <span class={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${sourceColor(article.source)}`}>
-                {article.source}
-              </span>
-              {article.pubDate && (
-                <span class="text-sm text-gray-500">{formatRelativeDate(article.pubDate)}</span>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                <span class={`text-[11px] font-medium px-2 py-0.5 rounded-full border whitespace-nowrap ${sourceColor(article.source)}`}>
+                  {article.source}
+                </span>
+                {article.pubDate && (
+                  <span class="text-xs text-gray-500 whitespace-nowrap">{formatRelativeDate(article.pubDate)}</span>
+                )}
+              </div>
+              <h2 class="text-base sm:text-lg font-semibold text-gray-100 group-hover:text-blue-300 transition-colors leading-snug">
+                {article.title}
+              </h2>
+              {article.snippet && (
+                <p class="text-gray-400 text-sm leading-relaxed mt-1.5 line-clamp-2">{article.snippet}</p>
               )}
             </div>
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-100 group-hover:text-blue-300 transition-colors">
-              {article.title}
-            </h2>
-            {article.snippet && (
-              <p class="text-gray-400 text-sm leading-relaxed">{article.snippet}</p>
-            )}
-            <span class="inline-block text-xs text-blue-400 group-hover:text-blue-300">
-              Leer nota →
+            <span class="shrink-0 mt-1 text-xs text-blue-400 group-hover:text-blue-300 whitespace-nowrap">
+              →
             </span>
           </a>
         ))}
       </div>
     ) : (
-      <div class="grid gap-4">
-        <article class="bg-gray-800/80 border border-gray-700/50 rounded-xl p-4 sm:p-5 space-y-3">
-          <div class="flex flex-wrap items-center gap-3">
-            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
-              ENACOM
-            </span>
-            <span class="text-sm text-gray-500">Hoy</span>
+      <div class="space-y-3">
+        <article class="flex items-start gap-3 bg-gray-800/80 border border-gray-700/50 rounded-xl p-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
+                ENACOM
+              </span>
+              <span class="text-xs text-gray-500">Hoy</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-semibold text-gray-100 leading-snug">ENACOM incrementa resolución de quejas</h2>
+            <p class="text-gray-400 text-sm leading-relaxed mt-1.5 line-clamp-2">
+              El organismo regulador informó que aumentó un 40% la resolución de quejas contra proveedores de internet.
+              Los reclamos más frecuentes son por cortes y velocidades por debajo de lo contratado.
+            </p>
           </div>
-          <h2 class="text-lg sm:text-xl font-semibold text-gray-100">ENACOM incrementa resolución de quejas</h2>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            El organismo regulador informó que aumentó un 40% la resolución de quejas contra proveedores de internet.
-            Los reclamos más frecuentes son por cortes y velocidades por debajo de lo contratado.
-          </p>
         </article>
 
-        <article class="bg-gray-800/80 border border-gray-700/50 rounded-xl p-4 sm:p-5 space-y-3">
-          <div class="flex flex-wrap items-center gap-3">
-            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-              IPLAN
-            </span>
-            <span class="text-sm text-gray-500">Ago 2026</span>
+        <article class="flex items-start gap-3 bg-gray-800/80 border border-gray-700/50 rounded-xl p-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-blue-500/20 text-blue-300 border-blue-500/30">
+                IPLAN
+              </span>
+              <span class="text-xs text-gray-500">Ago 2026</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-semibold text-gray-100 leading-snug">IPLAN expande fibra a Villa Allende</h2>
+            <p class="text-gray-400 text-sm leading-relaxed mt-1.5 line-clamp-2">
+              IPLAN completó la expansión de su red de fibra óptica a nuevos barrios de Villa Allende.
+              Ya están habilitadas las conexiones en Loma Ruiz, La Perla y alrededores del centro.
+            </p>
           </div>
-          <h2 class="text-lg sm:text-xl font-semibold text-gray-100">IPLAN expande fibra a Villa Allende</h2>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            IPLAN completó la expansión de su red de fibra óptica a nuevos barrios de Villa Allende.
-            Ya están habilitadas las conexiones en Loma Ruiz, La Perla y alrededores del centro.
-          </p>
         </article>
 
-        <article class="bg-gray-800/80 border border-gray-700/50 rounded-xl p-4 sm:p-5 space-y-3">
-          <div class="flex flex-wrap items-center gap-3">
-            <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-              Guía
-            </span>
-            <span class="text-sm text-gray-500">Jul 2026</span>
+        <article class="flex items-start gap-3 bg-gray-800/80 border border-gray-700/50 rounded-xl p-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="text-[11px] font-medium px-2 py-0.5 rounded-full border bg-purple-500/20 text-purple-300 border-purple-500/30">
+                Guía
+              </span>
+              <span class="text-xs text-gray-500">Jul 2026</span>
+            </div>
+            <h2 class="text-base sm:text-lg font-semibold text-gray-100 leading-snug">Comparativa: qué plan conviene según tu barrio</h2>
+            <p class="text-gray-400 text-sm leading-relaxed mt-1.5 line-clamp-2">
+              Armamos una comparativa de los mejores planes disponibles por zona de Córdoba.
+              Núcleo, sur, norte y Villa María tienen opciones diferentes. Encontrá cuál te conviene.
+            </p>
           </div>
-          <h2 class="text-lg sm:text-xl font-semibold text-gray-100">Comparativa: qué plan conviene según tu barrio</h2>
-          <p class="text-gray-400 text-sm leading-relaxed">
-            Armamos una comparativa de los mejores planes disponibles por zona de Córdoba.
-            Núcleo, sur, norte y Villa María tienen opciones diferentes. Encontrá cuál te conviene.
-          </p>
         </article>
       </div>
     )}
