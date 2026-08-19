@@ -158,23 +158,14 @@ const KNOWN_BARRIOS = {
     'YAPEYU', 'ZEPA',
   ],
   'Batcom': [
-    // Official list from user (28 barrios) — only 7 exist in cadastral GeoJSON
+    // Official batcom.com.ar Google Maps markers (15 total)
     'LOS BOULEVARES', 'CHACRA DEL NORTE',
-    'LILI BENITEZ', 'TORRES SUMMUM',
     'MALVINAS ARGENTINAS', 'JUAREZ CELMAN',
-    'PROCREAR LICEO', 'RETIRO DE HORIZONTE II',
-    'CIUDAD DE LOS CUARTETOS', 'UNIVERSITARIO DE HORIZONTE',
-    'CARRARA DE HORIZONTE', 'SAN IGNACIO',
-    'LA CALERA', 'LA CAMPANA',
-    'CUESTA COLORADA', 'CUESTA RESIDENCIAL',
-    'LA PANKANA', 'EL RODEO', 'EL CALICANTO',
-    'VALLE ESCONDIDO', 'COMARCA ALLENDE',
-    'LA MORADA', 'LA CATALINA',
-    'SAN CARLOS DE HORIZONTE', 'CARCANO DE HORIZONTE',
-    'RAMON J. CARCANO', 'PUNTO W', 'ACAECE MALL',
-    'CINCO LOMAS',
-    // Also match Villa Retiro de Horizonte (partial match for "Retiro de Horizonte II – III")
-    'VILLA RETIRO DE HORIZONTE',
+    'PROCREAR LICEO', 'UNIVERSITARIO DE HORIZONTE',
+    'CARRARA DE HORIZONTE', 'SPILIMBERGO',
+    'LA CALERA', 'LA CUESTA', 'CUESTA COLORADA',
+    'SAN CARLOS DE HORIZONTE', 'RAMON J. CARCANO',
+    'VALLE ESCONDIDO', 'VILLA ALLENDE PARQUE',
   ],
   'Guabi': [
     // Official map (5 barrios FO): https://www.google.com/maps/d/viewer?mid=1PoRTMASxcRlnWflR03VGpFh4_zFLheE
