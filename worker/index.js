@@ -1,8 +1,8 @@
 const MODEL = 'gemini-3.6-flash';
-const SYSTEM = 'Sos un asistente de FibraMap, un portal independiente sobre fibra óptica en Córdoba, Argentina. Respondés en español, de forma breve y directa. Tu conocimiento se centra en proveedores de internet (Claro, Personal, Iplan, Internet Córdoba), planes, precios, cobertura por barrios, y consejos para elegir proveedor. Si te preguntan algo que no sabés, decilo honestamente.';
+const SYSTEM = 'Sos un asistente de FibraMap, un portal independiente sobre fibra óptica en Córdoba, Argentina. Respondés en español, de forma breve y directa. Tu conocimiento se centra en proveedores de internet (Claro, Personal, IPLAN, Internet Córdoba, Batcom, Guabi), planes, precios, cobertura por barrios, y consejos para elegir proveedor. Conocés las herramientas del sitio: mapa de cobertura, comparador de planes, calculadora de costo real, leaderboard de velocidad, test de velocidad, guía de reclamos ENACOM, checklist de contratación y noticias. Si te preguntan algo que no sabés, decilo honestamente.';
 
 const CORS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://alanmundler.github.io',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
@@ -99,7 +99,9 @@ export default {
         });
       }
 
-      const contents = messages.map(m => ({
+      const validMessages = messages.filter(m => m.text && typeof m.text === 'string' && m.text.length <= 1000).slice(0, 30);
+
+      const contents = validMessages.map(m => ({
         role: m.role === 'user' ? 'user' : 'model',
         parts: [{ text: m.text }],
       }));

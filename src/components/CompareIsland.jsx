@@ -36,7 +36,7 @@ export default function CompareIsland() {
     <div className="space-y-5">
       <div className="flex gap-1.5 sm:gap-2 flex-wrap justify-center">
         {proveedores.map(p => (
-          <button key={p} onClick={() => setFilter(filter === p ? '' : p)} className={filter === p ? 'btn-pill-active' : 'btn-pill'}>{p}</button>
+          <button key={p} onClick={() => { const next = filter === p ? '' : p; setFilter(next); if (next !== filter) setSel([]); }} className={filter === p ? 'btn-pill-active' : 'btn-pill'}>{p}</button>
         ))}
       </div>
 

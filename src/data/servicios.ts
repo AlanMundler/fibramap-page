@@ -73,4 +73,3 @@ export const proveedores = [
 ];
 
 export const fmt = (n: number) => n ? `$${n.toLocaleString('es-AR')}` : 'Consultar';
-export const fmtStr = (n: number) => n ? `$${n.toLocaleString('es-AR')}` : 'Consultar';

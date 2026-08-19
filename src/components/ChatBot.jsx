@@ -31,7 +31,8 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      const apiMessages = [...messagesRef.current.map(m => ({
+      const recentMessages = messagesRef.current.slice(-20);
+      const apiMessages = [...recentMessages.map(m => ({
         text: m.text,
         role: m.role,
       })), { text: msg, role: "user" }];

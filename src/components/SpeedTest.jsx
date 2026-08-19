@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export default function SpeedTest() {
   const [state, setState] = useState("idle");
@@ -62,10 +62,13 @@ export default function SpeedTest() {
       engineRef.current = engine;
       engine.play();
     } catch (e) {
-      console.error("SpeedTest error:", e);
       setState("error");
       setProgress({ phase: "Error al iniciar el test", pct: 0 });
     }
+  }, []);
+
+  useEffect(() => {
+    return () => { engineRef.current?.stop(); };
   }, []);
 
   const stop = useCallback(() => {

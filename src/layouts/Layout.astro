@@ -1,20 +1,37 @@
 ---
 import NavBar from '../components/NavBar.astro';
 import { ViewTransitions } from 'astro:transitions';
+import { SITE_BASE } from '../data/constants';
+
 interface Props {
   title: string;
   description?: string;
 }
-const { title, description = 'Fibra optica en Cordoba, Argentina' } = Astro.props;
+const { title, description = 'Fibra óptica en Córdoba Capital: compará planes, precios y cobertura de 6 proveedores FTTH. Mapa interactivo, test de velocidad y más.' } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL(`${SITE_BASE}/og-default.png`, Astro.site);
 ---
 <!doctype html>
 <html lang="es" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="/fibramap-page/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href={`${SITE_BASE}/favicon.ico`} />
     <meta name="description" content={description} />
     <title>{title}</title>
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content="FibraMap" />
+    <meta property="og:locale" content="es_AR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="robots" content="index, follow" />
     <ViewTransitions />
   </head>
   <body class="bg-gray-900 min-h-screen text-gray-100 flex flex-col">

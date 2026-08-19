@@ -9,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const GEOJSON_PATH = path.join(__dirname, '..', 'src', 'data', 'cordoba-barrios-full.geojson');
+const GEOJSON_PATH = path.join(__dirname, '..', 'data', 'cordoba-barrios-full.geojson');
 const OUTPUT_BARRIOS = path.join(__dirname, '..', 'src', 'data', 'isp-barrios.json');
 const OUTPUT_GEOJSON = path.join(__dirname, '..', 'src', 'data', 'barrios-by-provider.json');
 

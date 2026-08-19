@@ -1,8 +1,6 @@
 ﻿---
 import Layout from '../layouts/Layout.astro';
 import Giscus from '../components/Giscus.astro';
-import { SITE_BASE as base } from '../data/constants';
-
 const providers = [
   {
     name: 'IPLAN',
@@ -73,7 +71,10 @@ const colorMap = {
 };
 ---
 
-<Layout title="FibraMap - Opiniones">
+<Layout
+  title="FibraMap — Opiniones y calificaciones de proveedores"
+  description="Opiniones reales de proveedores de fibra óptica en Córdoba. Calificaciones de IPLAN, Internet Córdoba, Guabi, Claro, Personal y Batcom."
+>
   <div class="space-y-6 max-w-4xl mx-auto">
     <div class="space-y-2 mb-6">
       <h1 class="text-2xl sm:text-3xl font-bold">Opiniones reales</h1>

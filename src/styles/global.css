@@ -100,10 +100,6 @@ img { max-width: 100%; height: auto; }
 .custom-popup .leaflet-popup-close-button {
   display: none !important;
 }
-.custom-marker {
-  background: transparent !important;
-  border: none !important;
-}
 .leaflet-control-zoom a {
   background: #1f2937 !important;
   color: #d1d5db !important;

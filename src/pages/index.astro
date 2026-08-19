@@ -3,8 +3,17 @@ import Layout from '../layouts/Layout.astro';
 import ChatBot from '../components/ChatBot.jsx';
 ---
 
-<Layout title="FibraMap">
-  <div class="max-w-4xl mx-auto h-full flex flex-col">
+<Layout
+  title="FibraMap — Compará fibra óptica en Córdoba Capital"
+  description="Compará planes, precios y cobertura de fibra óptica en Córdoba Capital. Mapa interactivo, comparador de planes, test de velocidad y asistente IA. 6 proveedores FTTH verificados."
+>
+  <div class="space-y-6">
+    <div class="space-y-2 text-center mb-4">
+      <h1 class="text-2xl sm:text-3xl font-bold">FibraMap</h1>
+      <p class="text-gray-400 max-w-xl mx-auto">
+        Compará proveedores de fibra óptica en Córdoba Capital. Planes, precios y cobertura verificados.
+      </p>
+    </div>
     <ChatBot client:load />
   </div>
 </Layout>
