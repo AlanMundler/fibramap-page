@@ -77,7 +77,7 @@ export default function ChatBot() {
         {!API_KEY && <span className="text-xs text-red-400 ml-auto">Sin API key</span>}
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-5 py-4 space-y-3 scroll-smooth">
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 sm:px-5 py-4 space-y-3 scroll-smooth">
         {messages.length === 0 && !loading && (
           <div className="text-center h-full flex flex-col items-center justify-center space-y-2">
             <p className="text-sm text-gray-400">Preguntá sobre fibra óptica en Córdoba</p>
