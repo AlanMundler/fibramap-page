@@ -272,7 +272,7 @@ function StepIndicator({ currentPhase }) {
 
 function NICInfo({ nic }) {
   const info = NIC_LIMITS[nic.type] || NIC_LIMITS.unknown;
-  const conn = navigator?.connection;
+  const conn = typeof navigator !== 'undefined' ? navigator.connection : null;
   return (
     <div className="p-3 rounded-xl bg-gray-700/15 border border-gray-700/15">
       <div className="flex items-center gap-2 mb-1.5">
