@@ -23,9 +23,11 @@ const NIC_LIMITS = {
   wifi_5:        { label: 'Wi-Fi 5', icon: '📶', maxDown: 500 },
   wifi_6:        { label: 'Wi-Fi 6', icon: '📶', maxDown: 900 },
   wifi_6e_7:     { label: 'Wi-Fi 6E/7', icon: '📶', maxDown: 2000 },
+  wifi_generic:  { label: 'Wi-Fi', icon: '📶', maxDown: null },
   ethernet_1g:   { label: 'Ethernet 1G', icon: '🔌', maxDown: 1000 },
   ethernet_2_5g: { label: 'Ethernet 2.5G', icon: '🔌', maxDown: 2500 },
   ethernet_10g:  { label: 'Ethernet 10G', icon: '🔌', maxDown: 10000 },
+  cellular:      { label: 'Datos móviles', icon: '📱', maxDown: null },
   unknown:       { label: 'Desconocido', icon: '❓', maxDown: null },
 };
 
@@ -37,10 +39,21 @@ const NIC_TABLE = [
   ['Ethernet 2.5G+', '2500+ Mbps'],
 ];
 
+function isMobileDevice() {
+  if (typeof navigator === 'undefined') return false;
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
 function detectNIC() {
   if (typeof navigator === 'undefined') return { type: 'unknown', downlink: null, rtt: null, saveData: false };
   const c = navigator.connection;
-  if (!c) return { type: 'unknown', downlink: null, rtt: null, saveData: false };
+  const mobile = isMobileDevice();
+
+  if (!c) {
+    return mobile
+      ? { type: 'wifi_generic', downlink: null, rtt: null, saveData: false }
+      : { type: 'unknown', downlink: null, rtt: null, saveData: false };
+  }
 
   const { downlink, rtt, saveData, type: connType } = c;
   let nicKey = 'unknown';
@@ -49,11 +62,23 @@ function detectNIC() {
     if (downlink >= 2500) nicKey = 'ethernet_10g';
     else if (downlink >= 1000) nicKey = 'ethernet_2_5g';
     else nicKey = 'ethernet_1g';
-  } else if (connType === 'wifi' || connType == null) {
+  } else if (connType === 'wifi') {
     if (downlink >= 800) nicKey = 'wifi_6e_7';
     else if (downlink >= 400) nicKey = 'wifi_6';
     else if (downlink >= 100) nicKey = 'wifi_5';
     else nicKey = 'wifi_4';
+  } else if (connType === 'cellular') {
+    nicKey = 'cellular';
+  } else {
+    if (downlink != null) {
+      if (downlink >= 800) nicKey = 'wifi_6e_7';
+      else if (downlink >= 400) nicKey = 'wifi_6';
+      else if (downlink >= 100) nicKey = 'wifi_5';
+      else if (downlink >= 20) nicKey = 'wifi_4';
+      else nicKey = mobile ? 'cellular' : 'unknown';
+    } else if (mobile) {
+      nicKey = 'wifi_generic';
+    }
   }
 
   return { type: nicKey, downlink, rtt, saveData };
