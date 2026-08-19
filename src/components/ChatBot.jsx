@@ -135,7 +135,6 @@ export default function ChatBot() {
           placeholder={API_KEY ? "Escribí tu pregunta..." : "API key no configurada"}
           disabled={loading || !API_KEY}
           className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 rounded-xl bg-gray-700/50 border border-gray-600/50 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 disabled:opacity-50 transition-all"
-          autoFocus
         />
         <button
           type="submit"
