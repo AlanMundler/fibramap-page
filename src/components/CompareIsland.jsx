@@ -1,32 +1,22 @@
 import { useState } from 'react';
+import { servicios as rawServicios, fmt } from '../data/servicios';
 
-const servicios = [
-  { id: 'personal-300', proveedor: 'Personal Fibra', plan: '300 Mbps', download: 300, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 26000, precioLista: 86610, instalacion: 0, descuento: '74% OFF x6 meses', detalle: 'WiFi Backup y Video Pass incluidos.', cobertura: 'Amplia' },
-  { id: 'personal-300-flow', proveedor: 'Personal Fibra', plan: '300 + Flow', download: 300, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 36000, precioLista: 125480, instalacion: 0, descuento: '76% OFF x6 meses', detalle: 'Incluye Flow Full (150+ canales).', cobertura: 'Amplia' },
-  { id: 'personal-600', proveedor: 'Personal Fibra', plan: '600 Mbps', download: 600, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 31000, precioLista: 101540, instalacion: 0, descuento: '70% OFF x6 meses', detalle: 'Internet Backup incluido.', cobertura: 'Amplia' },
-  { id: 'claro-200', proveedor: 'Claro', plan: 'Fibra 200', download: 200, upload: '200 Mbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 18999, precioLista: 0, instalacion: 0, descuento: '70% OFF x5 meses + 1 gratis', detalle: '64+ barrios. Simétrico.', cobertura: '64+ barrios' },
-  { id: 'claro-500', proveedor: 'Claro', plan: 'Fibra 500', download: 500, upload: '500 Mbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 21999, precioLista: 0, instalacion: 0, descuento: '70% OFF x5 meses + 1 gratis', detalle: '64+ barrios. Simétrico.', cobertura: '64+ barrios' },
-  { id: 'claro-800', proveedor: 'Claro', plan: 'Fibra 800', download: 800, upload: '800 Mbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 26999, precioLista: 0, instalacion: 0, descuento: '70% OFF x5 meses + 1 gratis', detalle: '64+ barrios. Simétrico.', cobertura: '64+ barrios' },
-  { id: 'icba-100', proveedor: 'Internet Córdoba', plan: '100 Megas', download: 100, upload: '30 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 24100, precioLista: 24100, instalacion: 0, descuento: 'Precio fijo', detalle: '67 barrios. WiFi incluido.', cobertura: '67 barrios' },
-  { id: 'icba-150', proveedor: 'Internet Córdoba', plan: '150 Megas', download: 150, upload: '40 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 25400, precioLista: 25400, instalacion: 0, descuento: 'Precio fijo', detalle: '67 barrios. WiFi incluido.', cobertura: '67 barrios' },
-  { id: 'icba-300', proveedor: 'Internet Córdoba', plan: '300 Megas', download: 300, upload: '60 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 26800, precioLista: 26800, instalacion: 0, descuento: 'Precio fijo', detalle: '67 barrios. WiFi incluido.', cobertura: '67 barrios' },
-  { id: 'batcom-100', proveedor: 'Batcom', plan: '100 Mbps', download: 100, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 36400, precioLista: 45500, instalacion: 0, descuento: '20% OFF x12 meses', detalle: 'WiFi de cortesía. Equipos comodato.', cobertura: 'Norte/Noroeste' },
-  { id: 'batcom-300', proveedor: 'Batcom', plan: '300 Mbps', download: 300, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 40640, precioLista: 50800, instalacion: 0, descuento: '20% OFF x12 meses', detalle: 'WiFi de cortesía. Equipos comodato.', cobertura: 'Norte/Noroeste' },
-  { id: 'batcom-500', proveedor: 'Batcom', plan: '500 Mbps', download: 500, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 45280, precioLista: 58300, instalacion: 0, descuento: '20% OFF x12 meses', detalle: 'WiFi de cortesía. Equipos comodato.', cobertura: 'Norte/Noroeste' },
-  { id: 'guabi-100', proveedor: 'Guabi', plan: '100 Mbps', download: 100, upload: '50 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 23940, precioLista: 36830, instalacion: 0, descuento: '35% OFF x6 meses', detalle: 'Zona Sur exclusivamente.', cobertura: 'Zona Sur' },
-  { id: 'guabi-300', proveedor: 'Guabi', plan: '300 Mbps', download: 300, upload: '100 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 31707, precioLista: 48780, instalacion: 0, descuento: '35% OFF x6 meses', detalle: 'Zona Sur exclusivamente.', cobertura: 'Zona Sur' },
-  { id: 'guabi-600', proveedor: 'Guabi', plan: '600 Mbps', download: 600, upload: '200 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 35750, precioLista: 55000, instalacion: 0, descuento: '35% OFF x6 meses', detalle: 'Zona Sur exclusivamente.', cobertura: 'Zona Sur' },
-  { id: 'iplan-500', proveedor: 'IPLAN', plan: '500 Megas', download: 500, upload: '500 Mbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 0, precioLista: 0, instalacion: 0, descuento: '44% OFF x12 meses', detalle: 'SIMÉTRICO. Solo Centro. Precio: consultar.', cobertura: 'Centro/Nueva Córdoba' },
-  { id: 'iplan-800', proveedor: 'IPLAN', plan: '800 Megas', download: 800, upload: '800 Mbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 0, precioLista: 0, instalacion: 0, descuento: '44% OFF x12 meses', detalle: 'SIMÉTRICO. Solo Centro. Precio: consultar.', cobertura: 'Centro/Nueva Córdoba' },
-  { id: 'iplan-1000', proveedor: 'IPLAN', plan: '1000 Megas', download: 1000, upload: '1 Gbps', tecnologia: 'FTTH', simetrico: true, precioDesc: 0, precioLista: 0, instalacion: 0, descuento: '44% OFF x12 meses', detalle: 'SIMÉTRICO. Solo Centro. Precio: consultar.', cobertura: 'Centro/Nueva Córdoba' },
-  { id: 'krill-50', proveedor: 'Krillcom', plan: '50 Mbps', download: 50, upload: '10 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 29900, precioLista: 36200, instalacion: 70000, descuento: 'Con IVA', detalle: 'Router no incluido.', cobertura: 'Periférico' },
-  { id: 'krill-100', proveedor: 'Krillcom', plan: '100/50 + TV', download: 100, upload: '50 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 56700, precioLista: 56700, instalacion: 70000, descuento: 'Con IVA', detalle: 'Incluye TV. Router Wi-Fi: $75.000 aparte.', cobertura: 'Periférico' },
-  { id: 'trimo-100', proveedor: 'Trimotion', plan: '100 Mbps', download: 100, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 28900, precioLista: 28900, instalacion: 70000, descuento: 'Precios julio 2026', detalle: 'Precio agosto NO confirmado.', cobertura: 'Variable' },
-  { id: 'trimo-200', proveedor: 'Trimotion', plan: '200 Mbps', download: 200, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 31900, precioLista: 31900, instalacion: 70000, descuento: 'Precios julio 2026', detalle: 'Precio agosto NO confirmado.', cobertura: 'Variable' },
-  { id: 'trimo-300', proveedor: 'Trimotion', plan: '300 Mbps', download: 300, upload: 'No publicada', tecnologia: 'FTTH', simetrico: false, precioDesc: 34900, precioLista: 34900, instalacion: 70000, descuento: 'Precios julio 2026', detalle: 'Precio agosto NO confirmado.', cobertura: 'Variable' },
-];
+const servicios = rawServicios.map(s => ({
+  id: s.id,
+  proveedor: s.proveedor,
+  plan: s.plan,
+  download: s.download,
+  upload: s.upload,
+  tecnologia: s.tecnologia,
+  simetrico: s.simetrico,
+  precioDesc: s.precioDesc,
+  precioLista: s.precioLista,
+  instalacion: s.instalacion,
+  descuento: s.descuento,
+  detalle: s.detalle,
+  cobertura: s.cobertura,
+}));
 
-const fmt = (n) => n ? `$${n.toLocaleString('es-AR')}` : 'Consultar';
 const precio100 = (s) => s.precioDesc && s.download ? (s.precioDesc / (s.download / 100)).toFixed(0) : null;
 const proveedores = [...new Set(servicios.map(s => s.proveedor))];
 

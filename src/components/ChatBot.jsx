@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Markdown from 'react-markdown';
 
-const API_KEY = import.meta.env.PUBLIC_GEMINI_API_KEY || "";
+const API_URL = `${import.meta.env.BASE_URL || '/fibramap-page/'}api/gemini`;
 const MODEL = "gemini-3.6-flash";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
-const SYSTEM = "Sos un asistente de FibraMap, un portal independiente sobre fibra óptica en Córdoba, Argentina. Respondés en español, de forma breve y directa. Tu conocimiento se centra en proveedores de internet (Claro, Personal, Iplan, Movistar, Internet Córdoba), planes, precios, cobertura por barrios, y consejos para elegir proveedor. Si te preguntan algo que no sabés, decilo honestamente.";
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
@@ -24,14 +22,9 @@ export default function ChatBot() {
     }
   }, [messages, loading]);
 
-  useEffect(() => {
-    if (!API_KEY) setError("API key no configurada.");
-  }, []);
-
   const send = async () => {
     const msg = input.trim();
     if (!msg || loading || msg.length > 500) return;
-    if (!API_KEY) { setError("No hay API key configurada."); return; }
 
     setInput("");
     setError(null);
@@ -39,34 +32,27 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      const contents = [...messagesRef.current.map(m => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.text }],
-      })), { role: "user", parts: [{ text: msg }] }];
+      const apiMessages = [...messagesRef.current.map(m => ({
+        text: m.text,
+        role: m.role,
+      })), { text: msg, role: "user" }];
 
       let text = null;
       for (let attempt = 0; attempt < 3; attempt++) {
         if (attempt > 0) await new Promise(r => setTimeout(r, 2000 * attempt));
-        const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+        const res = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents,
-            systemInstruction: { parts: [{ text: SYSTEM }] },
-            generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
-          }),
+          body: JSON.stringify({ messages: apiMessages }),
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          const detail = err?.error?.message || `HTTP ${res.status}`;
+          const detail = err?.error || `HTTP ${res.status}`;
           if (res.status === 503 && attempt < 2) continue;
-          if (res.status === 400) throw new Error(`Clave inválida o modelo no disponible: ${detail}`);
-          if (res.status === 403) throw new Error(`Acceso denegado: ${detail}`);
-          if (res.status === 429) throw new Error(`Cuota excedida: ${detail}`);
-          throw new Error(`Error ${res.status}: ${detail}`);
+          throw new Error(detail);
         }
         const data = await res.json();
-        text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        text = data?.text;
         if (text) break;
       }
       if (!text) throw new Error("El modelo no respondió. Intentá de nuevo en unos segundos.");
@@ -80,9 +66,8 @@ export default function ChatBot() {
   return (
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30 flex flex-col h-full">
       <div className="px-5 py-3.5 border-b border-gray-700/50 flex items-center gap-2.5 flex-shrink-0">
-        <div className={`w-2.5 h-2.5 rounded-full ${API_KEY ? 'bg-emerald-400 animate-pulse shadow-lg shadow-emerald-500/50' : 'bg-red-500'}`} />
+        <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-500/50" />
         <h2 className="font-semibold text-sm text-white">Chat IA — Gemini {MODEL}</h2>
-        {!API_KEY && <span className="text-xs text-red-400 ml-auto">Sin API key</span>}
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 sm:px-5 py-4 space-y-3 scroll-smooth">
@@ -142,14 +127,14 @@ export default function ChatBot() {
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
-          placeholder={API_KEY ? "Escribí tu pregunta..." : "API key no configurada"}
-          disabled={loading || !API_KEY}
+          placeholder="Escribí tu pregunta..."
+          disabled={loading}
           maxLength={500}
           className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 rounded-xl bg-gray-700/50 border border-gray-600/50 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 disabled:opacity-50 transition-all"
         />
         <button
           type="submit"
-          disabled={loading || !input.trim() || !API_KEY}
+          disabled={loading || !input.trim()}
           aria-label="Enviar mensaje"
           className="btn-primary disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none px-4 sm:px-5 shrink-0"
         >

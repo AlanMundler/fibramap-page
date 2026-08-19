@@ -4,6 +4,7 @@
 # build output
 /dist
 /.astro
+/.vercel
 
 # environment
 .env

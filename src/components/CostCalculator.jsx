@@ -1,27 +1,17 @@
 import { useState, useMemo } from 'react';
+import { servicios as rawServicios } from '../data/servicios';
 
-const planes = [
-  { id: 'personal-300', proveedor: 'Personal Fibra', plan: '300 Mbps', download: 300, precioDesc: 26000, precioLista: 86610, instalacion: 0, promoMeses: 6 },
-  { id: 'personal-300-flow', proveedor: 'Personal Fibra', plan: '300 + Flow', download: 300, precioDesc: 36000, precioLista: 125480, instalacion: 0, promoMeses: 6 },
-  { id: 'personal-600', proveedor: 'Personal Fibra', plan: '600 Mbps', download: 600, precioDesc: 31000, precioLista: 101540, instalacion: 0, promoMeses: 6 },
-  { id: 'claro-200', proveedor: 'Claro', plan: 'Fibra 200', download: 200, precioDesc: 18999, precioLista: 63330, instalacion: 0, promoMeses: 5, mesesGratis: 1 },
-  { id: 'claro-500', proveedor: 'Claro', plan: 'Fibra 500', download: 500, precioDesc: 21999, precioLista: 73330, instalacion: 0, promoMeses: 5, mesesGratis: 1 },
-  { id: 'claro-800', proveedor: 'Claro', plan: 'Fibra 800', download: 800, precioDesc: 26999, precioLista: 89997, instalacion: 0, promoMeses: 5, mesesGratis: 1 },
-  { id: 'icba-100', proveedor: 'Internet Córdoba', plan: '100 Megas', download: 100, precioDesc: 24100, precioLista: 24100, instalacion: 0, promoMeses: 0 },
-  { id: 'icba-150', proveedor: 'Internet Córdoba', plan: '150 Megas', download: 150, precioDesc: 25400, precioLista: 25400, instalacion: 0, promoMeses: 0 },
-  { id: 'icba-300', proveedor: 'Internet Córdoba', plan: '300 Megas', download: 300, precioDesc: 26800, precioLista: 26800, instalacion: 0, promoMeses: 0 },
-  { id: 'batcom-100', proveedor: 'Batcom', plan: '100 Mbps', download: 100, precioDesc: 36400, precioLista: 45500, instalacion: 0, promoMeses: 12 },
-  { id: 'batcom-300', proveedor: 'Batcom', plan: '300 Mbps', download: 300, precioDesc: 40640, precioLista: 50800, instalacion: 0, promoMeses: 12 },
-  { id: 'batcom-500', proveedor: 'Batcom', plan: '500 Mbps', download: 500, precioDesc: 45280, precioLista: 58300, instalacion: 0, promoMeses: 12 },
-  { id: 'guabi-100', proveedor: 'Guabi', plan: '100 Mbps', download: 100, precioDesc: 23940, precioLista: 36830, instalacion: 0, promoMeses: 6 },
-  { id: 'guabi-300', proveedor: 'Guabi', plan: '300 Mbps', download: 300, precioDesc: 31707, precioLista: 48780, instalacion: 0, promoMeses: 6 },
-  { id: 'guabi-600', proveedor: 'Guabi', plan: '600 Mbps', download: 600, precioDesc: 35750, precioLista: 55000, instalacion: 0, promoMeses: 6 },
-  { id: 'krill-50', proveedor: 'Krillcom', plan: '50 Mbps', download: 50, precioDesc: 29900, precioLista: 36200, instalacion: 70000, promoMeses: 0 },
-  { id: 'krill-100', proveedor: 'Krillcom', plan: '100/50 + TV', download: 100, precioDesc: 56700, precioLista: 56700, instalacion: 70000, promoMeses: 0 },
-  { id: 'trimo-100', proveedor: 'Trimotion', plan: '100 Mbps', download: 100, precioDesc: 28900, precioLista: 28900, instalacion: 70000, promoMeses: 0 },
-  { id: 'trimo-200', proveedor: 'Trimotion', plan: '200 Mbps', download: 200, precioDesc: 31900, precioLista: 31900, instalacion: 70000, promoMeses: 0 },
-  { id: 'trimo-300', proveedor: 'Trimotion', plan: '300 Mbps', download: 300, precioDesc: 34900, precioLista: 34900, instalacion: 70000, promoMeses: 0 },
-];
+const planes = rawServicios.filter(s => s.precioDesc > 0 || s.precioLista > 0).map(s => ({
+  id: s.id,
+  proveedor: s.proveedor,
+  plan: s.plan,
+  download: s.download,
+  precioDesc: s.precioDesc,
+  precioLista: s.precioLista,
+  instalacion: s.instalacion,
+  promoMeses: s.promoMeses,
+  mesesGratis: s.mesesGratis || 0,
+}));
 
 const proveedores = [...new Set(planes.map(p => p.proveedor))];
 const fmt = (n) => `$${Math.round(n).toLocaleString('es-AR')}`;
