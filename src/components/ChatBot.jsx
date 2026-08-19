@@ -36,28 +36,32 @@ export default function ChatBot() {
         parts: [{ text: m.text }],
       })), { role: "user", parts: [{ text: msg }] }];
 
-      const res = await fetch(`${API_URL}?key=${API_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents,
-          systemInstruction: { parts: [{ text: SYSTEM }] },
-          generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        const detail = err?.error?.message || `HTTP ${res.status}`;
-        if (res.status === 400) throw new Error(`Clave inválida o modelo no disponible: ${detail}`);
-        if (res.status === 403) throw new Error(`Acceso denegado: ${detail}`);
-        if (res.status === 429) throw new Error(`Cuota excedida: ${detail}`);
-        throw new Error(`Error ${res.status}: ${detail}`);
+      let text = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 2000 * attempt));
+        const res = await fetch(`${API_URL}?key=${API_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents,
+            systemInstruction: { parts: [{ text: SYSTEM }] },
+            generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+          }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          const detail = err?.error?.message || `HTTP ${res.status}`;
+          if (res.status === 503 && attempt < 2) continue;
+          if (res.status === 400) throw new Error(`Clave inválida o modelo no disponible: ${detail}`);
+          if (res.status === 403) throw new Error(`Acceso denegado: ${detail}`);
+          if (res.status === 429) throw new Error(`Cuota excedida: ${detail}`);
+          throw new Error(`Error ${res.status}: ${detail}`);
+        }
+        const data = await res.json();
+        text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) break;
       }
-
-      const data = await res.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) throw new Error("Respuesta vacía del modelo.");
+      if (!text) throw new Error("El modelo no respondió. Intentá de nuevo en unos segundos.");
       setMessages(prev => [...prev, { text, role: "bot", time: new Date() }]);
     } catch (e) {
       setError(e.message || "No se pudo obtener respuesta.");
