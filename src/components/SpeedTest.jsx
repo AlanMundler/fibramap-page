@@ -78,6 +78,7 @@ export default function SpeedTest() {
   const [liveSpeed, setLiveSpeed] = useState(0);
   const [results, setResults] = useState(null);
   const engineRef = useRef(null);
+  const pollRef = useRef(null);
 
   const run = useCallback(async () => {
     setState("running");
@@ -111,25 +112,22 @@ export default function SpeedTest() {
         if (type === 'latency' && phaseRef === 'latency') {
           phaseRef = 'download';
           setCurrentPhase('download');
-          setLiveSpeed(0);
         } else if (type === 'download') {
           if (phaseRef !== 'download') {
             phaseRef = 'download';
             setCurrentPhase('download');
           }
-          const bps = engine.results?.getDownloadBandwidth?.();
-          if (bps) setLiveSpeed(bpsToMbps(bps));
         } else if (type === 'upload') {
           if (phaseRef !== 'upload') {
             phaseRef = 'upload';
             setCurrentPhase('upload');
           }
-          const bps = engine.results?.getUploadBandwidth?.();
-          if (bps) setLiveSpeed(bpsToMbps(bps));
         }
       };
 
       engine.onFinish = (res) => {
+        if (pollRef.current) clearInterval(pollRef.current);
+        pollRef.current = null;
         const s = res.getSummary();
         setResults({
           download: s.download ? (s.download / 1e6).toFixed(1) : null,
@@ -145,6 +143,20 @@ export default function SpeedTest() {
 
       engineRef.current = engine;
       engine.play();
+
+      if (pollRef.current) clearInterval(pollRef.current);
+      pollRef.current = setInterval(() => {
+        if (!engine.results) return;
+        try {
+          const points = phaseRef === 'upload'
+            ? engine.results.getUploadBandwidthPoints?.()
+            : engine.results.getDownloadBandwidthPoints?.();
+          if (points && points.length > 0) {
+            const last = points[points.length - 1];
+            if (last.bps > 0) setLiveSpeed(bpsToMbps(last.bps));
+          }
+        } catch (_) {}
+      }, 300);
     } catch (e) {
       setState("error");
       setCurrentPhase(null);
@@ -152,11 +164,16 @@ export default function SpeedTest() {
   }, []);
 
   useEffect(() => {
-    return () => { engineRef.current?.stop(); };
+    return () => {
+      engineRef.current?.stop();
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
   }, []);
 
   const stop = useCallback(() => {
     engineRef.current?.stop();
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = null;
     setState("idle");
     setCurrentPhase(null);
     setLiveSpeed(0);
