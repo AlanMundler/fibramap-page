@@ -18,16 +18,24 @@ const ACTIVITIES = [
 ];
 
 const NIC_LIMITS = {
-  ethernet_100:  { label: 'Ethernet Fast (100 Mbps)', icon: '🔌', maxDown: 100 },
-  wifi_4:        { label: 'Wi-Fi 4 (802.11n)', icon: '📶', maxDown: 150 },
-  wifi_5:        { label: 'Wi-Fi 5 (802.11ac)', icon: '📶', maxDown: 500 },
-  wifi_6:        { label: 'Wi-Fi 6 (802.11ax)', icon: '📶', maxDown: 900 },
-  wifi_6e_7:     { label: 'Wi-Fi 6E / 7', icon: '📶', maxDown: 2000 },
-  ethernet_1g:   { label: 'Ethernet Gigabit', icon: '🔌', maxDown: 1000 },
+  ethernet_100:  { label: 'Ethernet Fast', icon: '🔌', maxDown: 100 },
+  wifi_4:        { label: 'Wi-Fi 4', icon: '📶', maxDown: 150 },
+  wifi_5:        { label: 'Wi-Fi 5', icon: '📶', maxDown: 500 },
+  wifi_6:        { label: 'Wi-Fi 6', icon: '📶', maxDown: 900 },
+  wifi_6e_7:     { label: 'Wi-Fi 6E/7', icon: '📶', maxDown: 2000 },
+  ethernet_1g:   { label: 'Ethernet 1G', icon: '🔌', maxDown: 1000 },
   ethernet_2_5g: { label: 'Ethernet 2.5G', icon: '🔌', maxDown: 2500 },
   ethernet_10g:  { label: 'Ethernet 10G', icon: '🔌', maxDown: 10000 },
   unknown:       { label: 'Desconocido', icon: '❓', maxDown: null },
 };
+
+const NIC_TABLE = [
+  ['Wi-Fi 4', '~150 Mbps'],
+  ['Wi-Fi 5', '~500 Mbps'],
+  ['Wi-Fi 6/6E', '~900 Mbps'],
+  ['Ethernet 1G', '1000 Mbps'],
+  ['Ethernet 2.5G+', '2500+ Mbps'],
+];
 
 function detectNIC() {
   if (typeof navigator === 'undefined') return { type: 'unknown', downlink: null, rtt: null, saveData: false };
@@ -78,13 +86,12 @@ function getQuality(d, l) {
 function uid() { return ++chartId; }
 
 function LiveChart({ points, color, id }) {
-  const W = 500, H = 120;
-  const pad = { t: 12, r: 8, b: 16, l: 36 };
+  const W = 500, H = 100;
+  const pad = { t: 10, r: 8, b: 14, l: 36 };
   const usable = points.slice(-40);
   if (usable.length < 2) return null;
 
   const yMax = Math.max(10, ...usable.map(p => p.v)) * 1.15;
-  const yTicks = 3;
   const plotW = W - pad.l - pad.r;
   const plotH = H - pad.t - pad.b;
   const toX = (i) => pad.l + (i / Math.max(1, usable.length - 1)) * plotW;
@@ -105,15 +112,15 @@ function LiveChart({ points, color, id }) {
   const areaD = lineD + ` L${lastX.toFixed(1)},${(H - pad.b).toFixed(1)} L${toX(0).toFixed(1)},${(H - pad.b).toFixed(1)} Z`;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full block" style={{ height: '100px' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full block" style={{ height: '85px' }}>
       <defs>
         <linearGradient id={`cg-${id}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.15" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      {Array.from({ length: yTicks + 1 }, (_, i) => {
-        const v = (yMax / yTicks) * i;
+      {[0, 1, 2, 3].map(i => {
+        const v = (yMax / 3) * i;
         return (
           <g key={i}>
             <line x1={pad.l} y1={toY(v)} x2={W - pad.r} y2={toY(v)} stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
@@ -131,8 +138,8 @@ function LiveChart({ points, color, id }) {
 }
 
 function Gauge({ value, max, phase, color, running, id }) {
-  const size = 180, cx = 90, cy = 90;
-  const r = 72, strokeW = 6;
+  const size = 170, cx = 85, cy = 85;
+  const r = 68, strokeW = 6;
   const arcStart = 140, arcEnd = 400, arcRange = arcEnd - arcStart;
   const toRad = (d) => (d * Math.PI) / 180;
   const arcPt = (deg) => ({ x: cx + r * Math.cos(toRad(deg)), y: cy + r * Math.sin(toRad(deg)) });
@@ -177,23 +184,22 @@ function Gauge({ value, max, phase, color, running, id }) {
             strokeWidth={t.major ? 1.2 : 0.6} strokeLinecap="round" />
         ))}
         {pct > 0 && (
-          <path d={valArc} fill="none" stroke={`url(#ggr-${id})`} strokeWidth={strokeW} strokeLinecap="round" filter={`url(#gg-${id})`}
-            style={{ transition: 'all 0.3s ease-out' }} />
+          <path d={valArc} fill="none" stroke={`url(#ggr-${id})`} strokeWidth={strokeW} strokeLinecap="round" filter={`url(#gg-${id})`} />
         )}
         {running && (
           <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="1" strokeDasharray="8 24" opacity="0.2"
             style={{ animation: 'gSpin 2.5s linear infinite', transformOrigin: `${cx}px ${cy}px` }} />
         )}
-        {pct > 0 && <circle cx={cur.x} cy={cur.y} r="3.5" fill={color} opacity="0.8" style={{ transition: 'all 0.3s ease-out' }} />}
+        {pct > 0 && <circle cx={cur.x} cy={cur.y} r="3.5" fill={color} opacity="0.8" />}
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ paddingTop: '8px' }}>
-        <span className="text-[2.2rem] sm:text-[2.6rem] font-extrabold text-white tabular-nums leading-none"
-          style={{ textShadow: `0 0 20px ${color}40` }}>
+      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ paddingTop: '6px' }}>
+        <span className="text-[2rem] sm:text-[2.4rem] font-extrabold text-white tabular-nums leading-none"
+          style={{ textShadow: `0 0 16px ${color}30` }}>
           {value}
         </span>
         <span className="text-[9px] text-gray-500 mt-0.5 font-semibold tracking-[0.15em] uppercase">Mbps</span>
         {phase && (
-          <span className="mt-1.5 px-2.5 py-[2px] rounded-full text-[9px] font-bold tracking-wider"
+          <span className="mt-1 px-2.5 py-[2px] rounded-full text-[9px] font-bold tracking-wider"
             style={{ backgroundColor: color + '12', color, border: `1px solid ${color}20` }}>
             {phase}
           </span>
@@ -229,33 +235,6 @@ function StepIndicator({ currentPhase }) {
   );
 }
 
-function NICInfo({ nic }) {
-  const info = NIC_LIMITS[nic.type] || NIC_LIMITS.unknown;
-  const conn = typeof navigator !== 'undefined' ? navigator.connection : null;
-  return (
-    <div className="p-3 rounded-xl bg-gray-700/15 border border-gray-700/15">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-sm">{info.icon}</span>
-        <span className="text-[11px] font-semibold text-gray-300">{info.label}</span>
-      </div>
-      <div className="grid grid-cols-3 gap-2 text-center">
-        <div>
-          <p className="text-[9px] text-gray-500 uppercase tracking-wider">Estimado ↓</p>
-          <p className="text-xs font-bold text-blue-400">{conn?.downlink ? `${conn.downlink} Mbps` : '—'}</p>
-        </div>
-        <div>
-          <p className="text-[9px] text-gray-500 uppercase tracking-wider">RTT base</p>
-          <p className="text-xs font-bold text-amber-400">{conn?.rtt != null ? `${conn.rtt} ms` : '—'}</p>
-        </div>
-        <div>
-          <p className="text-[9px] text-gray-500 uppercase tracking-wider">Ahorro datos</p>
-          <p className="text-xs font-bold text-gray-400">{conn?.saveData ? 'Sí' : 'No'}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ResultCard({ label, value, unit, color, icon }) {
   return (
     <div className="p-3 rounded-xl bg-gray-700/15 border border-gray-600/15 text-center">
@@ -270,7 +249,6 @@ export default function SpeedTest() {
   const [state, setState] = useState('idle');
   const [currentPhase, setCurrentPhase] = useState(null);
   const [liveSpeed, setLiveSpeed] = useState(0);
-  const smoothRef = useRef(0);
   const [results, setResults] = useState(null);
   const [chartPoints, setChartPoints] = useState([]);
   const [history, setHistory] = useState([]);
@@ -279,7 +257,8 @@ export default function SpeedTest() {
   const [nic, setNic] = useState({ type: 'unknown', downlink: null, rtt: null, saveData: false });
   const engineRef = useRef(null);
   const pollRef = useRef(null);
-  const stoppedRef = useRef(false);
+  const cancelledRef = useRef(false);
+  const smoothRef = useRef(0);
   const chartRef = useRef([]);
   const [cid] = useState(uid);
 
@@ -320,8 +299,8 @@ export default function SpeedTest() {
     setLiveSpeed(0);
     setChartPoints([]);
     chartRef.current = [];
-    stoppedRef.current = false;
     smoothRef.current = 0;
+    cancelledRef.current = false;
     setNic(detectNIC());
 
     try {
@@ -346,6 +325,7 @@ export default function SpeedTest() {
       let phaseRef = 'latency';
 
       engine.onResultsChange = ({ type }) => {
+        if (cancelledRef.current) return;
         if (type === 'latency' && phaseRef === 'latency') {
           phaseRef = 'download'; setCurrentPhase('download');
         } else if (type === 'download' && phaseRef !== 'download') {
@@ -356,7 +336,7 @@ export default function SpeedTest() {
       };
 
       engine.onFinish = (res) => {
-        if (stoppedRef.current) return;
+        if (cancelledRef.current) return;
         if (pollRef.current) clearInterval(pollRef.current);
         pollRef.current = null;
         const s = res.getSummary();
@@ -377,7 +357,7 @@ export default function SpeedTest() {
 
       if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = setInterval(() => {
-        if (!engine.results) return;
+        if (!engine.results || cancelledRef.current) return;
         try {
           const isUpload = phaseRef === 'upload';
 
@@ -395,9 +375,9 @@ export default function SpeedTest() {
 
             const rawMbps = aggMbps > 0 ? aggMbps : lastMbps;
             if (rawMbps > 0) {
-              const alpha = 0.45;
-              smoothRef.current = Math.round(smoothRef.current * (1 - alpha) + rawMbps * alpha);
-              const display = Math.max(smoothRef.current, rawMbps > 0 ? rawMbps : 0);
+              const prev = smoothRef.current;
+              smoothRef.current = prev === 0 ? rawMbps : Math.round(prev * 0.6 + rawMbps * 0.4);
+              const display = Math.max(smoothRef.current, rawMbps);
               setLiveSpeed(display);
               chartRef.current = [...chartRef.current, { v: rawMbps, t: isUpload ? 'upload' : 'download' }];
               if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
@@ -422,10 +402,10 @@ export default function SpeedTest() {
   useEffect(() => () => { engineRef.current?.stop(); if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   const stop = useCallback(() => {
-    stoppedRef.current = true;
-    engineRef.current?.stop();
+    cancelledRef.current = true;
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = null;
+    try { engineRef.current?.stop(); } catch (_) {}
     setState('idle'); setCurrentPhase(null); setLiveSpeed(0); setChartPoints([]);
   }, []);
 
@@ -441,32 +421,49 @@ export default function SpeedTest() {
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-gray-900/40">
       <style>{`@keyframes gSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
-      {/* NIC info — shown idle only */}
+      {/* NIC info — horizontal row, idle only */}
       {state === 'idle' && (
-        <div className="px-5 sm:px-6 pt-4 pb-2 space-y-3">
-          <NICInfo nic={nic} />
-          <div className="p-3 rounded-xl bg-gray-700/15 border border-gray-700/15">
-            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1.5">Límites por tipo de red</p>
-            <div className="text-[10px] text-gray-500 space-y-0.5">
-              {[
-                ['Wi-Fi 4 (2.4GHz)', '~150 Mbps'],
-                ['Wi-Fi 5 (5GHz)', '~500 Mbps'],
-                ['Wi-Fi 6 / 6E', '~900 Mbps'],
-                ['Ethernet Gigabit', '1000 Mbps'],
-                ['Ethernet 2.5G / 10G', '2500+ Mbps'],
-              ].map(([label, speed]) => (
-                <div key={label} className="flex justify-between">
-                  <span>{label}</span>
-                  <span className="text-gray-400 font-mono">{speed}</span>
+        <div className="px-4 sm:px-5 pt-4 pb-2">
+          <div className="flex gap-2">
+            {/* NIC detected */}
+            <div className="flex-1 p-2.5 rounded-xl bg-gray-700/15 border border-gray-700/15 min-w-0">
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-xs">{NIC_LIMITS[nic.type]?.icon || '❓'}</span>
+                <span className="text-[10px] font-semibold text-gray-300 truncate">{NIC_LIMITS[nic.type]?.label || 'Desconocido'}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-1 text-center">
+                <div>
+                  <p className="text-[8px] text-gray-500 uppercase">↓ Est.</p>
+                  <p className="text-[10px] font-bold text-blue-400">{nic.downlink ? `${nic.downlink}` : '—'}</p>
                 </div>
-              ))}
+                <div>
+                  <p className="text-[8px] text-gray-500 uppercase">RTT</p>
+                  <p className="text-[10px] font-bold text-amber-400">{nic.rtt != null ? `${nic.rtt}` : '—'}</p>
+                </div>
+                <div>
+                  <p className="text-[8px] text-gray-500 uppercase">Ahorro</p>
+                  <p className="text-[10px] font-bold text-gray-400">{nic.saveData ? 'Sí' : 'No'}</p>
+                </div>
+              </div>
+            </div>
+            {/* NIC speed limits */}
+            <div className="flex-1 p-2.5 rounded-xl bg-gray-700/15 border border-gray-700/15 min-w-0">
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1">Límites por red</p>
+              <div className="text-[9px] text-gray-500 space-y-0">
+                {NIC_TABLE.map(([label, speed]) => (
+                  <div key={label} className="flex justify-between">
+                    <span>{label}</span>
+                    <span className="text-gray-400 font-mono">{speed}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Gauge — always mounted, never unmounts */}
-      <div className="flex justify-center py-3 sm:py-4">
+      {/* Gauge — always mounted */}
+      <div className="flex justify-center py-3">
         <Gauge
           value={state === 'running' ? liveSpeed : 0}
           max={gaugeMax}
@@ -478,15 +475,15 @@ export default function SpeedTest() {
       </div>
 
       {/* Phase-specific content below gauge */}
-      <div className="px-5 sm:px-6 pb-2 min-h-[40px]">
+      <div className="px-4 sm:px-5 pb-2 min-h-[32px]">
         {state === 'idle' && (
-          <p className="text-[11px] text-gray-500 text-center">
+          <p className="text-[10px] text-gray-500 text-center">
             Test de velocidad con servidores Cloudflare en Argentina.
           </p>
         )}
 
         {state === 'running' && (
-          <div className="space-y-3">
+          <div className="space-y-2">
             <StepIndicator currentPhase={currentPhase} />
             <div className="flex justify-center">
               {currentPhase === 'download' && dlPoints.length >= 2 && (
@@ -496,27 +493,25 @@ export default function SpeedTest() {
                 <div className="w-full"><LiveChart points={ulPoints} color="#10b981" id={`ul-${cid}`} /></div>
               )}
             </div>
-            <p className="text-[10px] text-gray-600 text-center">No cierres esta página</p>
+            <p className="text-[9px] text-gray-600 text-center">No cierres esta página</p>
           </div>
         )}
 
         {state === 'error' && (
-          <p className="text-sm text-red-400 text-center py-4">Error al iniciar el test. Intentá de nuevo.</p>
+          <p className="text-sm text-red-400 text-center py-3">Error al iniciar el test. Intentá de nuevo.</p>
         )}
       </div>
 
-      {/* Results — rendered below gauge, never causes gauge to unmount */}
+      {/* Results */}
       {state === 'done' && results && (
-        <div className="px-5 sm:px-6 pb-2 space-y-4">
-          {/* Quality label */}
+        <div className="px-4 sm:px-5 pb-2 space-y-3">
           {quality && (
             <div className="text-center">
-              <span className="text-2xl">{quality.emoji}</span>
-              <p className="text-base font-extrabold tracking-tight mt-0.5" style={{ color: quality.color }}>{quality.label}</p>
+              <span className="text-xl">{quality.emoji}</span>
+              <p className="text-sm font-extrabold tracking-tight mt-0.5" style={{ color: quality.color }}>{quality.label}</p>
             </div>
           )}
 
-          {/* 4 core metrics */}
           <div className="grid grid-cols-2 gap-2">
             <ResultCard label="Descarga" value={results.download} unit="Mbps" color="#3b82f6" icon="↓" />
             <ResultCard label="Subida" value={results.upload} unit="Mbps" color="#10b981" icon="↑" />
@@ -524,7 +519,6 @@ export default function SpeedTest() {
             <ResultCard label="Jitter" value={results.jitter} unit="ms" color="#a855f7" icon="∿" />
           </div>
 
-          {/* Loaded latency */}
           {results.loadedLatencyDown && (
             <div className="grid grid-cols-2 gap-2">
               <div className="p-2 rounded-lg bg-gray-700/10 border border-gray-700/12 text-center">
@@ -538,7 +532,6 @@ export default function SpeedTest() {
             </div>
           )}
 
-          {/* NIC efficiency */}
           {nicInfo.maxDown && nicEfficiency != null && (
             <div className="p-2.5 rounded-xl bg-gray-700/10 border border-gray-700/15">
               <div className="flex items-center justify-between mb-1">
@@ -555,7 +548,6 @@ export default function SpeedTest() {
             </div>
           )}
 
-          {/* Charts */}
           {dlPoints.length >= 2 && (
             <div>
               <p className="text-[9px] text-gray-500 font-medium uppercase tracking-wider mb-1">Descarga</p>
@@ -569,7 +561,6 @@ export default function SpeedTest() {
             </div>
           )}
 
-          {/* Activities */}
           {activities.length > 0 && (
             <div className="grid grid-cols-2 gap-1.5">
               {activities.map(a => (
@@ -589,7 +580,6 @@ export default function SpeedTest() {
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex gap-2">
             <button onClick={() => { setShowHistory(!showHistory); setShowShare(false); }}
               className={`flex-1 py-2 rounded-xl text-[11px] font-semibold border transition-all ${
@@ -628,9 +618,9 @@ export default function SpeedTest() {
         </div>
       )}
 
-      {/* History panel */}
+      {/* History */}
       {showHistory && history.length > 0 && (
-        <div className="px-5 pb-3 max-h-40 overflow-y-auto border-t border-gray-700/15 pt-3">
+        <div className="px-4 sm:px-5 pb-3 max-h-40 overflow-y-auto border-t border-gray-700/15 pt-3">
           <div className="flex justify-between items-center mb-2">
             <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Últimas pruebas</p>
             <button onClick={clearHistory} className="text-[9px] text-red-400/60 hover:text-red-400 transition-colors">Borrar</button>
@@ -651,9 +641,9 @@ export default function SpeedTest() {
       )}
 
       {/* Bottom button */}
-      <div className="px-5 pb-5">
+      <div className="px-4 sm:px-5 pb-4">
         {state === 'running' ? (
-          <button onClick={stop} className="w-full py-2.5 rounded-xl text-xs font-semibold border border-gray-600/30 bg-gray-700/20 text-gray-300 hover:bg-gray-600/30 hover:text-white active:scale-[0.98] transition-all">
+          <button onClick={stop} className="w-full py-2.5 rounded-xl text-xs font-semibold border border-red-500/30 bg-red-500/8 text-red-400 hover:bg-red-500/15 hover:text-red-300 active:scale-[0.98] transition-all">
             Cancelar
           </button>
         ) : (
