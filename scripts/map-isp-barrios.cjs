@@ -79,57 +79,16 @@ const ISP_BOUNDS = {
 // Known barrio names per ISP (verified from official sources)
 // Sources: batcom.com.ar, internetcordoba.com.ar, distributor pages, phontel, selectra
 const KNOWN_BARRIOS = {
-  'Claro': [
-    // Confirmed by official distributor (internetytelefoniaencordoba.com)
-    'NUEVA CORDOBA', 'CERRO DE LAS ROSAS', 'GUEMES', 'ALTA CORDOBA',
-    'CENTRO', 'GENERAL PAZ', 'COFICO', 'GENERAL BUSTOS',
-    'CERRO NORTE', 'PROVIDENCIA', 'MULLER', 'COLON', 'EMPALME',
-    'PARQUE TABLADA', 'COMERCIAL',
-    // Confirmed initial 10 barrios (2019 launch)
-    'JARDIN', 'SAN VICENTE', 'SARMIENTO', 'MAIPU 1A SECCION',
-    'SAN CARLOS', 'OÑA', 'AYACUCHO',
-    // Confirmed by phontel.com.ar
-    'ALBERDI', 'PATRICIOS',
-    // Additional known Claro barrios from coverage checker
-    'SAN FRANCISCO', 'GUAYAQUIL', 'MERCANTIL', 'TALLERES (E)',
-    'GENERAL PUEYRREDON', 'SAN MARTIN', 'PARQUE SARMIENTO',
-    'RIVADAVIA', 'CIUDADELA', 'SANTA RITA', 'BOEDO',
-    'FERREYRA', '25 DE MAYO', 'INDEPENDENCIA', 'EL BOSQUE',
-    'LAS DELICIAS', 'LAS ROSAS', 'URCA', 'GENERAL BELGRANO',
-    'ALMIRANTE BROWN', 'GUIÑAZU', 'VILLA ARGENTINA',
-    'VILLA EL LIBERTADOR', 'VILLA ALBERDI', 'VILLA AVALOS',
-    'VILLA CORONEL OLMEDO', 'PARQUE CHATEAU CARRERAS',
-    'YOFRE H', 'YOFRE I', 'YOFRE SUD',
-  ],
-  'Personal Fibra': [
-    // Confirmed by phontel.com.ar and selectra.com.ar
-    // ex-Fibertel/Cablevisión HFC + new FTTH deployment
-    // "Amplia" coverage — largest national network
-    'NUEVA CORDOBA', 'GENERAL PAZ', 'ALTA CORDOBA',
-    'CENTRO', 'CERRO DE LAS ROSAS',
-    // Broader HFC + FTTH coverage (ex-Cablevisión infrastructure)
-    'ALBERDI', 'PATRICIOS', 'SAN FRANCISCO', 'GUAYAQUIL',
-    'MERCANTIL', 'GUEMES', 'SAN MARTIN', 'SARMIENTO',
-    'COLON', 'EMPALME', 'COFICO', 'GENERAL BUSTOS',
-    'PROVIDENCIA', 'MULLER', 'CERRO NORTE',
-    'TALLERES (E)', 'RIVADAVIA', 'CIUDADELA', 'SANTA RITA',
-    'BOEDO', 'FERREYRA', 'JARDIN', 'SAN VICENTE',
-    'URCA', 'EL BOSQUE', 'GENERAL BELGRANO',
-    'OÑA', '25 DE MAYO', 'INDEPENDENCIA',
-    'ALMIRANTE BROWN', 'GUIÑAZU', 'PARQUE SARMIENTO',
-    'PARQUE TABLADA', 'COMERCIAL', 'GENERAL PUEYRREDON',
-    'PARQUE CHATEAU CARRERAS', 'PARQUE LATINO',
-    'VILLA ARGENTINA', 'VILLA EL LIBERTADOR',
-    'VILLA ALBERDI', 'VILLA AVALOS',
-    'VILLA CORONEL OLMEDO', 'SAN RAMON', 'SAN NICOLAS',
-    'YOFRE H', 'YOFRE I', 'YOFRE SUD',
-    'GRANADERO PRINGLES', 'PANAMERICANO',
-    'LAS DELICIAS', 'LAS ROSAS',
-    'RESIDENCIAL SAN ROQUE', 'RESIDENCIAL SAN CARLOS',
-    'LOS ALAMOS', 'LOS FILTROS',
-    'PARQUE DEL ESTE', 'PARQUE DON BOSCO',
-    'LOMAS DE SAN MARTIN', 'ALTOS SAN MARTIN',
-  ],
+  'Claro': {
+    allUrban: true,
+    exclude: ['NUEVA CORDOBA', 'NUEVA CORDOBA ANEXA'],
+    // Anillo urbano completo except Nueva Córdoba (user-confirmed)
+  },
+  'Personal Fibra': {
+    allUrban: true,
+    exclude: [],
+    // Anillo urbano completo (user-confirmed)
+  },
   'IPLAN': [
     'NUEVA CORDOBA', 'CENTRO', 'ALBERDI',
   ],
@@ -217,35 +176,45 @@ const providerBarrios = {};
 const providerGeoFeatures = {};
 
 for (const [provider, bounds] of Object.entries(ISP_BOUNDS)) {
-  const knownNames = (KNOWN_BARRIOS[provider] || []).map(normalize);
+  const knownConfig = KNOWN_BARRIOS[provider] || [];
+  const isAllUrban = knownConfig.allUrban === true;
+  const excludeList = (knownConfig.exclude || []).map(normalize);
+  const knownNames = isAllUrban ? [] : knownConfig.map(normalize);
   const matchedBarrios = new Set();
   const matchedFeatures = [];
 
-  // 1. Match by known names
-  for (const name of knownNames) {
-    if (barrioByName[name]) {
-      matchedBarrios.add(name);
-      matchedFeatures.push(barrioByName[name]);
-    }
-  }
-
-  // 2. Match by centroid within tight bounds (limited expansion)
-  // IPLAN/Guabi: no expansion — user-confirmed coverage only
-  const noExpand = ['IPLAN', 'Guabi', 'Batcom'];
-  const maxFromBounds = noExpand.includes(provider) ? 0 : Math.ceil(knownNames.length * 0.15);
-  let boundsCount = 0;
-  for (const [name, feature] of Object.entries(barrioByName)) {
-    if (matchedBarrios.has(name)) continue;
-    if (boundsCount >= maxFromBounds) break;
-    
-    // Get centroid
-    const coords = feature.geometry?.coordinates;
-    if (!coords) continue;
-    const centroid = getCentroid(coords);
-    if (centroidInBounds(centroid, bounds)) {
+  if (isAllUrban) {
+    // Include ALL barrios from GeoJSON (anillo urbano completo), minus exclusions
+    for (const [name, feature] of Object.entries(barrioByName)) {
+      if (excludeList.includes(name)) continue;
       matchedBarrios.add(name);
       matchedFeatures.push(feature);
-      boundsCount++;
+    }
+  } else {
+    // 1. Match by known names
+    for (const name of knownNames) {
+      if (barrioByName[name]) {
+        matchedBarrios.add(name);
+        matchedFeatures.push(barrioByName[name]);
+      }
+    }
+
+    // 2. Match by centroid within tight bounds (limited expansion)
+    const noExpand = ['IPLAN', 'Guabi', 'Batcom'];
+    const maxFromBounds = noExpand.includes(provider) ? 0 : Math.ceil(knownNames.length * 0.15);
+    let boundsCount = 0;
+    for (const [name, feature] of Object.entries(barrioByName)) {
+      if (matchedBarrios.has(name)) continue;
+      if (boundsCount >= maxFromBounds) break;
+      
+      const coords = feature.geometry?.coordinates;
+      if (!coords) continue;
+      const centroid = getCentroid(coords);
+      if (centroidInBounds(centroid, bounds)) {
+        matchedBarrios.add(name);
+        matchedFeatures.push(feature);
+        boundsCount++;
+      }
     }
   }
 
