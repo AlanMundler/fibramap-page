@@ -103,7 +103,7 @@ export default function ChatBot() {
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30 flex flex-col h-full">
       <div className="px-5 py-3.5 border-b border-gray-700/50 flex items-center gap-2.5 flex-shrink-0">
         <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-500/50" />
-        <h2 className="font-semibold text-sm text-white">Chat IA — Gemini 2.5 Flash</h2>
+        <h2 className="font-semibold text-sm text-white">Chat IA — Gemini 3.6 Flash</h2>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 sm:px-5 py-4 space-y-3 scroll-smooth">
