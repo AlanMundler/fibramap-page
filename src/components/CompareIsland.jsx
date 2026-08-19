@@ -44,7 +44,7 @@ export default function CompareIsland() {
         <p className="text-gray-500 text-sm text-center py-8">Elegí un proveedor para ver los planes</p>
       )}
 
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3 justify-items-center">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {filtered.map(s => {
           const active = sel.includes(s.id);
           return (
