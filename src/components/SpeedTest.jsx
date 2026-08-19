@@ -82,15 +82,19 @@ function isMobileDevice() {
 function detectNIC() {
   if (typeof navigator === 'undefined') return { type: 'unknown', downlink: null, rtt: null, saveData: false };
   const c = navigator.connection;
-  const mobile = isMobileDevice();
 
   if (!c) {
+    const mobile = isMobileDevice();
     return mobile
       ? { type: 'wifi_generic', downlink: null, rtt: null, saveData: false }
       : { type: 'unknown', downlink: null, rtt: null, saveData: false };
   }
 
-  const { downlink, rtt, saveData, type: connType } = c;
+  const downlink = c.downlink ?? null;
+  const rtt = c.rtt ?? null;
+  const saveData = !!c.saveData;
+  const connType = c.type || null;
+  const effectiveType = c.effectiveType || null;
   let nicKey = 'unknown';
 
   if (connType === 'ethernet') {
@@ -105,18 +109,33 @@ function detectNIC() {
   } else if (connType === 'cellular') {
     nicKey = 'cellular';
   } else {
-    if (downlink != null) {
+    if (downlink != null && downlink > 0) {
       if (downlink >= 800) nicKey = 'wifi_6e_7';
       else if (downlink >= 400) nicKey = 'wifi_6';
       else if (downlink >= 100) nicKey = 'wifi_5';
       else if (downlink >= 20) nicKey = 'wifi_4';
-      else nicKey = mobile ? 'cellular' : 'unknown';
-    } else if (mobile) {
-      nicKey = 'wifi_generic';
+      else if (effectiveType === '4g' || effectiveType === '3g') nicKey = 'wifi_generic';
+      else nicKey = 'cellular';
+    } else if (rtt != null && rtt > 0) {
+      nicKey = rtt < 50 ? 'wifi_generic' : 'cellular';
+    } else if (effectiveType) {
+      if (effectiveType === '4g') nicKey = 'wifi_generic';
+      else nicKey = 'cellular';
+    } else {
+      nicKey = isMobileDevice() ? 'wifi_generic' : 'unknown';
     }
   }
 
   return { type: nicKey, downlink, rtt, saveData };
+}
+
+function inferNICFromSpeed(mbps) {
+  if (!mbps || mbps <= 0) return null;
+  if (mbps >= 800) return 'wifi_6e_7';
+  if (mbps >= 400) return 'wifi_6';
+  if (mbps >= 100) return 'wifi_5';
+  if (mbps >= 20) return 'wifi_4';
+  return 'cellular';
 }
 
 const HISTORY_KEY = 'fibramap_speedtest_history';
@@ -423,6 +442,10 @@ export default function SpeedTest() {
         console.log('[SpeedTest] parsed results:', r);
         setResults(r); setState('done'); setCurrentPhase(null);
         saveHistory(r); setHistory(loadHistory());
+        if (nic.type === 'unknown' || nic.type === 'wifi_generic' || nic.type === 'cellular') {
+          const inferred = inferNICFromSpeed(parseFloat(r.download));
+          if (inferred) setNic(prev => ({ ...prev, type: inferred }));
+        }
       };
 
       engineRef.current = engine;
