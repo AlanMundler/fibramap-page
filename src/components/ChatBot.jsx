@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Markdown from 'react-markdown';
 
-const API_URL = `${import.meta.env.BASE_URL || '/fibramap-page/'}api/gemini`;
+const API_URL = import.meta.env.PUBLIC_GEMINI_PROXY_URL || 'https://gemini-proxy.fibramap.workers.dev';
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
