@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Map, Marker, Overlay } from 'pigeon-maps';
+import { SITE_BASE as base } from '../data/constants';
 
 const CENTER = [-31.405, -64.175];
-const base = '/fibramap-page';
 
 const barrios = [
   // ── Claro (verificados: distribuidor oficial + phontel) ──────

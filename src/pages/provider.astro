@@ -77,11 +77,11 @@ const proveedores = [
     </div>
 
     {proveedores.map(proveedor => (
-      <section>
+      <section key={proveedor}>
         <h2 class="text-lg font-semibold mb-3">{proveedor}</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
           {servicios.filter(s => s.proveedor === proveedor).map(s => (
-            <TaskCard servicio={s} />
+            <TaskCard key={s.id} servicio={s} />
           ))}
         </div>
       </section>

@@ -1,7 +1,7 @@
 ﻿---
 import Layout from '../layouts/Layout.astro';
 import Giscus from '../components/Giscus.astro';
-const base = '/fibramap-page';
+import { SITE_BASE as base } from '../data/constants';
 
 const providers = [
   {
@@ -146,7 +146,7 @@ const colorMap = {
                   <div>
                     <div class="text-green-400 font-medium mb-1">+ A favor</div>
                     <ul class="text-gray-400 space-y-1">
-                      {p.pros.map(item => <li>{item}</li>)}
+                      {p.pros.map(item => <li key={item}>{item}</li>)}
                     </ul>
                   </div>
                 )}
@@ -154,7 +154,7 @@ const colorMap = {
                   <div>
                     <div class="text-red-400 font-medium mb-1">- En contra</div>
                     <ul class="text-gray-400 space-y-1">
-                      {p.cons.map(item => <li>{item}</li>)}
+                      {p.cons.map(item => <li key={item}>{item}</li>)}
                     </ul>
                   </div>
                 )}

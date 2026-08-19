@@ -12,6 +12,11 @@ export default function ChatBot() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const bottomRef = useRef(null);
+  const messagesRef = useRef([]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     if (messages.length > 0 || loading) {
@@ -25,7 +30,7 @@ export default function ChatBot() {
 
   const send = async () => {
     const msg = input.trim();
-    if (!msg || loading) return;
+    if (!msg || loading || msg.length > 500) return;
     if (!API_KEY) { setError("No hay API key configurada."); return; }
 
     setInput("");
@@ -34,7 +39,7 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      const contents = [...messages.map(m => ({
+      const contents = [...messagesRef.current.map(m => ({
         role: m.role === "user" ? "user" : "model",
         parts: [{ text: m.text }],
       })), { role: "user", parts: [{ text: msg }] }];
@@ -125,23 +130,27 @@ export default function ChatBot() {
       </div>
 
       {error && (
-        <div className="mx-4 mb-2 px-3 py-2 bg-red-900/30 border border-red-800 rounded-lg text-red-400 text-xs">
+        <div role="alert" className="mx-4 mb-2 px-3 py-2 bg-red-900/30 border border-red-800 rounded-lg text-red-400 text-xs">
           {error}
         </div>
       )}
 
       <form onSubmit={e => { e.preventDefault(); send(); }} className="flex gap-2 sm:gap-2.5 p-3 sm:p-4 border-t border-gray-700/50 flex-shrink-0">
+        <label className="sr-only" htmlFor="chat-input">Pregunta al chat</label>
         <input
+          id="chat-input"
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={API_KEY ? "Escribí tu pregunta..." : "API key no configurada"}
           disabled={loading || !API_KEY}
+          maxLength={500}
           className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 rounded-xl bg-gray-700/50 border border-gray-600/50 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 disabled:opacity-50 transition-all"
         />
         <button
           type="submit"
           disabled={loading || !input.trim() || !API_KEY}
+          aria-label="Enviar mensaje"
           className="btn-primary disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none px-4 sm:px-5 shrink-0"
         >
           {loading ? (
