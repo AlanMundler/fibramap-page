@@ -42,59 +42,19 @@ export default function ChatBot() {
         body: JSON.stringify({ messages: apiMessages }),
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error || `HTTP ${res.status}`);
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        throw new Error(data.error || `HTTP ${res.status}`);
       }
 
-      const reader = res.body?.getReader();
-      if (!reader) throw new Error("No stream");
-
-      const decoder = new TextDecoder();
-      let botText = "";
-      let buffer = "";
-
-      setMessages(prev => [...prev, { text: "", role: "bot", time: new Date() }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') continue;
-          if (!jsonStr) continue;
-          try {
-            const data = JSON.parse(jsonStr);
-            if (data.error) throw new Error(data.error);
-            if (data.text) {
-              botText += data.text;
-              const captured = botText;
-              setMessages(prev => {
-                const next = [...prev];
-                const last = next[next.length - 1];
-                if (last && last.role === "bot") {
-                  next[next.length - 1] = { ...last, text: captured };
-                }
-                return next;
-              });
-            }
-          } catch (e) {
-            if (e.message && !e.message.includes('JSON')) throw e;
-          }
-        }
+      if (!data.text) {
+        throw new Error("El modelo no respondió.");
       }
+
+      setMessages(prev => [...prev, { text: data.text, role: "bot", time: new Date() }]);
     } catch (e) {
       setError(e.message || "No se pudo obtener respuesta.");
-      setMessages(prev => {
-        if (prev.length > 0 && prev[prev.length - 1].role === "bot" && prev[prev.length - 1].text === "") {
-          return prev.slice(0, -1);
-        }
-        return prev;
-      });
     }
     setLoading(false);
   };
@@ -127,23 +87,25 @@ export default function ChatBot() {
                 ? "bg-blue-600 text-white rounded-br-md"
                 : "bg-gray-700 text-gray-100 rounded-bl-md"
             }`}>
-              <div className="prose-chat">
-                {msg.text ? <Markdown>{msg.text}</Markdown> : (
-                  <div className="flex gap-1 py-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                  </div>
-                )}
-              </div>
-              {msg.text && (
-                <p className={`text-[10px] mt-1 ${msg.role === "user" ? "text-blue-200" : "text-gray-400"}`}>
-                  {msg.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
-              )}
+              <div className="prose-chat"><Markdown>{msg.text}</Markdown></div>
+              <p className={`text-[10px] mt-1 ${msg.role === "user" ? "text-blue-200" : "text-gray-400"}`}>
+                {msg.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
             </div>
           </div>
         ))}
+
+        {loading && (
+          <div className="flex justify-start">
+            <div className="bg-gray-700 px-4 py-3 rounded-2xl rounded-bl-md">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+              </div>
+            </div>
+          </div>
+        )}
 
         <div ref={bottomRef} />
       </div>
