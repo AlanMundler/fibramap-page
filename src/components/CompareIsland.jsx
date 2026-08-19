@@ -48,7 +48,6 @@ export default function CompareIsland() {
   return (
     <div className="space-y-4">
       <div className="flex gap-2 flex-wrap">
-        <button onClick={() => setFilter('')} className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${!filter ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-gray-700 text-gray-400 hover:border-gray-500'}`}>Todos</button>
         {proveedores.map(p => (
           <button key={p} onClick={() => setFilter(filter === p ? '' : p)} className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${filter === p ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-gray-700 text-gray-400 hover:border-gray-500'}`}>{p}</button>
         ))}
