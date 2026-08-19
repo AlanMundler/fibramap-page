@@ -30,22 +30,31 @@ const NIC_LIMITS = {
 };
 
 function detectNIC() {
-  const c = navigator?.connection;
+  if (typeof navigator === 'undefined') return { type: 'unknown', downlink: null, rtt: null, saveData: false };
+  const c = navigator.connection;
   if (!c) return { type: 'unknown', downlink: null, rtt: null, saveData: false };
 
   const downlink = c.downlink;
   const effectiveType = c.effectiveType;
   const rtt = c.rtt;
   const saveData = c.saveData;
+  const connType = c.type;
 
   let nicKey = 'unknown';
-  if (downlink >= 100) nicKey = 'ethernet_10g';
-  else if (downlink >= 20) nicKey = 'ethernet_2_5g';
-  else if (downlink >= 9) nicKey = 'ethernet_1g';
-  else if (downlink >= 3) nicKey = 'wifi_6';
-  else if (downlink >= 1.5) nicKey = 'wifi_5';
-  else if (downlink >= 0.4) nicKey = 'wifi_4';
-  else if (downlink >= 0.1) nicKey = 'ethernet_100';
+
+  if (connType === 'ethernet') {
+    if (downlink >= 2500) nicKey = 'ethernet_10g';
+    else if (downlink >= 1000) nicKey = 'ethernet_2_5g';
+    else nicKey = 'ethernet_1g';
+  } else if (connType === 'wifi' || connType === undefined || connType === null) {
+    if (downlink >= 800) nicKey = 'wifi_6e_7';
+    else if (downlink >= 400) nicKey = 'wifi_6';
+    else if (downlink >= 100) nicKey = 'wifi_5';
+    else if (downlink >= 30) nicKey = 'wifi_4';
+    else nicKey = 'wifi_4';
+  } else {
+    nicKey = 'unknown';
+  }
 
   return { type: nicKey, downlink, rtt, saveData, effectiveType };
 }
@@ -367,7 +376,7 @@ export default function SpeedTest() {
     return ACTIVITIES.map(a => ({ ...a, ok: d >= a.minDown && u >= a.minUp && l <= a.maxLatency }));
   }, [results]);
 
-  const gaugeMax = nicInfo.maxDown ? Math.min(nicInfo.maxDown * 1.2, 10000) : 1000;
+  const gaugeMax = liveSpeed > 0 ? Math.max(liveSpeed * 1.25, 100) : (nicInfo.maxDown ? Math.max(nicInfo.maxDown * 1.2, 200) : 200);
 
   const run = useCallback(async () => {
     setState('running');
@@ -434,17 +443,28 @@ export default function SpeedTest() {
         if (!engine.results) return;
         try {
           const isUpload = phaseRef === 'upload';
-          const pts = isUpload ? engine.results.getUploadBandwidthPoints?.() : engine.results.getDownloadBandwidthPoints?.();
-          if (pts && pts.length > 0) {
-            const last = pts[pts.length - 1];
-            if (last.bps > 0) {
-              const mbps = bpsToMbps(last.bps);
-              setLiveSpeed(mbps);
-              chartRef.current = [...chartRef.current, { v: mbps, t: isUpload ? 'upload' : 'download' }];
+
+          if (phaseRef === 'download' || phaseRef === 'upload') {
+            const aggBps = isUpload
+              ? engine.results.getUploadBandwidth?.()
+              : engine.results.getDownloadBandwidth?.();
+            const mbps = aggBps ? Math.round(aggBps / 1e6) : 0;
+
+            const pts = isUpload
+              ? engine.results.getUploadBandwidthPoints?.()
+              : engine.results.getDownloadBandwidthPoints?.();
+            const lastBps = pts && pts.length > 0 ? pts[pts.length - 1].bps : 0;
+            const lastMbps = lastBps > 0 ? bpsToMbps(lastBps) : 0;
+
+            const displayMbps = mbps > 0 ? mbps : lastMbps;
+            if (displayMbps > 0) {
+              setLiveSpeed(displayMbps);
+              chartRef.current = [...chartRef.current, { v: displayMbps, t: isUpload ? 'upload' : 'download' }];
               if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
               setChartPoints([...chartRef.current]);
             }
           }
+
           if (phaseRef === 'latency') {
             const latPts = engine.results.getUnloadedLatencyPoints?.();
             if (latPts && latPts.length > 0) {
@@ -453,7 +473,7 @@ export default function SpeedTest() {
             }
           }
         } catch (_) {}
-      }, 200);
+      }, 300);
     } catch {
       setState('error'); setCurrentPhase(null);
     }
