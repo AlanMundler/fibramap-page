@@ -1,0 +1,152 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="FibraMap - Guía de Reclamos ENACOM">
+  <div class="space-y-6 max-w-4xl mx-auto">
+
+    <div class="space-y-2">
+      <h1 class="text-2xl sm:text-3xl font-bold">Guía de Reclamos ENACOM</h1>
+      <p class="text-gray-400 text-lg">
+        Tu derecho como consumidor: cómo presentar reclamos ante el Ente Nacional de Comunicaciones y hacer valer tus derechos.
+      </p>
+    </div>
+
+    <!-- Cuando presentar un reclamo -->
+    <div class="bg-gray-800/80 rounded-xl p-4 sm:p-5 space-y-3">
+      <h2 class="text-lg font-semibold">Cuándo presentar un reclamo</h2>
+      <p class="text-gray-400">Tenés derecho a reclamar cuando:</p>
+      <ul class="text-gray-400 space-y-2 list-disc list-inside">
+        <li>La velocidad contratada no coincide con la que recibís</li>
+        <li>Cortes frecuentes o prolongados sin aviso</li>
+        <li>Cobros indebidos o facturación incorrecta</li>
+        <li>El proveedor no cumple con el plazo de instalación</li>
+        <li>Te cambiaron las condiciones del contrato sin aviso</li>
+        <li>No resuelven tu consulta en los tiempos pactados</li>
+        <li>Cobran penalizaciones o cláusulas abusivas</li>
+      </ul>
+    </div>
+
+    <!-- Pasos para presentar el reclamo -->
+    <div class="bg-gray-800/80 rounded-xl p-4 sm:p-5 space-y-3">
+      <h2 class="text-lg font-semibold">Pasos para presentar el reclamo</h2>
+
+      <div class="space-y-4">
+        <div class="flex gap-3 items-start">
+          <span class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">1</span>
+          <div>
+            <h3 class="font-semibold text-gray-100">Documentá el problema</h3>
+            <p class="text-gray-400">Tomá capturas de pantalla, hacé pruebas de velocidad (speedtest), anotá fechas y horarios de los cortes o fallas. Cuanta más evidencia tengas, más fuerte es tu reclamo.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3 items-start">
+          <span class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">2</span>
+          <div>
+            <h3 class="font-semibold text-gray-100">Contactá al proveedor primero</h3>
+            <p class="text-gray-400">Es requisito obligatorio habilitar al proveedor antes de reclamar ante ENACOM. Llamá, mandá WhatsApp o escribí por la web. Guardá el número de reclamo que te den.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3 items-start">
+          <span class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">3</span>
+          <div>
+            <h3 class="font-semibold text-gray-100">Esperá 10 días hábiles</h3>
+            <p class="text-gray-400">El proveedor tiene 10 días hábiles para darte solución. Si no te responden o la respuesta no es satisfactoría, pasás al siguiente paso.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3 items-start">
+          <span class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">4</span>
+          <div>
+            <h3 class="font-semibold text-gray-100">Presentá el reclamo en ENACOM</h3>
+            <p class="text-gray-400">Entrá al portal de ENACOM y completá el formulario online: <a href="https://www.enacom.gob.ar/" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline">enacom.gob.ar</a>. Necesitás el número de reclamo anterior y toda la documentación.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-3 items-start">
+          <span class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">5</span>
+          <div>
+            <h3 class="font-semibold text-gray-100">Esperá la resolución</h3>
+            <p class="text-gray-400">El plazo típico es de 10 a 20 días hábiles. ENACOM notifica tanto a vos como al proveedor. Si no estás conforme, podés apelar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Templates WhatsApp -->
+    <div class="bg-gray-800/80 rounded-xl p-4 sm:p-5 space-y-3">
+      <h2 class="text-lg font-semibold">Templates para WhatsApp</h2>
+      <p class="text-gray-400">Copiá y enviá estos mensajes a tu proveedor:</p>
+
+      <div class="bg-gray-900/60 rounded-lg p-3 space-y-2">
+        <p class="text-sm font-semibold text-gray-300">Reclamo por velocidad:</p>
+        <p class="text-gray-400 text-sm leading-relaxed">
+          Hola, soy [tu nombre], cliente con número de cuenta [número]. Realicé pruebas de velocidad y no estoy recibiendo los [X] Mbps contratados. Solicito solución a esta situación. Adjunto capturas de las pruebas realizadas. Quiero número de reclamo para mi seguimiento.
+        </p>
+      </div>
+
+      <div class="bg-gray-900/60 rounded-lg p-3 space-y-2">
+        <p class="text-sm font-semibold text-gray-300">Reclamo por corte de servicio:</p>
+        <p class="text-gray-400 text-sm leading-relaxed">
+          Hola, soy [tu nombre], cliente con número de cuenta [número]. Mi servicio lleva cortado desde el [fecha/hora] y no he recibido comunicación sobre el problema. Solicito restablecimiento del servicio y una explicación del motivo del corte. Quiero número de reclamo.
+        </p>
+      </div>
+
+      <div class="bg-gray-900/60 rounded-lg p-3 space-y-2">
+        <p class="text-sm font-semibold text-gray-300">Reclamo por cobro indebido:</p>
+        <p class="text-gray-400 text-sm leading-relaxed">
+          Hola, soy [tu nombre], cliente con número de cuenta [número]. En mi factura del mes [mes] aparece un cobro de $[monto] que no corresponde al plan contratado. Solicito aclaración y ajuste de la factura. Quiero número de reclamo para mi seguimiento.
+        </p>
+      </div>
+    </div>
+
+    <!-- Qué puede hacer ENACOM -->
+    <div class="bg-gray-800/80 rounded-xl p-4 sm:p-5 space-y-3">
+      <h2 class="text-lg font-semibold">Qué puede hacer ENACOM</h2>
+      <ul class="text-gray-400 space-y-2 list-disc list-inside">
+        <li>Suspender servicios al proveedor que no cumpla</li>
+        <li>Ordenar reparaciones urgentes</li>
+        <li>Disponer la devolución de montos cobrados indebidamente</li>
+        <li>Aplicar multas a los proveedores</li>
+        <li>Obligar al cumplimiento de los contratos</li>
+        <li>Mediar entre el usuario y el proveedor</li>
+      </ul>
+    </div>
+
+    <!-- Dato importante -->
+    <div class="bg-blue-900/30 border border-blue-700/30 rounded-xl p-4 sm:p-5 text-center">
+      <p class="text-2xl sm:text-3xl font-bold text-blue-400">78%</p>
+      <p class="text-gray-300 mt-1">de las quejas ante ENACOM se resolvieron a favor del usuario en 2025</p>
+    </div>
+
+    <!-- Preguntas frecuentes -->
+    <div class="bg-gray-800/80 rounded-xl p-4 sm:p-5 space-y-4">
+      <h2 class="text-lg font-semibold">Preguntas frecuentes</h2>
+
+      <div class="space-y-3">
+        <div>
+          <h3 class="font-semibold text-gray-200">¿Cuánto cuesta reclamar?</h3>
+          <p class="text-gray-400">Nada. El trámite ante ENACOM es completamente gratuito.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-200">¿Necesito abogado?</h3>
+          <p class="text-gray-400">No. El proceso está diseñado para que el usuario pueda hacerlo solo. Pero si querés, podés consultar con un abogado.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-200">¿Puedo reclamar si soy de otra provincia?</h3>
+          <p class="text-gray-400">Sí. ENACOM es un ente nacional, recibís reclamos de todo el país.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-200">¿Qué pasa si el proveedor no cumple la resolución?</h3>
+          <p class="text-gray-400">ENACOM puede aplicar multas y sanciones. En casos graves, puede solicitar la intervención judicial.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-200">¿Puedo reclamar por un servicio de Cablevisión/Fibertel?</h3>
+          <p class="text-gray-400">Sí, siempre que el servicio de internet esté incluido en tu plan. ENACOM regula todos los proveedores de telecomunicaciones.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</Layout>

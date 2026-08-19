@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import CostCalculator from '../components/CostCalculator.jsx';
+---
+
+<Layout title="FibraMap - Calculadora de Costo Real">
+  <div class="space-y-6 max-w-4xl mx-auto">
+    <div class="space-y-2 mb-6">
+      <h1 class="text-2xl sm:text-3xl font-bold">Calculadora de Costo Real</h1>
+      <p class="text-gray-400 max-w-2xl">
+        Descubrí cuánto realmente vas a pagar en 12 meses. Los precios de promoción suben después de unos meses, y la inflación argentina los hace subir aún más. Ajustá la tasa de inflación y compará el costo real lado a lado.
+      </p>
+    </div>
+    <CostCalculator client:load />
+  </div>
+</Layout>

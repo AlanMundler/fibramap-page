@@ -1,0 +1,68 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const posts = [
+  {
+    title: 'Claro sube precios en agosto 2026',
+    date: '15 ago 2026',
+    provider: 'Claro',
+    excerpt: 'Claro ajustó los precios de sus planes de fibra óptica a partir del 1 de agosto. Los aumentos van del 8% al 15% dependiendo del plan. Te contamos cuánto sube cada uno y qué alternativas tenés.',
+  },
+  {
+    title: 'IPLAN expande fibra a Villa Allende',
+    date: '08 ago 2026',
+    provider: 'IPLAN',
+    excerpt: 'IPLAN completó la expansión de su red de fibra óptica a nuevos barrios de Villa Allende. Ya están habilitadas las conexiones en Loma Ruiz, La Perla y alrededores del centro.',
+  },
+  {
+    title: 'Nuevo proveedor llega a zona norte',
+    date: '01 ago 2026',
+    provider: 'Otros',
+    excerpt: 'Se confirmó la llegada de un nuevo operador de fibra a la zona norte de Córdoba capital. Ofrecerá planes desde $8.000 con velocidades de 300/300 Mbps. Detalles del lanzamiento.',
+  },
+  {
+    title: 'Comparativa: qué plan conviene según tu barrio',
+    date: '25 jul 2026',
+    provider: 'Guía',
+    excerpt: 'Armamos una comparativa de los mejores planes disponibles por zona de Córdoba. Núcleo, sur, norte y Villa María tienen opciones diferentes. Encontrá cuál te conviene.',
+  },
+  {
+    title: 'ENACOM incrementa resolución de quejas',
+    date: '18 jul 2026',
+    provider: 'ENACOM',
+    excerpt: 'El organismo regulador informó que aumentó un 40% la resolución de quejas contra proveedores de internet. Los reclamos más frecuentes son por cortes y velocidades por debajo de lo contratado.',
+  },
+];
+
+const providerColors: Record<string, string> = {
+  Claro: 'bg-red-500/20 text-red-300',
+  IPLAN: 'bg-blue-500/20 text-blue-300',
+  Otros: 'bg-purple-500/20 text-purple-300',
+  Guía: 'bg-green-500/20 text-green-300',
+  ENACOM: 'bg-yellow-500/20 text-yellow-300',
+};
+---
+
+<Layout title="FibraMap - Noticias">
+  <div class="max-w-4xl mx-auto space-y-8">
+    <div class="space-y-2">
+      <h1 class="text-2xl sm:text-3xl font-bold">Noticias</h1>
+      <p class="text-gray-400">Novedades del mercado de fibra óptica en Córdoba.</p>
+    </div>
+
+    <div class="grid gap-4">
+      {posts.map((post) => (
+        <article class="bg-gray-800/80 border border-gray-700/50 rounded-xl p-4 sm:p-5 space-y-3">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class={`text-xs font-medium px-2.5 py-0.5 rounded-full ${providerColors[post.provider] ?? 'bg-gray-500/20 text-gray-300'}`}>
+              {post.provider}
+            </span>
+            <span class="text-sm text-gray-500">{post.date}</span>
+          </div>
+          <h2 class="text-lg sm:text-xl font-semibold text-gray-100">{post.title}</h2>
+          <p class="text-gray-400 text-sm leading-relaxed">{post.excerpt}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</Layout>

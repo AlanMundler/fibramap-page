@@ -4,6 +4,16 @@ import { SITE_BASE as base } from '../data/constants';
 
 const CENTER = [-31.405, -64.175];
 
+const SPEED_TIERS = {
+  'Claro': 'Hasta 800 Mbps simétrico',
+  'Personal Fibra': 'Hasta 600 Mbps',
+  'IPLAN': 'Hasta 1.000 Mbps simétrico',
+  'Telecentro': 'Sin cobertura en Cba',
+  'Internet Córdoba': 'Hasta 300 Mbps',
+  'Batcom': 'Hasta 500 Mbps',
+  'Guabi': 'Hasta 600 Mbps',
+};
+
 const barrios = [
   // ── Claro (verificados: distribuidor oficial + phontel) ──────
   { name: 'Centro', pos: [-31.4182, -64.1871], providers: ['Claro', 'Personal Fibra', 'IPLAN', 'Telecentro'] },
@@ -171,21 +181,27 @@ export default function MapIsland() {
           {activePopup !== null && (
             <Overlay anchor={filtered[activePopup].pos} offset={[6, 6]}>
               <div
-                className="bg-white rounded-lg shadow-xl p-3 text-sm min-w-[160px] border border-gray-200 cursor-pointer z-10"
+                className="bg-gray-800 rounded-lg shadow-xl p-3 text-sm min-w-[200px] max-w-[260px] border border-gray-700 cursor-pointer z-10"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="font-bold text-gray-900 mb-1.5">{filtered[activePopup].name}</div>
-                <div className="space-y-0.5">
+                <div className="font-bold text-white mb-2 text-[13px]">{filtered[activePopup].name}</div>
+                <div className="space-y-1.5">
                   {filtered[activePopup].providers.map(p => (
                     <a
                       key={p}
                       href={`${base}/provider`}
-                      style={{ color: colorMap[p] }}
-                      className="block text-xs font-medium hover:underline"
+                      className="flex items-center gap-2 text-xs font-medium hover:opacity-80 transition-opacity group"
                     >
-                      {p}
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: colorMap[p] }} />
+                      <span className="text-gray-300 group-hover:text-white transition-colors">{p}</span>
+                      <span className="ml-auto text-[10px] text-gray-500">{SPEED_TIERS[p] || ''}</span>
                     </a>
                   ))}
+                </div>
+                <div className="mt-2 pt-2 border-t border-gray-700">
+                  <a href={`${base}/provider`} className="text-[10px] text-blue-400 hover:text-blue-300 transition-colors">
+                    Ver planes y precios →
+                  </a>
                 </div>
               </div>
             </Overlay>
@@ -197,6 +213,15 @@ export default function MapIsland() {
         Barrios con cobertura confirmada de fibra óptica en Córdoba Capital (18/08/2026).
         La disponibilidad real depende de calle, altura y factibilidad técnica.
       </p>
+
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] text-gray-500">
+        {providers.map(p => (
+          <span key={p.name} className="inline-flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+            {p.name}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
