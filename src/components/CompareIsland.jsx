@@ -43,10 +43,10 @@ export default function CompareIsland() {
   const selected = sel.map(id => servicios.find(s => s.id === id)).filter(Boolean);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex gap-2 flex-wrap">
         {proveedores.map(p => (
-          <button key={p} onClick={() => setFilter(filter === p ? '' : p)} className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${filter === p ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-gray-700 text-gray-400 hover:border-gray-500'}`}>{p}</button>
+          <button key={p} onClick={() => setFilter(filter === p ? '' : p)} className={filter === p ? 'btn-pill-active' : 'btn-pill'}>{p}</button>
         ))}
       </div>
 
@@ -54,33 +54,33 @@ export default function CompareIsland() {
         <p className="text-gray-500 text-sm text-center py-8">Elegí un proveedor para ver los planes</p>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
         {filtered.map(s => {
           const active = sel.includes(s.id);
           return (
-            <button key={s.id} onClick={() => toggle(s.id)} className={`text-left p-2.5 rounded-lg border text-xs transition-all ${active ? 'border-blue-500 bg-blue-500/10 ring-1 ring-blue-500' : 'border-gray-700 bg-gray-800 hover:border-gray-500'}`}>
-              <div className="flex items-center justify-between mb-0.5">
+            <button key={s.id} onClick={() => toggle(s.id)} className={active ? 'card-interactive-active text-left p-3' : 'card-interactive text-left p-3'}>
+              <div className="flex items-center justify-between mb-1">
                 <span className="font-medium text-[11px] text-gray-400">{s.proveedor}</span>
-                {s.simetrico && <span className="text-[9px] px-1 py-0.5 rounded bg-green-600/20 text-green-400">SIM</span>}
+                {s.simetrico && <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-medium border border-emerald-500/20">SIM</span>}
               </div>
-              <div className="font-semibold text-sm">{s.plan}</div>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="font-bold text-sm">{s.precioDesc ? fmt(s.precioDesc) : 'Consultar'}</span>
+              <div className="font-semibold text-sm text-white">{s.plan}</div>
+              <div className="flex items-baseline gap-1.5 mt-1">
+                <span className="font-bold text-sm text-white">{s.precioDesc ? fmt(s.precioDesc) : 'Consultar'}</span>
                 {s.precioLista > 0 && <span className="line-through text-gray-500 text-[10px]">{fmt(s.precioLista)}</span>}
               </div>
-              <div className="text-gray-500 text-[10px]">{s.download}↓ / {s.upload}↑</div>
+              <div className="text-gray-500 text-[10px] mt-0.5">{s.download}↓ / {s.upload}↑</div>
             </button>
           );
         })}
       </div>
 
       {sel.length >= 2 && (
-        <div className="overflow-x-auto border-t border-gray-700 pt-4">
+        <div className="overflow-x-auto border-t border-gray-700/50 pt-5">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-gray-700">
-                <th className="text-left py-2 px-2 text-gray-400"></th>
-                {selected.map(s => <th key={s.id} className="text-left py-2 px-2 font-semibold">{s.proveedor} — {s.plan}</th>)}
+              <tr className="border-b border-gray-700/50">
+                <th className="text-left py-2.5 px-2 text-gray-400"></th>
+                {selected.map(s => <th key={s.id} className="text-left py-2.5 px-2 font-semibold text-white">{s.proveedor} — {s.plan}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -94,14 +94,14 @@ export default function CompareIsland() {
                 ['Descuento', s => s.descuento],
                 ['Cobertura', s => s.cobertura],
               ].map(([label, fn]) => (
-                <tr key={label} className="border-b border-gray-800">
-                  <td className="py-1.5 px-2 text-gray-400">{label}</td>
-                  {selected.map(s => <td key={s.id} className="py-1.5 px-2">{fn(s)}</td>)}
+                <tr key={label} className="border-b border-gray-800/50">
+                  <td className="py-2 px-2 text-gray-400">{label}</td>
+                  {selected.map(s => <td key={s.id} className="py-2 px-2 text-gray-200">{fn(s)}</td>)}
                 </tr>
               ))}
-              <tr className="border-b border-gray-800 bg-gray-800/50">
-                <td className="py-1.5 px-2 text-gray-400 font-medium">Precio/100 Mbps</td>
-                {selected.map(s => <td key={s.id} className="py-1.5 px-2 font-bold">{precio100(s) ? `$${precio100(s)}` : '—'}</td>)}
+              <tr className="border-b border-gray-800/50 bg-gray-800/30">
+                <td className="py-2 px-2 text-gray-400 font-medium">Precio/100 Mbps</td>
+                {selected.map(s => <td key={s.id} className="py-2 px-2 font-bold text-white">{precio100(s) ? `$${precio100(s)}` : '—'}</td>)}
               </tr>
             </tbody>
           </table>
@@ -109,7 +109,7 @@ export default function CompareIsland() {
       )}
 
       {sel.length >= 2 && (
-        <button onClick={() => setSel([])} className="text-xs text-gray-500 hover:text-white transition-colors">Limpiar selección</button>
+        <button onClick={() => setSel([])} className="btn-pill text-gray-500 hover:text-white">Limpiar selección</button>
       )}
     </div>
   );

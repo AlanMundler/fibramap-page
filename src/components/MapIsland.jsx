@@ -120,9 +120,7 @@ export default function MapIsland() {
       <div className="flex flex-wrap gap-2">
         <button
           onClick={() => { setActiveFilter(null); setActivePopup(null); }}
-          className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-            !activeFilter ? 'bg-gray-200 text-gray-800' : 'bg-gray-100 text-gray-500 border border-gray-300'
-          }`}
+          className={!activeFilter ? 'btn-pill-active' : 'btn-pill'}
         >
           Todos ({barrios.length})
         </button>
@@ -130,11 +128,12 @@ export default function MapIsland() {
           <button
             key={p.name}
             onClick={() => setActiveFilter(activeFilter === p.name ? null : p.name)}
-            className="px-3 py-1.5 text-xs font-medium rounded-full transition-colors"
+            className="btn-pill"
             style={{
-              backgroundColor: activeFilter === p.name ? p.color : undefined,
-              color: activeFilter === p.name ? '#fff' : p.color,
-              border: `1px solid ${p.color}`,
+              backgroundColor: activeFilter === p.name ? p.color + '20' : undefined,
+              color: activeFilter === p.name ? p.color : undefined,
+              borderColor: activeFilter === p.name ? p.color + '80' : undefined,
+              boxShadow: activeFilter === p.name ? `0 4px 14px ${p.color}30` : undefined,
             }}
           >
             {p.name} ({providerCounts[p.name] || 0})

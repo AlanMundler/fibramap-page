@@ -6,3 +6,55 @@ html { scroll-behavior: smooth; }
 a { color: inherit; text-decoration: none; }
 *, *::before, *::after { box-sizing: border-box; }
 img { max-width: 100%; height: auto; }
+
+@layer components {
+  .btn-primary {
+    @apply px-5 py-2.5 rounded-xl font-medium text-sm text-white
+           bg-gradient-to-r from-blue-600 to-blue-500
+           shadow-lg shadow-blue-500/20
+           hover:from-blue-500 hover:to-blue-400
+           hover:shadow-xl hover:shadow-blue-500/30
+           active:scale-[0.98]
+           transition-all duration-200;
+  }
+
+  .btn-pill {
+    @apply px-4 py-2 rounded-full text-xs font-medium
+           border border-gray-600 bg-gray-800/50
+           text-gray-300
+           hover:bg-gray-700 hover:border-gray-500 hover:text-white
+           hover:shadow-lg hover:shadow-gray-900/30
+           active:scale-[0.97]
+           transition-all duration-200;
+  }
+
+  .btn-pill-active {
+    @apply px-4 py-2 rounded-full text-xs font-medium
+           border border-blue-500/50 bg-blue-500/15
+           text-blue-400
+           hover:bg-blue-500/25 hover:border-blue-400
+           hover:shadow-lg hover:shadow-blue-500/20
+           active:scale-[0.97]
+           transition-all duration-200;
+  }
+
+  .card-interactive {
+    @apply rounded-xl border border-gray-700/50 bg-gray-800/80
+           backdrop-blur-sm
+           hover:border-gray-600 hover:bg-gray-800
+           hover:shadow-xl hover:shadow-gray-900/40
+           hover:-translate-y-0.5
+           active:scale-[0.99]
+           transition-all duration-200;
+  }
+
+  .card-interactive-active {
+    @apply rounded-xl border border-blue-500/50 bg-blue-500/10
+           ring-1 ring-blue-500/30
+           backdrop-blur-sm
+           hover:border-blue-400 hover:bg-blue-500/15
+           hover:shadow-xl hover:shadow-blue-500/20
+           active:scale-[0.99]
+           transition-all duration-200;
+  }
+}

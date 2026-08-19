@@ -70,20 +70,20 @@ export default function ChatBot() {
   };
 
   return (
-    <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-      <div className="px-4 py-3 border-b border-gray-700 flex items-center gap-2">
-        <div className={`w-2 h-2 rounded-full ${API_KEY ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-        <h2 className="font-semibold text-sm">Chat IA — Gemini {MODEL}</h2>
+    <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30">
+      <div className="px-5 py-3.5 border-b border-gray-700/50 flex items-center gap-2.5">
+        <div className={`w-2.5 h-2.5 rounded-full ${API_KEY ? 'bg-emerald-400 animate-pulse shadow-lg shadow-emerald-500/50' : 'bg-red-500'}`} />
+        <h2 className="font-semibold text-sm text-white">Chat IA — Gemini {MODEL}</h2>
         {!API_KEY && <span className="text-xs text-red-400 ml-auto">Sin API key</span>}
       </div>
 
-      <div className="h-80 sm:h-96 overflow-y-auto px-4 py-3 space-y-3 scroll-smooth">
+      <div className="h-80 sm:h-96 overflow-y-auto px-5 py-4 space-y-3 scroll-smooth">
         {messages.length === 0 && !loading && (
           <div className="text-center mt-12 space-y-2">
             <p className="text-sm text-gray-400">Preguntá sobre fibra óptica en Córdoba</p>
-            <div className="flex flex-wrap justify-center gap-2 mt-3">
+            <div className="flex flex-wrap justify-center gap-2 mt-4">
               {["¿Qué proveedor me conviene?", "¿Claro tiene fibra en Nueva Córdoba?", "Compará Iplan y Movistar"].map(q => (
-                <button key={q} onClick={() => setInput(q)} className="text-xs px-3 py-1.5 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors text-gray-300">
+                <button key={q} onClick={() => setInput(q)} className="btn-pill">
                   {q}
                 </button>
               ))}
@@ -127,20 +127,20 @@ export default function ChatBot() {
         </div>
       )}
 
-      <form onSubmit={e => { e.preventDefault(); send(); }} className="flex gap-2 p-3 border-t border-gray-700">
+      <form onSubmit={e => { e.preventDefault(); send(); }} className="flex gap-2.5 p-4 border-t border-gray-700/50">
         <input
           type="text"
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={API_KEY ? "Escribí tu pregunta..." : "API key no configurada"}
           disabled={loading || !API_KEY}
-          className="flex-1 px-4 py-2.5 rounded-xl bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all"
+          className="flex-1 px-4 py-2.5 rounded-xl bg-gray-700/50 border border-gray-600/50 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 disabled:opacity-50 transition-all"
           autoFocus
         />
         <button
           type="submit"
           disabled={loading || !input.trim() || !API_KEY}
-          className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          className="btn-primary disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none"
         >
           {loading ? (
             <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>

@@ -75,19 +75,19 @@ export default function SpeedTest() {
   }, []);
 
   return (
-    <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+    <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30">
       {results && state === "done" && (
         <div className="px-6 pt-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             {[
-              { label: "Descarga", value: results.download, unit: "Mbps", icon: "↓", color: "text-blue-500" },
-              { label: "Subida", value: results.upload, unit: "Mbps", icon: "↑", color: "text-green-500" },
-              { label: "Latencia", value: results.latency, unit: "ms", icon: "↔", color: "text-amber-500" },
-              { label: "Jitter", value: results.jitter, unit: "ms", icon: "∿", color: "text-purple-500" },
+              { label: "Descarga", value: results.download, unit: "Mbps", icon: "↓", color: "text-blue-400" },
+              { label: "Subida", value: results.upload, unit: "Mbps", icon: "↑", color: "text-emerald-400" },
+              { label: "Latencia", value: results.latency, unit: "ms", icon: "↔", color: "text-amber-400" },
+              { label: "Jitter", value: results.jitter, unit: "ms", icon: "∿", color: "text-purple-400" },
             ].map(({ label, value, unit, icon, color }) => (
-              <div key={label} className="p-3 rounded-lg bg-gray-700/50">
+              <div key={label} className="p-3.5 rounded-xl bg-gray-700/30 border border-gray-600/30">
                 <span className={`text-lg ${color}`}>{icon}</span>
-                <p className="text-2xl font-bold mt-1">{value ?? "--"}</p>
+                <p className="text-2xl font-bold mt-1 text-white">{value ?? "--"}</p>
                 <p className="text-[11px] text-gray-400">{label} ({unit})</p>
               </div>
             ))}
@@ -105,12 +105,12 @@ export default function SpeedTest() {
       {state === "running" && (
         <div className="px-6 pt-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">{progress.phase}</span>
+            <span className="text-sm font-medium text-white">{progress.phase}</span>
             <span className="text-xs text-gray-500">{progress.pct}%</span>
           </div>
-          <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500 ease-out"
+              className="h-full bg-gradient-to-r from-blue-500 via-blue-400 to-cyan-400 rounded-full transition-all duration-500 ease-out shadow-lg shadow-blue-500/30"
               style={{ width: `${progress.pct}%` }}
             />
           </div>
@@ -120,7 +120,7 @@ export default function SpeedTest() {
 
       {state === "error" && (
         <div className="px-6 pt-6">
-          <p className="text-sm text-red-500 text-center">{progress.phase}</p>
+          <p className="text-sm text-red-400 text-center">{progress.phase}</p>
         </div>
       )}
 
@@ -136,14 +136,14 @@ export default function SpeedTest() {
         {state === "running" ? (
           <button
             onClick={stop}
-            className="w-full py-3 bg-gray-700 text-gray-300 text-sm font-medium rounded-xl hover:bg-gray-600 transition-colors"
+            className="w-full py-3 rounded-xl text-sm font-medium border border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600 hover:border-gray-500 hover:text-white active:scale-[0.98] transition-all duration-200"
           >
             Cancelar
           </button>
         ) : (
           <button
             onClick={run}
-            className="w-full py-3 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors"
+            className="w-full btn-primary"
           >
             {state === "done" ? "Medir de nuevo" : "Iniciar test de velocidad"}
           </button>
