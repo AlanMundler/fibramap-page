@@ -20,11 +20,8 @@ function formatRelativeDate(dateStr) {
 function sourceFromLink(link) {
   try {
     const host = new URL(link).hostname.replace('www.', '');
-    if (host.includes('iprofesional')) return { name: 'iProfesional', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' };
-    if (host.includes('infotechnology')) return { name: 'Infotechnology', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' };
-    if (host.includes('techcrunch')) return { name: 'TechCrunch', color: 'bg-green-500/20 text-green-300 border-green-500/30' };
-    if (host.includes('wired')) return { name: 'WIRED', color: 'bg-red-500/20 text-red-300 border-red-500/30' };
-    if (host.includes('engadget')) return { name: 'Engadget', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' };
+    if (host.includes('xataka')) return { name: 'Xataka', color: 'bg-green-500/20 text-green-300 border-green-500/30' };
+    if (host.includes('infotechnology') || host.includes('feedburner')) return { name: 'Infotechnology', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' };
     return { name: host, color: 'bg-gray-500/20 text-gray-300 border-gray-500/30' };
   } catch { return { name: 'Noticia', color: 'bg-gray-500/20 text-gray-300 border-gray-500/30' }; }
 }

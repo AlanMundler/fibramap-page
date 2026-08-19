@@ -8,12 +8,20 @@ const CORS = {
 };
 
 const RSS_FEEDS = [
-  'https://www.iprofesional.com/rss/tecnologia.xml',
-  'https://www.infotechnology.com/feed',
-  'https://techcrunch.com/feed/',
-  'https://www.wired.com/feed/rss',
-  'https://www.engadget.com/rss.xml',
+  'https://feeds.feedburner.com/xataka/feed',
 ];
+
+function decodeEntities(str) {
+  return str
+    .replace(/&#160;/g, ' ').replace(/&#xA0;/g, ' ').replace(/&nbsp;/g, ' ')
+    .replace(/&#8216;/g, "'").replace(/&#8217;/g, "'").replace(/&#8218;/g, ",")
+    .replace(/&#8220;/g, '"').replace(/&#8221;/g, '"').replace(/&#8211;/g, "–").replace(/&#8212;/g, "—")
+    .replace(/&#039;/g, "'").replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#x27;/g, "'")
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
 
 function parseRSSItems(xml) {
   const items = [];
@@ -26,16 +34,12 @@ function parseRSSItems(xml) {
     const dateMatch = block.match(/<pubDate>(.*?)<\/pubDate>/);
     const descMatch = block.match(/<description>(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?<\/description>/s);
     if (!titleMatch || !linkMatch) continue;
-    let title = titleMatch[1].trim().replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#039;/g, "'");
+    let title = decodeEntities(titleMatch[1].trim());
     let link = linkMatch[1].trim();
     if (link.includes('<')) link = link.split('<')[0].trim();
     let snippet = '';
     if (descMatch) {
-      snippet = descMatch[1]
-        .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&')
-        .replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&#039;/g, "'")
-        .replace(/<[^>]+>/g, '').replace(/\s+/g, ' ')
-        .trim().slice(0, 200);
+      snippet = decodeEntities(descMatch[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()).slice(0, 200);
     }
     items.push({ title, link, pubDate: dateMatch?.[1] || '', snippet });
   }
@@ -52,7 +56,7 @@ async function handleRSS() {
   }
   all.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
   return new Response(JSON.stringify(all.slice(0, 30)), {
-    headers: { 'Content-Type': 'application/json', ...CORS },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS },
   });
 }
 
