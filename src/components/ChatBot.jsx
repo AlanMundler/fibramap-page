@@ -71,7 +71,7 @@ export default function ChatBot() {
           <div className="text-center h-full flex flex-col items-center justify-center space-y-2">
             <p className="text-sm text-gray-400">Preguntá sobre fibra óptica en Córdoba</p>
             <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mt-3 sm:mt-4">
-              {["¿Qué proveedor me conviene?", "¿Claro tiene fibra en Nueva Córdoba?", "Compará Iplan y Movistar"].map(q => (
+              {["¿Cuál es el plan más barato de 300 megas?", "Compará Claro y Guabi para home office", "¿Qué proveedor tiene subida simétrica?", "¿Cuánto cuesta instalar Batcom?", "¿Qué me conviene para gaming?"].map(q => (
                 <button key={q} onClick={() => setInput(q)} className="btn-pill text-[11px] sm:text-xs">
                   {q}
                 </button>
