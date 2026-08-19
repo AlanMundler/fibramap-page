@@ -64,15 +64,17 @@ const currentPath = Astro.url.pathname.replace(base, '') || '/';
 </nav>
 
 <script is:inline>
-  const toggle = document.getElementById('menu-toggle');
-  const menu = document.getElementById('mobile-menu');
-  const iconOpen = document.getElementById('menu-icon-open');
-  const iconClose = document.getElementById('menu-icon-close');
-
-  toggle?.addEventListener('click', () => {
-    const open = menu.classList.toggle('hidden') === false;
-    iconOpen.classList.toggle('hidden', open);
-    iconClose.classList.toggle('hidden', !open);
+  document.addEventListener('click', (e) => {
+    const toggle = e.target.closest('#menu-toggle');
+    if (!toggle) return;
+    const menu = document.getElementById('mobile-menu');
+    const iconOpen = document.getElementById('menu-icon-open');
+    const iconClose = document.getElementById('menu-icon-close');
+    if (!menu) return;
+    const isOpen = !menu.classList.contains('hidden');
+    menu.classList.toggle('hidden');
+    iconOpen?.classList.toggle('hidden', !isOpen);
+    iconClose?.classList.toggle('hidden', isOpen);
   });
 
   document.addEventListener('astro:after-swap', () => {
