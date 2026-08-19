@@ -33,7 +33,7 @@ export default function BarrioSearch() {
   }, [selected]);
 
   return (
-    <div className="space-y-4 my-4">
+    <div className="relative z-10 space-y-4 my-4">
       <div className="relative">
         <label htmlFor="barrio-search" className="sr-only">Buscar barrio</label>
         <div className="relative">
@@ -51,7 +51,7 @@ export default function BarrioSearch() {
         </div>
 
         {matches.length > 0 && !selected && (
-          <div className="absolute left-0 right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-xl shadow-xl shadow-gray-900/50 py-1.5 z-50 max-h-60 overflow-y-auto">
+          <div className="absolute left-0 right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-xl shadow-xl shadow-gray-900/50 py-1.5 z-[9999] max-h-60 overflow-y-auto">
             {matches.map(b => (
               <button
                 key={b}
