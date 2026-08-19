@@ -23,12 +23,13 @@ const currentPath = Astro.url.pathname.replace(base, '') || '/';
         <a
           href={base + link.href}
           class:list={[
-            "px-3 py-1.5 text-sm rounded-lg transition-all duration-200",
+            "relative px-3 py-1.5 text-sm rounded-lg transition-all duration-200",
             currentPath === link.href
-              ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium shadow-md shadow-blue-500/20"
+              ? "text-white font-medium"
               : "text-gray-400 hover:text-white hover:bg-gray-700/50",
           ]}
         >
+          {currentPath === link.href && <span class="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 shadow-md shadow-blue-500/20 -z-10" />}
           {link.label}
         </a>
       ))}
