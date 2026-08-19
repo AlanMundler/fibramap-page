@@ -17,21 +17,14 @@ function Gauge({ value, max, phase, color }) {
   return (
     <div className="relative flex items-center justify-center">
       <svg height={radius * 2} width={radius * 2} className="-rotate-90">
-        <circle
-          stroke="rgba(255,255,255,0.06)"
-          fill="transparent"
-          strokeWidth={stroke}
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-        />
+        <circle stroke="rgba(255,255,255,0.06)" fill="transparent" strokeWidth={stroke} r={normalizedRadius} cx={radius} cy={radius} />
         <circle
           stroke={color}
           fill="transparent"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={`${circumference} ${circumference}`}
-          style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.3s ease-out' }}
+          style={{ strokeDashoffset, transition: 'stroke-dashoffset 0.25s ease-out' }}
           r={normalizedRadius}
           cx={radius}
           cy={radius}
@@ -74,20 +67,23 @@ function StepIndicator({ currentPhase }) {
   );
 }
 
+function bpsToMbps(bps) {
+  if (!bps || bps <= 0) return 0;
+  return Math.round(bps / 1e6);
+}
+
 export default function SpeedTest() {
   const [state, setState] = useState("idle");
   const [currentPhase, setCurrentPhase] = useState(null);
   const [liveSpeed, setLiveSpeed] = useState(0);
   const [results, setResults] = useState(null);
   const engineRef = useRef(null);
-  const liveSpeedRef = useRef(0);
 
   const run = useCallback(async () => {
     setState("running");
     setResults(null);
     setCurrentPhase("latency");
     setLiveSpeed(0);
-    liveSpeedRef.current = 0;
 
     try {
       const { default: SpeedTest } = await import("@cloudflare/speedtest");
@@ -109,24 +105,27 @@ export default function SpeedTest() {
         ],
       });
 
-      let lastPhase = null;
+      let phaseRef = 'latency';
 
-      engine.onRunningChange = (running) => {
-        if (!running) return;
-        const t = engine.transaction;
-        const phase = t?.type || 'download';
-        if (phase !== lastPhase) {
-          lastPhase = phase;
-          setCurrentPhase(phase);
-          liveSpeedRef.current = 0;
+      engine.onResultsChange = ({ type }) => {
+        if (type === 'latency' && phaseRef === 'latency') {
+          phaseRef = 'download';
+          setCurrentPhase('download');
           setLiveSpeed(0);
-        }
-        if (phase === 'download' || phase === 'upload') {
-          const speed = t?.progress ? (t.progress * (phase === 'download' ? t.bytes : t.bytes) / 1e6) : 0;
-          if (speed > 0 && speed < 10000) {
-            liveSpeedRef.current = Math.round(speed);
-            setLiveSpeed(Math.round(speed));
+        } else if (type === 'download') {
+          if (phaseRef !== 'download') {
+            phaseRef = 'download';
+            setCurrentPhase('download');
           }
+          const bps = engine.results?.getDownloadBandwidth?.();
+          if (bps) setLiveSpeed(bpsToMbps(bps));
+        } else if (type === 'upload') {
+          if (phaseRef !== 'upload') {
+            phaseRef = 'upload';
+            setCurrentPhase('upload');
+          }
+          const bps = engine.results?.getUploadBandwidth?.();
+          if (bps) setLiveSpeed(bpsToMbps(bps));
         }
       };
 
@@ -163,8 +162,8 @@ export default function SpeedTest() {
     setLiveSpeed(0);
   }, []);
 
-  const gaugeMax = currentPhase === 'upload' ? 1000 : 1000;
   const gaugeColor = currentPhase === 'upload' ? '#10b981' : currentPhase === 'latency' ? '#f59e0b' : '#3b82f6';
+  const phaseLabel = PHASES.find(p => p.key === currentPhase)?.label || '';
 
   return (
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30">
@@ -172,7 +171,7 @@ export default function SpeedTest() {
         {state === "running" && (
           <div className="space-y-5">
             <StepIndicator currentPhase={currentPhase} />
-            <Gauge value={liveSpeed} max={gaugeMax} phase={PHASES.find(p => p.key === currentPhase)?.label || ''} color={gaugeColor} />
+            <Gauge value={liveSpeed} max={1000} phase={phaseLabel} color={gaugeColor} />
             <p className="text-xs text-gray-500 text-center">No cierres esta página durante el test</p>
           </div>
         )}
