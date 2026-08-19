@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import Markdown from 'react-markdown';
 
 const API_KEY = import.meta.env.PUBLIC_GEMINI_API_KEY || "";
 const MODEL = "gemini-3.6-flash";
@@ -100,7 +101,7 @@ export default function ChatBot() {
                 ? "bg-blue-600 text-white rounded-br-md"
                 : "bg-gray-700 text-gray-100 rounded-bl-md"
             }`}>
-              <p className="whitespace-pre-wrap">{msg.text}</p>
+              <div className="prose-chat"><Markdown>{msg.text}</Markdown></div>
               <p className={`text-[10px] mt-1 ${msg.role === "user" ? "text-blue-200" : "text-gray-400"}`}>
                 {msg.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
