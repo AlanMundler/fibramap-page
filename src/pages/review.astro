@@ -1,23 +1,178 @@
----
+﻿---
 import Layout from '../layouts/Layout.astro';
 import Giscus from '../components/Giscus.astro';
 const base = '/fibramap-page';
+
+const providers = [
+  {
+    name: 'IPLAN',
+    rating: 4.5,
+    color: 'pink',
+    summary: 'La mejor calidad de fibra simétrica en Córdoba. Precio premium, pero la estabilidad es innegable.',
+    pros: ['Velocidad real simétrica', 'Estabilidad excepcional', 'Servicio técnico eficiente'],
+    cons: ['Cobertura limitada (Centro/Nueva Córdoba)', 'Precios más altos'],
+    source: 'Reddit + InfoZona + Selectra'
+  },
+  {
+    name: 'Internet Córdoba',
+    rating: 4.0,
+    color: 'cyan',
+    summary: 'Local, confiable y económico. Buena opción para quienes buscan estabilidad sin gastar de más.',
+    pros: ['Excelente relación precio-calidad', 'Cobertura amplia (67 barrios)', 'Sin subas bruscas de precio'],
+    cons: ['Velocidad no siempre simétrica', 'App de autogestión básica'],
+    source: 'Reddit + InfoZona + Selectra'
+  },
+  {
+    name: 'Guabi',
+    rating: 4.0,
+    color: 'green',
+    summary: 'ISP chico pero confiable. Atención cercana por WhatsApp y buena reputación local.',
+    pros: ['Atención personalizada', 'Sin publicidad engañosa', 'Estable'],
+    cons: ['Zona limitada', 'Poca presencia online'],
+    source: 'Reddit + InfoZona'
+  },
+  {
+    name: 'Claro',
+    rating: 3.5,
+    color: 'red',
+    summary: 'Promos agresivas y buena cobertura. Algunos usuarios reportan estabilidad irregular y subida lenta.',
+    pros: ['Promos muy competitivas', 'Cobertura amplia (64+ barrios)', 'Netflix gratis'],
+    cons: ['Velocidad de subida inconsistente', 'Soporte técnico lento', 'No siempre simétrica'],
+    source: 'Selectra + Trustpilot + Reddit'
+  },
+  {
+    name: 'Personal Fibra',
+    rating: 3.0,
+    color: 'blue',
+    summary: 'Precios accesibles pero estabilidad cuestionada. Microcortes frecuentes según usuarios.',
+    pros: ['Buenos precios con promos', 'Cobertura en zona norte'],
+    cons: ['Microcortes frecuentes', 'Subida inestable', 'Soporte variable'],
+    source: 'Reddit + Selectra + TuQuejaSuma'
+  },
+  {
+    name: 'Batcom',
+    rating: 2.5,
+    color: 'purple',
+    summary: 'Única opción en algunas zonas. Servicio caro y con problemas frecuentes de estabilidad.',
+    pros: ['Cobertura en zona oeste donde otros no llegan'],
+    cons: ['Caro para lo que ofrece', 'Caídas frecuentes', 'Soporte difícil'],
+    source: 'TuQuejaSuma + Reddit'
+  },
+  {
+    name: 'Krillcom',
+    rating: 2.5,
+    color: 'orange',
+    summary: 'Inalámbrico, no fibra óptica. Poca información disponible y velocidad depende de la distancia.',
+    pros: ['Cobertura en barrios periféricos'],
+    cons: ['No es fibra óptica', 'Sin precios publicados', 'Velocidad variable'],
+    source: 'InfoZona + Selectra'
+  },
+  {
+    name: 'Trimotion',
+    rating: 2.0,
+    color: 'yellow',
+    summary: 'Económico pero con problemas serios de caídas y soporte. Reclamos frecuentes en foros.',
+    pros: ['Precios bajos', 'Presencia en centro'],
+    cons: ['Caídas frecuentes', 'Soporte difícil', 'Velocidad inconsistente'],
+    source: 'TuQuejaSuma + Reddit'
+  },
+  {
+    name: 'MetroWL',
+    rating: null,
+    color: 'gray',
+    summary: 'Poca información disponible. ISP joven en zona oeste sin datos verificados.',
+    pros: [],
+    cons: ['Sin precios publicados', 'Sin opiniones verificadas'],
+    source: 'Sin fuentes verificadas'
+  }
+];
+
+const colorMap = {
+  pink: { border: 'border-pink-500/30', text: 'text-pink-400', bg: 'bg-pink-500' },
+  cyan: { border: 'border-cyan-500/30', text: 'text-cyan-400', bg: 'bg-cyan-500' },
+  green: { border: 'border-green-500/30', text: 'text-green-400', bg: 'bg-green-500' },
+  red: { border: 'border-red-500/30', text: 'text-red-400', bg: 'bg-red-500' },
+  blue: { border: 'border-blue-500/30', text: 'text-blue-400', bg: 'bg-blue-500' },
+  purple: { border: 'border-purple-500/30', text: 'text-purple-400', bg: 'bg-purple-500' },
+  orange: { border: 'border-orange-500/30', text: 'text-orange-400', bg: 'bg-orange-500' },
+  yellow: { border: 'border-yellow-500/30', text: 'text-yellow-400', bg: 'bg-yellow-500' },
+  gray: { border: 'border-gray-700/50', text: 'text-gray-400', bg: 'bg-gray-500' }
+};
 ---
 
 <Layout title="FibraMap - Opiniones">
   <div class="space-y-6 max-w-3xl mx-auto">
     <div class="space-y-2 mb-6">
-      <h1 class="text-2xl sm:text-3xl font-bold">Opiniones</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold">Opiniones reales</h1>
       <p class="text-gray-400 max-w-2xl">
-        Contanos sobre tu experiencia con el servicio: qué bien, qué mal, qué se podría mejorar.
+        Calificaciones compiladas de foros, Google Reviews y comparadores.
+        Actualizado agosto 2026.
       </p>
     </div>
-    <div class="flex gap-1.5 sm:gap-2 flex-wrap">
-      <a href={base + '/review'} class="btn-pill border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-400 hover:text-red-300">Claro</a>
-      <a href={base + '/review'} class="btn-pill border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:border-blue-400 hover:text-blue-300">Personal</a>
-      <a href={base + '/review'} class="btn-pill border-pink-500/30 bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 hover:border-pink-400 hover:text-pink-300">Iplan</a>
+
+    <div class="space-y-4">
+      {providers.map(p => {
+        const c = colorMap[p.color];
+        const pct = p.rating !== null ? (p.rating / 5) * 100 : 0;
+        return (
+          <div class={`bg-gray-800/80 rounded-xl border backdrop-blur-sm p-4 sm:p-5 ${c.border}`}>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="min-w-0 break-words">
+                <h3 class={`font-semibold text-lg ${c.text}`}>{p.name}</h3>
+              </div>
+              <div class="flex-shrink-0">
+                {p.rating !== null ? (
+                  <div class="text-right">
+                    <div class={`font-bold text-xl ${c.text}`}>{p.rating}/5</div>
+                    <div class="text-yellow-400 text-sm tracking-wider">{'★'.repeat(Math.floor(p.rating))}{p.rating % 1 >= 0.5 ? '½' : ''}{'☆'.repeat(5 - Math.ceil(p.rating))}</div>
+                  </div>
+                ) : (
+                  <div class="text-gray-500 text-sm italic">Sin datos</div>
+                )}
+              </div>
+            </div>
+
+            {p.rating !== null && (
+              <div class="w-full bg-gray-700/50 rounded-full h-2 mb-3">
+                <div class={`h-2 rounded-full ${c.bg}`} style={`width: ${pct}%`} />
+              </div>
+            )}
+
+            <p class="text-gray-300 text-sm mb-3">{p.summary}</p>
+
+            {(p.pros.length > 0 || p.cons.length > 0) && (
+              <div class="grid sm:grid-cols-2 gap-3 text-sm">
+                {p.pros.length > 0 && (
+                  <div>
+                    <div class="text-green-400 font-medium mb-1">+ A favor</div>
+                    <ul class="text-gray-400 space-y-1">
+                      {p.pros.map(item => <li>{item}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {p.cons.length > 0 && (
+                  <div>
+                    <div class="text-red-400 font-medium mb-1">- En contra</div>
+                    <ul class="text-gray-400 space-y-1">
+                      {p.cons.map(item => <li>{item}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div class="mt-3 text-xs text-gray-500">Fuente: {p.source}</div>
+          </div>
+        );
+      })}
     </div>
+
+    <div class="text-xs text-gray-500 text-center">
+      Calificaciones subjetivas basadas en opiniones públicas. No son mediciones oficiales.
+    </div>
+
     <div class="bg-gray-800/80 rounded-xl p-4 sm:p-5 border border-gray-700/50 backdrop-blur-sm">
+      <h2 class="text-lg font-semibold mb-3">Dejanos tu opinion</h2>
       <Giscus />
     </div>
   </div>
