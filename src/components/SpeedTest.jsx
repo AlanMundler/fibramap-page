@@ -270,6 +270,7 @@ export default function SpeedTest() {
   const [state, setState] = useState('idle');
   const [currentPhase, setCurrentPhase] = useState(null);
   const [liveSpeed, setLiveSpeed] = useState(0);
+  const smoothRef = useRef(0);
   const [results, setResults] = useState(null);
   const [chartPoints, setChartPoints] = useState([]);
   const [history, setHistory] = useState([]);
@@ -278,6 +279,7 @@ export default function SpeedTest() {
   const [nic, setNic] = useState({ type: 'unknown', downlink: null, rtt: null, saveData: false });
   const engineRef = useRef(null);
   const pollRef = useRef(null);
+  const stoppedRef = useRef(false);
   const chartRef = useRef([]);
   const [cid] = useState(uid);
 
@@ -318,6 +320,8 @@ export default function SpeedTest() {
     setLiveSpeed(0);
     setChartPoints([]);
     chartRef.current = [];
+    stoppedRef.current = false;
+    smoothRef.current = 0;
     setNic(detectNIC());
 
     try {
@@ -352,6 +356,7 @@ export default function SpeedTest() {
       };
 
       engine.onFinish = (res) => {
+        if (stoppedRef.current) return;
         if (pollRef.current) clearInterval(pollRef.current);
         pollRef.current = null;
         const s = res.getSummary();
@@ -380,18 +385,21 @@ export default function SpeedTest() {
             const aggBps = isUpload
               ? engine.results.getUploadBandwidth?.()
               : engine.results.getDownloadBandwidth?.();
-            const mbps = aggBps ? Math.round(aggBps / 1e6) : 0;
+            const aggMbps = aggBps ? Math.round(aggBps / 1e6) : 0;
 
             const pts = isUpload
               ? engine.results.getUploadBandwidthPoints?.()
               : engine.results.getDownloadBandwidthPoints?.();
             const lastBps = pts && pts.length > 0 ? pts[pts.length - 1].bps : 0;
             const lastMbps = lastBps > 0 ? Math.round(lastBps / 1e6) : 0;
-            const displayMbps = mbps > 0 ? mbps : lastMbps;
 
-            if (displayMbps > 0) {
-              setLiveSpeed(displayMbps);
-              chartRef.current = [...chartRef.current, { v: displayMbps, t: isUpload ? 'upload' : 'download' }];
+            const rawMbps = aggMbps > 0 ? aggMbps : lastMbps;
+            if (rawMbps > 0) {
+              const alpha = 0.45;
+              smoothRef.current = Math.round(smoothRef.current * (1 - alpha) + rawMbps * alpha);
+              const display = Math.max(smoothRef.current, rawMbps > 0 ? rawMbps : 0);
+              setLiveSpeed(display);
+              chartRef.current = [...chartRef.current, { v: rawMbps, t: isUpload ? 'upload' : 'download' }];
               if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
               setChartPoints([...chartRef.current]);
             }
@@ -414,6 +422,7 @@ export default function SpeedTest() {
   useEffect(() => () => { engineRef.current?.stop(); if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   const stop = useCallback(() => {
+    stoppedRef.current = true;
     engineRef.current?.stop();
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = null;
@@ -434,8 +443,25 @@ export default function SpeedTest() {
 
       {/* NIC info — shown idle only */}
       {state === 'idle' && (
-        <div className="px-5 sm:px-6 pt-4 pb-2">
+        <div className="px-5 sm:px-6 pt-4 pb-2 space-y-3">
           <NICInfo nic={nic} />
+          <div className="p-3 rounded-xl bg-gray-700/15 border border-gray-700/15">
+            <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1.5">Límites por tipo de red</p>
+            <div className="text-[10px] text-gray-500 space-y-0.5">
+              {[
+                ['Wi-Fi 4 (2.4GHz)', '~150 Mbps'],
+                ['Wi-Fi 5 (5GHz)', '~500 Mbps'],
+                ['Wi-Fi 6 / 6E', '~900 Mbps'],
+                ['Ethernet Gigabit', '1000 Mbps'],
+                ['Ethernet 2.5G / 10G', '2500+ Mbps'],
+              ].map(([label, speed]) => (
+                <div key={label} className="flex justify-between">
+                  <span>{label}</span>
+                  <span className="text-gray-400 font-mono">{speed}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
