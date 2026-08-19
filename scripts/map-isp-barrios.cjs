@@ -158,37 +158,23 @@ const KNOWN_BARRIOS = {
     'YAPEYU', 'ZEPA',
   ],
   'Batcom': [
-    // Explicit list from batcom.com.ar — 50+ barrios
-    // North/northwest zone + La Calera area
+    // Official list from user (28 barrios) — only 7 exist in cadastral GeoJSON
     'LOS BOULEVARES', 'CHACRA DEL NORTE',
     'LILI BENITEZ', 'TORRES SUMMUM',
     'MALVINAS ARGENTINAS', 'JUAREZ CELMAN',
-    'PROCREAR LICEO', 'UNIVERSITARIO DE HORIZONTE',
-    'SAN IGNACIO', 'CINCO LOMAS',
-    'VALLE ESCONDIDO', 'CARRARA DE HORIZONTE',
+    'PROCREAR LICEO', 'RETIRO DE HORIZONTE II',
+    'CIUDAD DE LOS CUARTETOS', 'UNIVERSITARIO DE HORIZONTE',
+    'CARRARA DE HORIZONTE', 'SAN IGNACIO',
+    'LA CALERA', 'LA CAMPANA',
+    'CUESTA COLORADA', 'CUESTA RESIDENCIAL',
+    'LA PANKANA', 'EL RODEO', 'EL CALICANTO',
+    'VALLE ESCONDIDO', 'COMARCA ALLENDE',
+    'LA MORADA', 'LA CATALINA',
     'SAN CARLOS DE HORIZONTE', 'CARCANO DE HORIZONTE',
-    'RAMON J. CARCANO', 'EL RODEO', 'EL CALICANTO',
-    'LA CATALINA', 'LA MORADA', 'COMARCA ALLENDE',
-    // Northern barrios
-    'ALTA CORDOBA', 'ALTO PALERMO', 'ALTO VERDE',
-    'ALTOS SAN MARTIN', 'ARGUELLO', 'ARGUELLO NORTE',
-    'BELLA VISTA', 'BELLA VISTA OESTE',
-    'CIUDAD DE JUAN PABLO II',
-    'COLINAS DE BELLA VISTA', 'GENERAL ARTIGAS',
-    'HORIZONTE', 'JARDIN ESPINOSA', 'JUAN XXIII',
-    'LOS EUCALIPTUS', 'LOS GIGANTES', 'LOS GRANADOS',
-    'LOS NARANJOS', 'LOS PLATANOS', 'LOS ROBLES',
-    'LOS SAUCES', 'MANANTIALES',
-    'MIRADOR DEL CHATEAU', 'PARQUE ALAMEDA',
-    'PARQUE CAPITAL', 'PARQUE CAPITAL SUR',
-    'PARQUE FUTURA', 'PARQUE JORGE NEWBERY',
-    'RECREO DEL NORTE', 'RESIDENCIAL SAN JORGE',
-    'SAN DANIEL', 'SAN PEDRO NOLASCO',
-    'SIETE SOLES', 'VILLA ALBERTO', 'VILLA ALBERTO ANEXO',
-    'VILLA CLAUDINA', 'VILLA GRAN PARQUE',
-    'VILLA RETIRO', 'VILLA RETIRO DE HORIZONTE',
-    'VILLA REVOL', 'VILLA REVOL ANEXO',
-    'VIVERO NORTE', 'YOFRE NORTE',
+    'RAMON J. CARCANO', 'PUNTO W', 'ACAECE MALL',
+    'CINCO LOMAS',
+    // Also match Villa Retiro de Horizonte (partial match for "Retiro de Horizonte II – III")
+    'VILLA RETIRO DE HORIZONTE',
   ],
   'Guabi': [
     // Official map (5 barrios FO): https://www.google.com/maps/d/viewer?mid=1PoRTMASxcRlnWflR03VGpFh4_zFLheE
@@ -242,7 +228,7 @@ for (const [provider, bounds] of Object.entries(ISP_BOUNDS)) {
 
   // 2. Match by centroid within tight bounds (limited expansion)
   // IPLAN/Guabi: no expansion — user-confirmed coverage only
-  const noExpand = ['IPLAN', 'Guabi'];
+  const noExpand = ['IPLAN', 'Guabi', 'Batcom'];
   const maxFromBounds = noExpand.includes(provider) ? 0 : Math.ceil(knownNames.length * 0.15);
   let boundsCount = 0;
   for (const [name, feature] of Object.entries(barrioByName)) {
