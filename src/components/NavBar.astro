@@ -12,7 +12,7 @@ const links = [
 const raw = Astro.url.pathname.replace(base, '') || '/';
 const currentPath = raw.endsWith('/') && raw !== '/' ? raw.slice(0, -1) : raw;
 ---
-<nav class="sticky top-0 z-50 bg-gray-900/90 backdrop-blur-md border-b border-gray-700/50 shadow-lg shadow-gray-900/30">
+<nav class="sticky top-0 z-50 bg-gray-800/95 backdrop-blur-md border-b border-gray-700/50 shadow-lg shadow-gray-900/30">
   <div class="max-w-4xl mx-auto px-4 flex items-center h-14 gap-6">
     <a href={base + '/'} class="text-lg font-bold text-white tracking-tight shrink-0 hover:opacity-80 transition-opacity">
       Fibra<span class="text-blue-400">Map</span>
@@ -47,7 +47,7 @@ const currentPath = raw.endsWith('/') && raw !== '/' ? raw.slice(0, -1) : raw;
     </button>
   </div>
 
-  <div id="mobile-menu" class="hidden sm:hidden border-t border-gray-700/50 bg-gray-900/95 backdrop-blur-md">
+  <div id="mobile-menu" class="hidden sm:hidden border-t border-gray-700/50 bg-gray-800/95 backdrop-blur-md">
     <div class="max-w-4xl mx-auto px-4 py-2 space-y-0.5">
       {links.map(link => {
         const isActive = currentPath === link.href;
