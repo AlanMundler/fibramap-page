@@ -78,7 +78,7 @@ export default function SpeedTest() {
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30">
       {results && state === "done" && (
         <div className="px-6 pt-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-center">
             {[
               { label: "Descarga", value: results.download, unit: "Mbps", icon: "↓", color: "text-blue-400" },
               { label: "Subida", value: results.upload, unit: "Mbps", icon: "↑", color: "text-emerald-400" },

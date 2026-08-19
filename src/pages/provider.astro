@@ -72,14 +72,14 @@ const proveedores = [
 <Layout title="FibraMap - Proveedores">
   <div class="space-y-8">
     <div>
-      <h1 class="text-xl font-semibold">Proveedores FTTH en Córdoba Capital</h1>
+      <h1 class="text-xl sm:text-2xl font-semibold">Proveedores FTTH en Córdoba Capital</h1>
       <p class="text-sm text-gray-400 mt-1">Investigación verificada al 18/08/2026. La cobertura real depende de la dirección exacta.</p>
     </div>
 
     {proveedores.map(proveedor => (
       <section>
         <h2 class="text-lg font-semibold mb-3">{proveedor}</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
           {servicios.filter(s => s.proveedor === proveedor).map(s => (
             <TaskCard servicio={s} />
           ))}

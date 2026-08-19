@@ -44,7 +44,7 @@ export default function CompareIsland() {
 
   return (
     <div className="space-y-5">
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-1.5 sm:gap-2 flex-wrap">
         {proveedores.map(p => (
           <button key={p} onClick={() => setFilter(filter === p ? '' : p)} className={filter === p ? 'btn-pill-active' : 'btn-pill'}>{p}</button>
         ))}
@@ -54,17 +54,17 @@ export default function CompareIsland() {
         <p className="text-gray-500 text-sm text-center py-8">Elegí un proveedor para ver los planes</p>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
         {filtered.map(s => {
           const active = sel.includes(s.id);
           return (
-            <button key={s.id} onClick={() => toggle(s.id)} className={active ? 'card-interactive-active text-left p-3' : 'card-interactive text-left p-3'}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="font-medium text-[11px] text-gray-400">{s.proveedor}</span>
-                {s.simetrico && <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-medium border border-emerald-500/20">SIM</span>}
+            <button key={s.id} onClick={() => toggle(s.id)} className={active ? 'card-interactive-active text-left p-3 sm:p-4' : 'card-interactive text-left p-3 sm:p-4'}>
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="font-medium text-[10px] sm:text-[11px] text-gray-400 truncate">{s.proveedor}</span>
+                {s.simetrico && <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-medium border border-emerald-500/20">SIM</span>}
               </div>
               <div className="font-semibold text-sm text-white">{s.plan}</div>
-              <div className="flex items-baseline gap-1.5 mt-1">
+              <div className="flex items-baseline gap-1.5 mt-1.5">
                 <span className="font-bold text-sm text-white">{s.precioDesc ? fmt(s.precioDesc) : 'Consultar'}</span>
                 {s.precioLista > 0 && <span className="line-through text-gray-500 text-[10px]">{fmt(s.precioLista)}</span>}
               </div>
@@ -75,7 +75,8 @@ export default function CompareIsland() {
       </div>
 
       {sel.length >= 2 && (
-        <div className="overflow-x-auto border-t border-gray-700/50 pt-5">
+        <div className="overflow-x-auto border-t border-gray-700/50 pt-5 -mx-1 px-1">
+          <div className="min-w-[400px]">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-700/50">
@@ -95,16 +96,17 @@ export default function CompareIsland() {
                 ['Cobertura', s => s.cobertura],
               ].map(([label, fn]) => (
                 <tr key={label} className="border-b border-gray-800/50">
-                  <td className="py-2 px-2 text-gray-400">{label}</td>
+                  <td className="py-2 px-2 text-gray-400 whitespace-nowrap">{label}</td>
                   {selected.map(s => <td key={s.id} className="py-2 px-2 text-gray-200">{fn(s)}</td>)}
                 </tr>
               ))}
               <tr className="border-b border-gray-800/50 bg-gray-800/30">
-                <td className="py-2 px-2 text-gray-400 font-medium">Precio/100 Mbps</td>
+                <td className="py-2 px-2 text-gray-400 font-medium whitespace-nowrap">Precio/100 Mbps</td>
                 {selected.map(s => <td key={s.id} className="py-2 px-2 font-bold text-white">{precio100(s) ? `$${precio100(s)}` : '—'}</td>)}
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

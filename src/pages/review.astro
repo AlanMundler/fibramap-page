@@ -5,19 +5,19 @@ const base = '/fibramap-page';
 ---
 
 <Layout title="FibraMap - Opiniones">
-  <div class="space-y-6">
+  <div class="space-y-6 max-w-3xl mx-auto">
     <div class="space-y-2 mb-6">
-      <h1 class="text-2xl font-bold">Opiniones</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold">Opiniones</h1>
       <p class="text-gray-400 max-w-2xl">
         Contanos sobre tu experiencia con el servicio: qué bien, qué mal, qué se podría mejorar.
       </p>
     </div>
-    <div class="flex gap-2 flex-wrap">
+    <div class="flex gap-1.5 sm:gap-2 flex-wrap">
       <a href={base + '/review'} class="btn-pill border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:border-red-400 hover:text-red-300">Claro</a>
       <a href={base + '/review'} class="btn-pill border-blue-500/30 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:border-blue-400 hover:text-blue-300">Personal</a>
       <a href={base + '/review'} class="btn-pill border-pink-500/30 bg-pink-500/10 text-pink-400 hover:bg-pink-500/20 hover:border-pink-400 hover:text-pink-300">Iplan</a>
     </div>
-    <div class="bg-gray-800/80 rounded-xl p-5 border border-gray-700/50 backdrop-blur-sm">
+    <div class="bg-gray-800/80 rounded-xl p-4 sm:p-5 border border-gray-700/50 backdrop-blur-sm">
       <Giscus />
     </div>
   </div>

@@ -141,7 +141,7 @@ export default function MapIsland() {
         ))}
       </div>
 
-      <div className="w-full h-[55vh] min-h-[350px] rounded-lg overflow-hidden border border-gray-200">
+      <div className="w-full h-[50vh] sm:h-[55vh] min-h-[300px] sm:min-h-[350px] rounded-xl overflow-hidden border border-gray-700/50 shadow-lg shadow-gray-900/30">
         <Map
           height="100%"
           defaultCenter={CENTER}
