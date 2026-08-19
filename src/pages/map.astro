@@ -15,7 +15,9 @@ import BarrioSearch from '../components/BarrioSearch.jsx';
         Buscá tu barrio o hacé click en el mapa para ver qué proveedores lo cubren.
       </p>
     </div>
-    <BarrioSearch client:load />
+    <div class="relative z-20">
+      <BarrioSearch client:load />
+    </div>
     <MapIsland client:only="react" />
     <p class="text-[10px] sm:text-xs text-gray-500">
       La cobertura puede variar block a block. Verificá tu dirección en la página de cada proveedor.
