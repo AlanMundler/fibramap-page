@@ -5,15 +5,48 @@ import SpeedTest from '../components/SpeedTest.jsx';
 
 <Layout
   title="FibraMap — Test de velocidad de fibra óptica"
-  description="Medí la velocidad de tu conexión de fibra óptica: descarga, subida, latencia y jitter. Usa los servidores de Cloudflare."
+  description="Medí la velocidad de tu conexión de fibra óptica: descarga, subida, latencia, jitter y calidad de conexión. Usa los servidores de Cloudflare."
 >
   <div class="space-y-6 max-w-4xl mx-auto">
     <div class="space-y-2 mb-6">
       <h1 class="text-2xl sm:text-3xl font-bold">Test de Velocidad</h1>
       <p class="text-gray-400 max-w-2xl">
-        Medí la velocidad de tu conexión para saber si llegás a lo que te prometen.
+        Medí la velocidad real de tu conexión. El test mide descarga, subida, latencia, jitter, latencia bajo carga y puntaje de calidad. Usa servidores de Cloudflare en Argentina.
       </p>
     </div>
     <SpeedTest client:load />
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+      <div class="p-4 rounded-xl bg-gray-800/50 border border-gray-700/30">
+        <h3 class="text-sm font-semibold text-white mb-1">¿Qué mide?</h3>
+        <ul class="text-xs text-gray-400 space-y-1">
+          <li>• <strong class="text-blue-400">Descarga</strong> — velocidad de recepción (Mbps)</li>
+          <li>• <strong class="text-green-400">Subida</strong> — velocidad de envío (Mbps)</li>
+          <li>• <strong class="text-amber-400">Latencia</strong> — tiempo de respuesta (ms)</li>
+          <li>• <strong class="text-purple-400">Jitter</strong> — variación de latencia (ms)</li>
+          <li>• Latencia bajo carga ↓ y ↑</li>
+        </ul>
+      </div>
+      <div class="p-4 rounded-xl bg-gray-800/50 border border-gray-700/30">
+        <h3 class="text-sm font-semibold text-white mb-1">Tips para un buen test</h3>
+        <ul class="text-xs text-gray-400 space-y-1">
+          <li>• Usá conexión <strong class="text-white">cable Ethernet</strong></li>
+          <li>• Cerrá otras pestañas y apps</li>
+          <li>• No bajés archivos durante el test</li>
+          <li>• Hacé el test en horarios variados</li>
+          <li>• Compare con tu plan contratado</li>
+        </ul>
+      </div>
+      <div class="p-4 rounded-xl bg-gray-800/50 border border-gray-700/30">
+        <h3 class="text-sm font-semibold text-white mb-1">Referencia de velocidad</h3>
+        <div class="text-xs text-gray-400 space-y-1">
+          <div class="flex justify-between"><span>Web, email, redes</span><span class="text-gray-500">2-5 Mbps</span></div>
+          <div class="flex justify-between"><span>Streaming HD</span><span class="text-gray-500">5-10 Mbps</span></div>
+          <div class="flex justify-between"><span>Streaming 4K</span><span class="text-gray-500">25+ Mbps</span></div>
+          <div class="flex justify-between"><span>Gaming online</span><span class="text-gray-500">10-25 Mbps</span></div>
+          <div class="flex justify-between"><span>Videollamada HD</span><span class="text-gray-500">5-10 Mbps</span></div>
+          <div class="flex justify-between"><span>Hogar 4+ dispositivos</span><span class="text-gray-500">50+ Mbps</span></div>
+        </div>
+      </div>
+    </div>
   </div>
 </Layout>
