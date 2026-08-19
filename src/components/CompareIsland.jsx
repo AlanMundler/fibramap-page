@@ -37,7 +37,7 @@ export default function CompareIsland() {
   const [filter, setFilter] = useState('');
   const [sel, setSel] = useState([]);
 
-  const filtered = filter ? servicios.filter(s => s.proveedor === filter) : servicios;
+  const filtered = filter ? servicios.filter(s => s.proveedor === filter) : [];
 
   const toggle = (id) => {
     setSel(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 3 ? [...prev, id] : prev);
@@ -52,6 +52,10 @@ export default function CompareIsland() {
           <button key={p} onClick={() => setFilter(filter === p ? '' : p)} className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${filter === p ? 'border-blue-500 bg-blue-500/10 text-blue-400' : 'border-gray-700 text-gray-400 hover:border-gray-500'}`}>{p}</button>
         ))}
       </div>
+
+      {!filter && (
+        <p className="text-gray-500 text-sm text-center py-8">Elegí un proveedor para ver los planes</p>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
         {filtered.map(s => {
