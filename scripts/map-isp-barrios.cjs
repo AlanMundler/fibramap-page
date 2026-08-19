@@ -131,14 +131,7 @@ const KNOWN_BARRIOS = {
     'LOMAS DE SAN MARTIN', 'ALTOS SAN MARTIN',
   ],
   'IPLAN': [
-    // User-confirmed: Nueva Córdoba, Centro, parte de Alberdi
-    // hasta Coronel Olmedo y La Rioja
-    'NUEVA CORDOBA', 'NUEVA CORDOBA ANEXA', 'CENTRO',
-    'ALBERDI', 'SAN FRANCISCO', 'GUAYAQUIL',
-    'GUEMES', 'PATRICIOS', 'SAN MARTIN',
-    'SARMIENTO', 'CONGRESO', 'AYACUCHO',
-    'DEAN FUNES', 'GENERAL PAZ',
-    'JERONIMO LUIS DE CABRERA',
+    'NUEVA CORDOBA', 'CENTRO', 'ALBERDI',
   ],
   'Internet Córdoba': [
     // Explicit list from internetcordoba.com.ar — 67+ barrios
