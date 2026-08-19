@@ -78,6 +78,48 @@ export default {
       }
     }
 
+    if (request.method === 'GET' && url.pathname === '/trace') {
+      try {
+        const [traceRes, ipRes] = await Promise.allSettled([
+          fetch('https://1.1.1.1/cdn-cgi/trace', { signal: AbortSignal.timeout(5000) }),
+          fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(5000) }),
+        ]);
+
+        const trace = {};
+        if (traceRes.status === 'fulfilled' && traceRes.value.ok) {
+          const text = await traceRes.value.text();
+          for (const line of text.split('\n')) {
+            const [k, v] = line.split('=');
+            if (k && v !== undefined) trace[k.trim()] = v.trim();
+          }
+        }
+
+        const ip = {};
+        if (ipRes.status === 'fulfilled' && ipRes.value.ok) {
+          Object.assign(ip, await ipRes.value.json());
+        }
+
+        return new Response(JSON.stringify({
+          ip: trace.ip || ip.ip || null,
+          isp: ip.org || null,
+          city: ip.city || null,
+          region: ip.region || null,
+          country: trace.loc || ip.country || null,
+          colo: trace.colo || null,
+          lat: ip.loc?.split(',')[0] || null,
+          lng: ip.loc?.split(',')[1] || null,
+          tls: trace.tls || null,
+          warp: trace.warp || null,
+        }), {
+          headers: { 'Content-Type': 'application/json', ...CORS },
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+          status: 500, headers: { 'Content-Type': 'application/json', ...CORS },
+        });
+      }
+    }
+
     if (request.method !== 'POST') {
       return new Response(JSON.stringify({ error: 'Not found' }), {
         status: 404, headers: { 'Content-Type': 'application/json', ...CORS },

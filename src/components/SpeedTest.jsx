@@ -1,5 +1,40 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 
+const WORKER_URL = 'https://quiet-bird-94ce.alan-mundler.workers.dev';
+
+const COLO_MAP = {
+  EZE: 'Buenos Aires, AR',
+  SCL: 'Santiago, CL',
+  MIA: 'Miami, US',
+  IAD: 'Ashburn, US',
+  LAX: 'Los Angeles, US',
+  ORD: 'Chicago, US',
+  FRA: 'Frankfurt, DE',
+  LHR: 'Londres, GB',
+  AMS: 'Ámsterdam, NL',
+  CDG: 'París, FR',
+  NRT: 'Tokio, JP',
+  HKG: 'Hong Kong',
+  SIN: 'Singapur',
+  SYD: 'Sídney, AU',
+  GRU: 'São Paulo, BR',
+  BOG: 'Bogotá, CO',
+  LIM: 'Lima, PE',
+  MEX: 'México, MX',
+  GIG: 'Rio de Janeiro, BR',
+  BUE: 'Buenos Aires, AR',
+  CCT: 'Buenos Aires, AR',
+  AEP: 'Buenos Aires, AR',
+  COR: 'Córdoba, AR',
+  ROS: 'Rosario, AR',
+  MDE: 'Medellín, CO',
+  UIO: 'Quito, EC',
+  PTY: 'Panamá, PA',
+  MAD: 'Madrid, ES',
+  BCN: 'Barcelona, ES',
+  LIS: 'Lisboa, PT',
+};
+
 const PHASES = [
   { key: 'latency', label: 'Latencia', color: '#f59e0b' },
   { key: 'download', label: 'Descarga', color: '#3b82f6' },
@@ -280,6 +315,7 @@ export default function SpeedTest() {
   const [showHistory, setShowHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [nic, setNic] = useState({ type: 'unknown', downlink: null, rtt: null, saveData: false });
+  const [trace, setTrace] = useState(null);
   const engineRef = useRef(null);
   const pollRef = useRef(null);
   const cancelledRef = useRef(false);
@@ -290,6 +326,10 @@ export default function SpeedTest() {
   useEffect(() => {
     setHistory(loadHistory());
     setNic(detectNIC());
+    fetch(`${WORKER_URL}/trace`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && d.ip) setTrace(d); })
+      .catch(() => {});
   }, []);
 
   const nicInfo = NIC_LIMITS[nic.type] || NIC_LIMITS.unknown;
@@ -498,6 +538,29 @@ export default function SpeedTest() {
               </div>
             </div>
           </div>
+          {/* ISP + Server info */}
+          {trace && (
+            <div className="mt-2 p-2 rounded-xl bg-gray-700/15 border border-gray-700/15">
+              <div className="flex items-center gap-3 text-[9px]">
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="text-gray-600 shrink-0">IP</span>
+                  <span className="text-gray-300 font-mono font-semibold truncate">{trace.ip}</span>
+                </div>
+                <div className="w-px h-2.5 bg-gray-700/40 shrink-0" />
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="text-gray-600 shrink-0">ISP</span>
+                  <span className="text-gray-300 font-semibold truncate">{trace.isp || '—'}</span>
+                </div>
+                <div className="w-px h-2.5 bg-gray-700/40 shrink-0" />
+                <div className="flex items-center gap-1 min-w-0">
+                  <span className="text-gray-600 shrink-0">Servidor</span>
+                  <span className="text-gray-300 font-semibold truncate">
+                    Cloudflare {trace.colo} {COLO_MAP[trace.colo] ? `(${COLO_MAP[trace.colo]})` : ''}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -548,6 +611,18 @@ export default function SpeedTest() {
             <div className="text-center">
               <span className="text-xl">{quality.emoji}</span>
               <p className="text-sm font-extrabold tracking-tight mt-0.5" style={{ color: quality.color }}>{quality.label}</p>
+            </div>
+          )}
+
+          {trace && (
+            <div className="p-2 rounded-xl bg-gray-700/15 border border-gray-700/15">
+              <div className="flex items-center justify-center gap-3 text-[9px]">
+                <span className="text-gray-500">{trace.ip}</span>
+                <span className="text-gray-600">·</span>
+                <span className="text-gray-300 font-semibold">{trace.isp || '—'}</span>
+                <span className="text-gray-600">·</span>
+                <span className="text-gray-300 font-semibold">Cloudflare {trace.colo}{COLO_MAP[trace.colo] ? ` (${COLO_MAP[trace.colo]})` : ''}</span>
+              </div>
             </div>
           )}
 
