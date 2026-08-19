@@ -305,8 +305,12 @@ export default function SpeedTest() {
 
     try {
       const { default: SpeedTestEngine } = await import('@cloudflare/speedtest');
+      const ts = Date.now();
       const engine = new SpeedTestEngine({
         autoStart: false,
+        logAimApiUrl: null,
+        downloadApiUrl: `https://speed.cloudflare.com/__down?_=${ts}`,
+        uploadApiUrl: `https://speed.cloudflare.com/__up?_=${ts}`,
         measurements: [
           { type: 'latency', numPackets: 20 },
           { type: 'download', bytes: 1e5, count: 9 },
@@ -340,14 +344,18 @@ export default function SpeedTest() {
         if (pollRef.current) clearInterval(pollRef.current);
         pollRef.current = null;
         const s = res.getSummary();
+        console.log('[SpeedTest] onFinish raw summary:', s);
+        console.log('[SpeedTest] download bps:', s.download, '→ Mbps:', s.download ? (s.download / 1e6).toFixed(1) : null);
+        console.log('[SpeedTest] upload bps:', s.upload, '→ Mbps:', s.upload ? (s.upload / 1e6).toFixed(1) : null);
         const r = {
           download: s.download ? (s.download / 1e6).toFixed(1) : null,
           upload: s.upload ? (s.upload / 1e6).toFixed(1) : null,
           latency: s.latency ? s.latency.toFixed(0) : null,
           jitter: s.jitter ? s.jitter.toFixed(0) : null,
-          loadedLatencyDown: s.loadedLatencyDown ? s.loadedLatencyDown.toFixed(0) : null,
-          loadedLatencyUp: s.loadedLatencyUp ? s.loadedLatencyUp.toFixed(0) : null,
+          loadedLatencyDown: s.downLoadedLatency ? s.downLoadedLatency.toFixed(0) : null,
+          loadedLatencyUp: s.upLoadedLatency ? s.upLoadedLatency.toFixed(0) : null,
         };
+        console.log('[SpeedTest] parsed results:', r);
         setResults(r); setState('done'); setCurrentPhase(null);
         saveHistory(r); setHistory(loadHistory());
       };
@@ -356,8 +364,10 @@ export default function SpeedTest() {
       engine.play();
 
       if (pollRef.current) clearInterval(pollRef.current);
+      let pollCount = 0;
       pollRef.current = setInterval(() => {
         if (!engine.results || cancelledRef.current) return;
+        pollCount++;
         try {
           const isUpload = phaseRef === 'upload';
 
@@ -372,6 +382,10 @@ export default function SpeedTest() {
               : engine.results.getDownloadBandwidthPoints?.();
             const lastBps = pts && pts.length > 0 ? pts[pts.length - 1].bps : 0;
             const lastMbps = lastBps > 0 ? Math.round(lastBps / 1e6) : 0;
+
+            if (pollCount % 5 === 1) {
+              console.log(`[SpeedTest] poll #${pollCount} ${phaseRef}: agg=${aggMbps}Mbps last=${lastMbps}Mbps points=${pts?.length || 0}`);
+            }
 
             const rawMbps = aggMbps > 0 ? aggMbps : lastMbps;
             if (rawMbps > 0) {
