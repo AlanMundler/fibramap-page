@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import Cusdis from '../components/Cusdis.astro';
+import Giscus from '../components/Giscus.astro';
 const base = '/fibramap-page';
 ---
 
@@ -18,7 +18,7 @@ const base = '/fibramap-page';
       <a href={base + '/review'} class="px-4 py-2 text-sm font-medium rounded-lg bg-pink-900/50 text-pink-300 hover:bg-pink-900 transition-colors">Iplan</a>
     </div>
     <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-      <Cusdis pageId={Astro.url.pathname} pageTitle="Opiniones FibraMap" pageUrl={Astro.url.href} />
+      <Giscus />
     </div>
   </div>
 </Layout>
