@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import Markdown from 'react-markdown';
 
 const API_URL = `${import.meta.env.BASE_URL || '/fibramap-page/'}api/gemini`;
-const MODEL = "gemini-3.6-flash";
 
 export default function ChatBot() {
   const [messages, setMessages] = useState([]);
@@ -37,28 +36,65 @@ export default function ChatBot() {
         role: m.role,
       })), { text: msg, role: "user" }];
 
-      let text = null;
-      for (let attempt = 0; attempt < 3; attempt++) {
-        if (attempt > 0) await new Promise(r => setTimeout(r, 2000 * attempt));
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: apiMessages }),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          const detail = err?.error || `HTTP ${res.status}`;
-          if (res.status === 503 && attempt < 2) continue;
-          throw new Error(detail);
-        }
-        const data = await res.json();
-        text = data?.text;
-        if (text) break;
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: apiMessages }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || `HTTP ${res.status}`);
       }
-      if (!text) throw new Error("El modelo no respondió. Intentá de nuevo en unos segundos.");
-      setMessages(prev => [...prev, { text, role: "bot", time: new Date() }]);
+
+      const reader = res.body?.getReader();
+      if (!reader) throw new Error("No stream");
+
+      const decoder = new TextDecoder();
+      let botText = "";
+      let buffer = "";
+
+      setMessages(prev => [...prev, { text: "", role: "bot", time: new Date() }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+          if (!jsonStr) continue;
+          try {
+            const data = JSON.parse(jsonStr);
+            if (data.error) throw new Error(data.error);
+            if (data.text) {
+              botText += data.text;
+              const captured = botText;
+              setMessages(prev => {
+                const next = [...prev];
+                const last = next[next.length - 1];
+                if (last && last.role === "bot") {
+                  next[next.length - 1] = { ...last, text: captured };
+                }
+                return next;
+              });
+            }
+          } catch (e) {
+            if (e.message && !e.message.includes('JSON')) throw e;
+          }
+        }
+      }
     } catch (e) {
       setError(e.message || "No se pudo obtener respuesta.");
+      setMessages(prev => {
+        if (prev.length > 0 && prev[prev.length - 1].role === "bot" && prev[prev.length - 1].text === "") {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
     }
     setLoading(false);
   };
@@ -67,7 +103,7 @@ export default function ChatBot() {
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30 flex flex-col h-full">
       <div className="px-5 py-3.5 border-b border-gray-700/50 flex items-center gap-2.5 flex-shrink-0">
         <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-500/50" />
-        <h2 className="font-semibold text-sm text-white">Chat IA — Gemini {MODEL}</h2>
+        <h2 className="font-semibold text-sm text-white">Chat IA — Gemini 2.5 Flash</h2>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-4 sm:px-5 py-4 space-y-3 scroll-smooth">
@@ -91,25 +127,23 @@ export default function ChatBot() {
                 ? "bg-blue-600 text-white rounded-br-md"
                 : "bg-gray-700 text-gray-100 rounded-bl-md"
             }`}>
-              <div className="prose-chat"><Markdown>{msg.text}</Markdown></div>
-              <p className={`text-[10px] mt-1 ${msg.role === "user" ? "text-blue-200" : "text-gray-400"}`}>
-                {msg.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </p>
+              <div className="prose-chat">
+                {msg.text ? <Markdown>{msg.text}</Markdown> : (
+                  <div className="flex gap-1 py-1">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                  </div>
+                )}
+              </div>
+              {msg.text && (
+                <p className={`text-[10px] mt-1 ${msg.role === "user" ? "text-blue-200" : "text-gray-400"}`}>
+                  {msg.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </p>
+              )}
             </div>
           </div>
         ))}
-
-        {loading && (
-          <div className="flex justify-start">
-            <div className="bg-gray-700 px-4 py-3 rounded-2xl rounded-bl-md">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-              </div>
-            </div>
-          </div>
-        )}
 
         <div ref={bottomRef} />
       </div>
