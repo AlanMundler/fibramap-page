@@ -71,8 +71,8 @@ const ISP_BOUNDS = {
     // Norte/Noroeste only
   },
   'Guabi': {
-    north: -31.445, south: -31.480, west: -64.225, east: -64.175,
-    // Zona Sur - tighter bounds
+    north: -31.300, south: -31.530, west: -64.350, east: -64.050,
+    // Wide bounds — official map has 5 scattered barrios
   },
 };
 
@@ -191,44 +191,10 @@ const KNOWN_BARRIOS = {
     'VIVERO NORTE', 'YOFRE NORTE',
   ],
   'Guabi': [
-    // Zona Sur exclusivamente — from guabi.com.ar
-    // "Llegamos al sur de Córdoba"
-    // HQ: Cleveland 5158, Bo. Santa Isabel 1ra Sección
-    // Also: Río Negro 6150, Bo. Valle Cercano - El Triunfo
-    'SANTA ISABEL 1A SECCION', 'SANTA ISABEL 2A SECCION',
-    'SANTA ISABEL 3A SECCION', 'VALLE CERCANO',
-    'VILLA EL LIBERTADOR', 'PARQUE FUTURA',
-    'ARGUELLO', 'ARGUELLO NORTE',
-    'BETANIA', 'CARRARA',
-    'EL PUEBLITO', 'EL TREBOL', 'EL REFUGIO',
-    'JARDIN', 'JARDIN DEL PILAR', 'JARDIN HIPODROMO',
-    'KAIROS', 'LA CARBONADA', 'LA RESERVA',
-    'LAS CAÑITAS', 'LAS DALIAS', 'LAS FLORES',
-    'LAS HUERTILLAS', 'LAS VIOLETAS',
-    'LOS ANGELES', 'LOS CEIBOS',
-    'LOS FILTROS', 'LOS FRESNOS',
-    'LOS HORNILLOS', 'LOS JACARANDAES', 'LOS OLMOS',
-    'LOS OLMOS SUD', 'LOS PINOS', 'LOS ROBLES', 'LOS SAUCES',
-    'MANANTIALES', 'MANANTIALES II',
-    'PASO DE LOS ANDES', 'PUENTE BLANCO',
-    'RESIDENCIAL AMERICA', 'RESIDENCIAL ARAGON',
-    'RESIDENCIAL OLIVOS', 'RESIDENCIAL SUD',
-    'ROCIO DEL SUR', 'ROGELIO MARTINEZ', 'ROSEDAL',
-    'SAN MARCELO', 'SAN RAFAEL', 'SAN SALVADOR',
-    'SANTA ANA RESIDENCIAL', 'SANTA CECILIA',
-    'SANTA CLARA DE ASIS', 'SANTA ROSA RESIDENCIAL',
-    'SOLARES DE SANTA MARIA', 'TABLADA PARK',
-    'TEJAS DE LA CANDELARIA', 'TEJAS DEL SUR',
-    'VALLE DEL CERRO', 'VALLE ESCONDIDO',
-    'VILLA CENTENARIO', 'VILLA CLARET', 'VILLA DERNA',
-    'VILLA EUCARISTICA', 'VILLA GENERAL URQUIZA',
-    'VILLA MAFEKIN', 'VILLA MARTA', 'VILLA MARTINEZ',
-    'VILLA QUISQUIZACATE', 'VILLA SALDAN',
-    'VILLA SAN CARLOS', 'VILLA SAN ISIDRO',
-    'VILLA SERRANA', 'VILLA SILVANO FUNES',
-    'VILLA SOLFERINO', 'VILLA WARCALDE', 'VILLA ZEPPELIN',
-    'YAPEYU', 'PORTAL DEL JACARANDA',
-    'PARQUE VELEZ SARSFIELD', 'COLINAS DE VELEZ SARSFIELD',
+    // Official map (5 barrios FO): https://www.google.com/maps/d/viewer?mid=1PoRTMASxcRlnWflR03VGpFh4_zFLheE
+    'UNIVERSITARIO DE HORIZONTE', 'LA ESPERANZA',
+    'VALLE CERCANO', 'PARQUE FUTURA',
+    'VILLA SAN CARLOS',
   ],
 };
 
@@ -275,8 +241,9 @@ for (const [provider, bounds] of Object.entries(ISP_BOUNDS)) {
   }
 
   // 2. Match by centroid within tight bounds (limited expansion)
-  // IPLAN: no expansion — user-confirmed coverage only
-  const maxFromBounds = provider === 'IPLAN' ? 0 : Math.ceil(knownNames.length * 0.15);
+  // IPLAN/Guabi: no expansion — user-confirmed coverage only
+  const noExpand = ['IPLAN', 'Guabi'];
+  const maxFromBounds = noExpand.includes(provider) ? 0 : Math.ceil(knownNames.length * 0.15);
   let boundsCount = 0;
   for (const [name, feature] of Object.entries(barrioByName)) {
     if (matchedBarrios.has(name)) continue;
