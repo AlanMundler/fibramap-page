@@ -4,11 +4,13 @@ import CompareIsland from '../components/CompareIsland.jsx';
 ---
 
 <Layout title="FibraMap - Comparar">
-  <div class="space-y-4">
-    <h1 class="text-xl font-semibold">Comparar Servicios</h1>
-    <p class="text-gray-400 max-w-2xl text-sm">
-      Elegí dos planes para ver las diferencias lado a lado.
-    </p>
+  <div class="space-y-6">
+    <div class="space-y-2">
+      <h1 class="text-2xl font-bold">Comparar Servicios</h1>
+      <p class="text-gray-400 max-w-2xl">
+        Elegí dos planes para ver las diferencias lado a lado.
+      </p>
+    </div>
     <CompareIsland client:load />
   </div>
 </Layout>

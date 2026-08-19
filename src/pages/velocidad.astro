@@ -4,11 +4,13 @@ import SpeedTest from '../components/SpeedTest.jsx';
 ---
 
 <Layout title="FibraMap - Velocidad">
-  <div class="space-y-4">
-    <h1 class="text-xl font-semibold">Test de Velocidad</h1>
-    <p class="text-gray-400 max-w-2xl text-sm">
-      Medí la velocidad de tu conexión para saber si llegás a lo que te prometen.
-    </p>
+  <div class="space-y-6">
+    <div class="space-y-2">
+      <h1 class="text-2xl font-bold">Test de Velocidad</h1>
+      <p class="text-gray-400 max-w-2xl">
+        Medí la velocidad de tu conexión para saber si llegás a lo que te prometen.
+      </p>
+    </div>
     <SpeedTest client:load />
   </div>
 </Layout>
