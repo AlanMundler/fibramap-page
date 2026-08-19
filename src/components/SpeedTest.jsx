@@ -1,9 +1,9 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 
 const PHASES = [
-  { key: 'latency', label: 'Latencia', icon: '↔', color: '#f59e0b' },
-  { key: 'download', label: 'Descarga', icon: '↓', color: '#3b82f6' },
-  { key: 'upload', label: 'Subida', icon: '↑', color: '#10b981' },
+  { key: 'latency', label: 'Latencia', color: '#f59e0b' },
+  { key: 'download', label: 'Descarga', color: '#3b82f6' },
+  { key: 'upload', label: 'Subida', color: '#10b981' },
 ];
 
 const ACTIVITIES = [
@@ -18,97 +18,192 @@ const ACTIVITIES = [
 ];
 
 const HISTORY_KEY = 'fibramap_speedtest_history';
+let chartId = 0;
 
 function loadHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
   catch { return []; }
 }
-function saveHistory(results) {
-  const hist = loadHistory();
-  hist.unshift({ ...results, date: new Date().toISOString() });
-  if (hist.length > 50) hist.length = 50;
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+function saveHistory(r) {
+  const h = loadHistory();
+  h.unshift({ ...r, date: new Date().toISOString() });
+  if (h.length > 50) h.length = 50;
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
 }
 
-function getQuality(download, upload, latency) {
-  if (download >= 100 && latency < 15) return { label: 'Excepcional', color: '#22d3ee', emoji: '🏆', score: 100 };
-  if (download >= 50 && latency < 25) return { label: 'Excelente', color: '#10b981', emoji: '⭐', score: 85 };
-  if (download >= 25 && latency < 50) return { label: 'Muy buena', color: '#34d399', emoji: '✅', score: 70 };
-  if (download >= 10 && latency < 80) return { label: 'Buena', color: '#fbbf24', emoji: '👍', score: 55 };
-  if (download >= 5 && latency < 120) return { label: 'Regular', color: '#f97316', emoji: '⚠️', score: 40 };
-  if (download >= 1) return { label: 'Lenta', color: '#ef4444', emoji: '🐌', score: 20 };
+function getQuality(d, u, l) {
+  if (d >= 100 && l < 15) return { label: 'Excepcional', color: '#22d3ee', emoji: '🏆', score: 100 };
+  if (d >= 50 && l < 25) return { label: 'Excelente', color: '#10b981', emoji: '⭐', score: 85 };
+  if (d >= 25 && l < 50) return { label: 'Muy buena', color: '#34d399', emoji: '✅', score: 70 };
+  if (d >= 10 && l < 80) return { label: 'Buena', color: '#fbbf24', emoji: '👍', score: 55 };
+  if (d >= 5 && l < 120) return { label: 'Regular', color: '#f97316', emoji: '⚠️', score: 40 };
+  if (d >= 1) return { label: 'Lenta', color: '#ef4444', emoji: '🐌', score: 20 };
   return { label: 'Muy lenta', color: '#dc2626', emoji: '❌', score: 5 };
 }
 
-function LiveChart({ points, color, maxVal }) {
-  const W = 400, H = 100, pad = 4;
-  const usable = points.length > 1 ? points.slice(-60) : points;
-  const yMax = maxVal || Math.max(10, ...usable.map(p => p.v)) * 1.1;
+function bpsToMbps(bps) {
+  if (!bps || bps <= 0) return 0;
+  return Math.round(bps / 1e6);
+}
 
-  const pathD = usable.map((p, i) => {
-    const x = pad + (i / Math.max(1, usable.length - 1)) * (W - pad * 2);
-    const y = H - pad - (p.v / yMax) * (H - pad * 2);
-    return `${i === 0 ? 'M' : 'L'}${x},${y}`;
-  }).join(' ');
+function smoothPath(pts, W, H, pad) {
+  if (pts.length < 2) return '';
+  const coords = pts.map((p, i) => ({
+    x: pad + (i / Math.max(1, pts.length - 1)) * (W - pad * 2),
+    y: H - pad - (p.v / (pts._yMax || 10)) * (H - pad * 2),
+  }));
+  let d = `M${coords[0].x},${coords[0].y}`;
+  for (let i = 1; i < coords.length; i++) {
+    const prev = coords[i - 1];
+    const cur = coords[i];
+    const cpx = (prev.x + cur.x) / 2;
+    d += ` C${cpx},${prev.y} ${cpx},${cur.y} ${cur.x},${cur.y}`;
+  }
+  return d;
+}
 
-  const areaD = pathD + ` L${pad + ((usable.length - 1) / Math.max(1, usable.length - 1)) * (W - pad * 2)},${H} L${pad},${H} Z`;
+const uid = () => ++chartId;
+
+function LiveChart({ points, color, id }) {
+  const W = 500, H = 140, pad = { t: 16, r: 8, b: 20, l: 40 };
+  const usable = points.slice(-50);
+  if (usable.length < 2) return null;
+
+  const yMax = Math.max(10, ...usable.map(p => p.v)) * 1.15;
+  const ySteps = 4;
+
+  const toX = (i) => pad.l + (i / Math.max(1, usable.length - 1)) * (W - pad.l - pad.r);
+  const toY = (v) => pad.t + (1 - v / yMax) * (H - pad.t - pad.b);
+
+  const lineD = usable.map((p, i) => `${i === 0 ? 'M' : 'L'}${toX(i).toFixed(1)},${toY(p.v).toFixed(1)}`).join(' ');
+
+  const areaD = lineD +
+    ` L${toX(usable.length - 1).toFixed(1)},${H - pad.b}` +
+    ` L${toX(0).toFixed(1)},${H - pad.b} Z`;
+
+  const lastPt = usable[usable.length - 1];
+  const lastX = toX(usable.length - 1);
+  const lastY = toY(lastPt.v);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-20 sm:h-24" preserveAspectRatio="none">
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: '120px' }}>
       <defs>
-        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+        <linearGradient id={`cg-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
+        <filter id={`glow-${id}`}>
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
       </defs>
-      {usable.length > 1 && <path d={areaD} fill="url(#areaGrad)" />}
-      {usable.length > 1 && <path d={pathD} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
-      {usable.length > 0 && (() => {
-        const last = usable[usable.length - 1];
-        const x = pad + ((usable.length - 1) / Math.max(1, usable.length - 1)) * (W - pad * 2);
-        const y = H - pad - (last.v / yMax) * (H - pad * 2);
-        return <circle cx={x} cy={y} r="4" fill={color} stroke="#1f2937" strokeWidth="2" />;
-      })()}
-      <text x={W - 2} y={12} textAnchor="end" fill="rgba(255,255,255,0.3)" fontSize="10">
-        {Math.round(yMax)} Mbps
+
+      {Array.from({ length: ySteps + 1 }, (_, i) => {
+        const val = (yMax / ySteps) * i;
+        const y = toY(val);
+        return (
+          <g key={i}>
+            <line x1={pad.l} y1={y} x2={W - pad.r} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+            <text x={pad.l - 6} y={y + 3.5} textAnchor="end" fill="rgba(255,255,255,0.25)" fontSize="9" fontFamily="monospace">
+              {Math.round(val)}
+            </text>
+          </g>
+        );
+      })}
+
+      <path d={areaD} fill={`url(#cg-${id})`} />
+      <path d={lineD} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" filter={`url(#glow-${id})`} />
+
+      <circle cx={lastX} cy={lastY} r="5" fill={color} stroke="#111827" strokeWidth="2.5" />
+      <circle cx={lastX} cy={lastY} r="10" fill={color} opacity="0.15" />
+
+      <rect x={lastX - 26} y={lastY - 22} width="52" height="16" rx="4" fill="rgba(17,24,39,0.9)" stroke={color} strokeWidth="0.5" />
+      <text x={lastX} y={lastY - 11} textAnchor="middle" fill={color} fontSize="10" fontWeight="bold" fontFamily="monospace">
+        {lastPt.v}
       </text>
     </svg>
   );
 }
 
 function Gauge({ value, max, phase, color, running }) {
-  const radius = 88;
-  const stroke = 10;
-  const nR = radius - stroke / 2;
-  const C = nR * 2 * Math.PI;
+  const size = 200;
+  const cx = size / 2, cy = size / 2;
+  const r = 82;
+  const stroke = 8;
+  const arcStart = 135;
+  const arcEnd = 405;
+  const arcRange = arcEnd - arcStart;
+
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const arcPoint = (deg) => ({
+    x: cx + r * Math.cos(toRad(deg)),
+    y: cy + r * Math.sin(toRad(deg)),
+  });
+
+  const start = arcPoint(arcStart);
+  const end = arcPoint(arcEnd);
+  const largeArc = 1;
+
   const pct = Math.min(value / max, 1);
-  const offset = C - pct * C;
+  const curAngle = arcStart + pct * arcRange;
+  const cur = arcPoint(curAngle);
+  const curPct = pct > 0 ? 1 : 0;
+
+  const bgArc = `M${start.x},${start.y} A${r},${r} 0 ${largeArc} 1 ${end.x},${end.y}`;
+  const valArc = pct > 0 ? `M${start.x},${start.y} A${r},${r} 0 ${curPct} 1 ${cur.x},${cur.y}` : '';
+
+  const tickCount = 10;
+  const ticks = Array.from({ length: tickCount + 1 }, (_, i) => {
+    const a = arcStart + (i / tickCount) * arcRange;
+    const inner = arcPoint(a);
+    const outerR = r + (i % 5 === 0 ? 8 : 5);
+    const outer = { x: cx + outerR * Math.cos(toRad(a)), y: cy + outerR * Math.sin(toRad(a)) };
+    return { inner, outer, major: i % 5 === 0 };
+  });
 
   return (
     <div className="relative flex items-center justify-center">
-      <svg height={radius * 2} width={radius * 2} className="-rotate-90">
-        <circle stroke="rgba(255,255,255,0.06)" fill="transparent" strokeWidth={stroke} r={nR} cx={radius} cy={radius} />
-        <circle
-          stroke={color} fill="transparent" strokeWidth={stroke} strokeLinecap="round"
-          strokeDasharray={`${C} ${C}`}
-          style={{ strokeDashoffset: offset, transition: 'stroke-dashoffset 0.3s ease-out' }}
-          r={nR} cx={radius} cy={radius}
-        />
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-0">
+        <defs>
+          <filter id="gauge-glow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <linearGradient id="gauge-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.8" />
+            <stop offset="100%" stopColor={color} stopOpacity="1" />
+          </linearGradient>
+        </defs>
+
+        <path d={bgArc} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={stroke} strokeLinecap="round" />
+
+        {pct > 0 && (
+          <path d={valArc} fill="none" stroke={`url(#gauge-grad)`} strokeWidth={stroke} strokeLinecap="round" filter="url(#gauge-glow)" style={{ transition: 'all 0.35s ease-out' }} />
+        )}
+
+        {ticks.map((t, i) => (
+          <line key={i} x1={t.inner.x} y1={t.inner.y} x2={t.outer.x} y2={t.outer.y} stroke={t.major ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'} strokeWidth={t.major ? 1.5 : 0.8} />
+        ))}
+
         {running && (
-          <circle
-            stroke={color} fill="transparent" strokeWidth={stroke} strokeLinecap="round"
-            strokeDasharray={`${C * 0.15} ${C * 0.85}`}
-            style={{ strokeDashoffset: 0, opacity: 0.4, animation: 'spin 1.5s linear infinite', transformOrigin: `${radius}px ${radius}px` }}
-            r={nR} cx={radius} cy={radius}
-          />
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="1.5" strokeDasharray="12 30" opacity="0.3" style={{ animation: 'gaugeSpin 2s linear infinite', transformOrigin: `${cx}px ${cy}px` }} />
         )}
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl sm:text-5xl font-bold text-white tabular-nums leading-none">{value}</span>
-        <span className="text-[11px] text-gray-400 mt-1">Mbps</span>
-        <span className="text-[10px] mt-1 px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: color + '20', color }}>
-          {phase}
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ paddingTop: '8px' }}>
+        <span className="text-4xl sm:text-5xl font-extrabold text-white tabular-nums leading-none tracking-tight" style={{ textShadow: `0 0 20px ${color}40` }}>
+          {value}
         </span>
+        <span className="text-[11px] text-gray-400 mt-1 font-medium tracking-wide uppercase">Mbps</span>
+        <div className="mt-2 px-3 py-0.5 rounded-full text-[11px] font-semibold tracking-wider" style={{ backgroundColor: color + '15', color, border: `1px solid ${color}30` }}>
+          {phase}
+        </div>
       </div>
     </div>
   );
@@ -117,19 +212,26 @@ function Gauge({ value, max, phase, color, running }) {
 function StepIndicator({ currentPhase }) {
   const idx = PHASES.findIndex(p => p.key === currentPhase);
   return (
-    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+    <div className="flex items-center justify-center gap-2">
       {PHASES.map((p, i) => {
         const done = i < idx, active = i === idx;
         return (
-          <div key={p.key} className="flex items-center gap-1.5">
-            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-medium border transition-all duration-300 ${
-              done ? 'bg-green-500/20 border-green-500/50 text-green-400'
-              : active ? '' : 'border-gray-700 text-gray-600'
-            }`} style={active ? { backgroundColor: p.color + '20', borderColor: p.color + '80', color: p.color } : {}}>
-              {done ? '✓' : p.icon}
+          <div key={p.key} className="flex items-center gap-2">
+            <div className={`relative w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-500 ${
+              done ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-400'
+              : active ? 'text-white' : 'border-gray-700/50 bg-gray-800/50 text-gray-600'
+            }`} style={active ? { borderColor: p.color + '80', backgroundColor: p.color + '15', color: p.color, boxShadow: `0 0 16px ${p.color}25` } : {}}>
+              {done ? (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+              ) : (
+                <span>{p.label[0]}</span>
+              )}
+              {active && (
+                <span className="absolute inset-0 rounded-full border-2 animate-ping" style={{ borderColor: p.color + '30' }} />
+              )}
             </div>
             {i < PHASES.length - 1 && (
-              <div className={`w-5 sm:w-8 h-0.5 rounded ${done ? 'bg-green-500/50' : 'bg-gray-700'}`} />
+              <div className={`w-8 sm:w-12 h-[2px] rounded-full transition-all duration-500 ${done ? 'bg-emerald-500/50' : 'bg-gray-700/30'}`} />
             )}
           </div>
         );
@@ -138,20 +240,18 @@ function StepIndicator({ currentPhase }) {
   );
 }
 
-function ResultCard({ label, value, unit, color, icon, detail }) {
+function ResultCard({ label, value, unit, color, icon, sub }) {
   return (
-    <div className="p-3 sm:p-4 rounded-xl bg-gray-700/30 border border-gray-600/30 text-center">
-      <div className="text-base sm:text-lg mb-1" style={{ color }}>{icon}</div>
-      <p className="text-xl sm:text-3xl font-bold text-white tabular-nums leading-none">{value ?? '--'}</p>
-      <p className="text-[10px] sm:text-[11px] text-gray-400 mt-1">{label} ({unit})</p>
-      {detail && <p className="text-[10px] text-gray-500 mt-0.5">{detail}</p>}
+    <div className="relative p-4 rounded-2xl bg-gray-700/20 border border-gray-600/20 text-center overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.03]" style={{ background: `radial-gradient(circle at 50% 0%, ${color}, transparent 70%)` }} />
+      <div className="relative">
+        <div className="text-xl mb-1.5" style={{ color }}>{icon}</div>
+        <p className="text-3xl sm:text-4xl font-extrabold text-white tabular-nums leading-none tracking-tight">{value ?? '--'}</p>
+        <p className="text-[11px] text-gray-400 mt-1.5 font-medium">{label} <span className="text-gray-600">({unit})</span></p>
+        {sub && <p className="text-[10px] mt-1 font-medium" style={{ color: color + 'cc' }}>{sub}</p>}
+      </div>
     </div>
   );
-}
-
-function bpsToMbps(bps) {
-  if (!bps || bps <= 0) return 0;
-  return Math.round(bps / 1e6);
 }
 
 export default function SpeedTest() {
@@ -166,6 +266,7 @@ export default function SpeedTest() {
   const engineRef = useRef(null);
   const pollRef = useRef(null);
   const chartRef = useRef([]);
+  const [cid] = useState(uid);
 
   useEffect(() => { setHistory(loadHistory()); }, []);
 
@@ -183,10 +284,7 @@ export default function SpeedTest() {
     const d = results.download ? parseFloat(results.download) : 0;
     const u = results.upload ? parseFloat(results.upload) : 0;
     const l = results.latency ? parseInt(results.latency) : 999;
-    return ACTIVITIES.map(a => ({
-      ...a,
-      ok: d >= a.minDown && u >= a.minUp && l <= a.maxLatency,
-    }));
+    return ACTIVITIES.map(a => ({ ...a, ok: d >= a.minDown && u >= a.minUp && l <= a.maxLatency }));
   }, [results]);
 
   const run = useCallback(async () => {
@@ -199,7 +297,6 @@ export default function SpeedTest() {
 
     try {
       const { default: SpeedTest } = await import('@cloudflare/speedtest');
-
       const engine = new SpeedTest({
         autoStart: false,
         measurements: [
@@ -221,14 +318,11 @@ export default function SpeedTest() {
 
       engine.onResultsChange = ({ type }) => {
         if (type === 'latency' && phaseRef === 'latency') {
-          phaseRef = 'download';
-          setCurrentPhase('download');
+          phaseRef = 'download'; setCurrentPhase('download');
         } else if (type === 'download' && phaseRef !== 'download') {
-          phaseRef = 'download';
-          setCurrentPhase('download');
+          phaseRef = 'download'; setCurrentPhase('download');
         } else if (type === 'upload' && phaseRef !== 'upload') {
-          phaseRef = 'upload';
-          setCurrentPhase('upload');
+          phaseRef = 'upload'; setCurrentPhase('upload');
         }
       };
 
@@ -245,11 +339,8 @@ export default function SpeedTest() {
           loadedLatencyUp: s.loadedLatencyUp ? s.loadedLatencyUp.toFixed(0) : null,
           scores: typeof s.getScores === 'function' ? s.getScores() : null,
         };
-        setResults(r);
-        setState('done');
-        setCurrentPhase(null);
-        saveHistory(r);
-        setHistory(loadHistory());
+        setResults(r); setState('done'); setCurrentPhase(null);
+        saveHistory(r); setHistory(loadHistory());
       };
 
       engineRef.current = engine;
@@ -271,129 +362,135 @@ export default function SpeedTest() {
               setChartPoints([...chartRef.current]);
             }
           }
-          const latPts = engine.results.getUnloadedLatencyPoints?.();
-          if (latPts && phaseRef === 'latency') {
-            const lastLat = latPts[latPts.length - 1];
-            if (lastLat > 0) {
-              setLiveSpeed(Math.round(lastLat));
+          if (phaseRef === 'latency') {
+            const latPts = engine.results.getUnloadedLatencyPoints?.();
+            if (latPts && latPts.length > 0) {
+              const lastLat = latPts[latPts.length - 1];
+              if (lastLat > 0) setLiveSpeed(Math.round(lastLat));
             }
           }
         } catch (_) {}
-      }, 250);
-    } catch (e) {
-      setState('error');
-      setCurrentPhase(null);
+      }, 200);
+    } catch {
+      setState('error'); setCurrentPhase(null);
     }
   }, []);
 
-  useEffect(() => {
-    return () => {
-      engineRef.current?.stop();
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, []);
+  useEffect(() => () => { engineRef.current?.stop(); if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   const stop = useCallback(() => {
     engineRef.current?.stop();
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = null;
-    setState('idle');
-    setCurrentPhase(null);
-    setLiveSpeed(0);
-    setChartPoints([]);
+    setState('idle'); setCurrentPhase(null); setLiveSpeed(0); setChartPoints([]);
   }, []);
 
-  const clearHistory = useCallback(() => {
-    localStorage.removeItem(HISTORY_KEY);
-    setHistory([]);
-  }, []);
+  const clearHistory = useCallback(() => { localStorage.removeItem(HISTORY_KEY); setHistory([]); }, []);
 
   const gaugeColor = currentPhase === 'upload' ? '#10b981' : currentPhase === 'latency' ? '#f59e0b' : '#3b82f6';
   const phaseLabel = PHASES.find(p => p.key === currentPhase)?.label || '';
+  const chartColor = currentPhase === 'upload' ? '#10b981' : '#3b82f6';
 
-  const chartColor = currentPhase === 'upload' ? '#10b981' : currentPhase === 'latency' ? '#f59e0b' : '#3b82f6';
-
-  const downloadPoints = chartPoints.filter(p => p.t === 'download');
-  const uploadPoints = chartPoints.filter(p => p.t === 'upload');
-  const chartMax = Math.max(10, ...chartPoints.map(p => p.v)) * 1.1;
+  const dlPoints = chartPoints.filter(p => p.t === 'download');
+  const ulPoints = chartPoints.filter(p => p.t === 'upload');
 
   return (
-    <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-xl shadow-gray-900/30">
-      <style>{`@keyframes spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }`}</style>
+    <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-gray-900/40">
+      <style>{`
+        @keyframes gaugeSpin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+      `}</style>
 
-      <div className="px-4 sm:px-5 pt-5 pb-4">
+      <div className="px-5 sm:px-6 pt-6 pb-4">
         {state === 'running' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <StepIndicator currentPhase={currentPhase} />
             <Gauge value={liveSpeed} max={1000} phase={phaseLabel} color={gaugeColor} running />
-            {currentPhase !== 'latency' && chartPoints.length > 1 && (
-              <div className="bg-gray-700/20 rounded-xl p-2 border border-gray-700/30">
-                <div className="flex gap-3 text-[10px] text-gray-500 mb-1">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Descarga</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Subida</span>
-                </div>
-                <LiveChart points={currentPhase === 'upload' ? uploadPoints : downloadPoints} color={chartColor} maxVal={chartMax} />
+            {currentPhase === 'download' && dlPoints.length >= 2 && (
+              <div className="mx-1">
+                <LiveChart points={dlPoints} color="#3b82f6" id={`dl-${cid}`} />
               </div>
             )}
-            <p className="text-[11px] text-gray-500 text-center">No cierres esta página durante el test</p>
+            {currentPhase === 'upload' && ulPoints.length >= 2 && (
+              <div className="mx-1">
+                <LiveChart points={ulPoints} color="#10b981" id={`ul-${cid}`} />
+              </div>
+            )}
+            <p className="text-[11px] text-gray-500 text-center">No cierres esta página</p>
           </div>
         )}
 
         {state === 'done' && results && (
-          <div className="space-y-5">
+          <div className="space-y-6">
             {quality && (
-              <div className="text-center">
-                <div className="text-3xl mb-1">{quality.emoji}</div>
-                <p className="text-lg font-bold" style={{ color: quality.color }}>{quality.label}</p>
-                <div className="mt-2 h-2 bg-gray-700/50 rounded-full overflow-hidden max-w-[200px] mx-auto">
-                  <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${quality.score}%`, backgroundColor: quality.color }} />
+              <div className="text-center space-y-2">
+                <div className="text-4xl">{quality.emoji}</div>
+                <p className="text-xl font-extrabold tracking-tight" style={{ color: quality.color }}>{quality.label}</p>
+                <div className="relative h-2.5 bg-gray-700/40 rounded-full overflow-hidden max-w-[240px] mx-auto">
+                  <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out" style={{ width: `${quality.score}%`, backgroundColor: quality.color, boxShadow: `0 0 12px ${quality.color}60` }} />
                 </div>
-                <p className="text-[10px] text-gray-500 mt-1">{quality.score}/100</p>
+                <p className="text-[11px] text-gray-500 font-mono">{quality.score}/100</p>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <ResultCard label="Descarga" value={results.download} unit="Mbps" color="#3b82f6" icon="↓" />
               <ResultCard label="Subida" value={results.upload} unit="Mbps" color="#10b981" icon="↑" />
-              <ResultCard label="Latencia" value={results.latency} unit="ms" color="#f59e0b" icon="↔" detail={results.latency && parseInt(results.latency) < 20 ? 'Muy baja' : ''} />
-              <ResultCard label="Jitter" value={results.jitter} unit="ms" color="#a855f7" icon="∿" detail={results.jitter && parseInt(results.jitter) < 5 ? 'Estable' : ''} />
+              <ResultCard label="Latencia" value={results.latency} unit="ms" color="#f59e0b" icon="↔"
+                sub={results.latency && parseInt(results.latency) < 20 ? 'Muy baja' : results.latency && parseInt(results.latency) < 50 ? 'Baja' : ''} />
+              <ResultCard label="Jitter" value={results.jitter} unit="ms" color="#a855f7" icon="∿"
+                sub={results.jitter && parseInt(results.jitter) < 3 ? 'Muy estable' : results.jitter && parseInt(results.jitter) < 8 ? 'Estable' : ''} />
             </div>
 
             {results.loadedLatencyDown && (
-              <div className="grid grid-cols-2 gap-2.5 text-center text-xs">
-                <div className="p-2 rounded-lg bg-gray-700/20 border border-gray-700/30">
-                  <p className="text-gray-500">↓ Bajo carga</p>
-                  <p className="text-white font-semibold">{results.loadedLatencyDown} ms</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-gray-700/15 border border-gray-700/20 text-center">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">↓ Bajo carga</p>
+                  <p className="text-lg font-bold text-white mt-0.5">{results.loadedLatencyDown} <span className="text-[10px] text-gray-500">ms</span></p>
                 </div>
-                <div className="p-2 rounded-lg bg-gray-700/20 border border-gray-700/30">
-                  <p className="text-gray-500">↑ Bajo carga</p>
-                  <p className="text-white font-semibold">{results.loadedLatencyUp} ms</p>
+                <div className="p-3 rounded-xl bg-gray-700/15 border border-gray-700/20 text-center">
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">↑ Bajo carga</p>
+                  <p className="text-lg font-bold text-white mt-0.5">{results.loadedLatencyUp} <span className="text-[10px] text-gray-500">ms</span></p>
                 </div>
               </div>
             )}
 
-            {downloadPoints.length > 1 && (
-              <div className="bg-gray-700/20 rounded-xl p-2 border border-gray-700/30">
-                <p className="text-[10px] text-gray-500 mb-1">Mediciones ↓ descarga</p>
-                <LiveChart points={downloadPoints} color="#3b82f6" maxVal={chartMax} />
-                {uploadPoints.length > 1 && (
-                  <>
-                    <p className="text-[10px] text-gray-500 mb-1 mt-2">Mediciones ↑ subida</p>
-                    <LiveChart points={uploadPoints} color="#10b981" maxVal={chartMax} />
-                  </>
+            {dlPoints.length >= 2 && (
+              <div className="space-y-3">
+                <div className="mx-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Descarga — mediciones</p>
+                  </div>
+                  <LiveChart points={dlPoints} color="#3b82f6" id={`dlr-${cid}`} />
+                </div>
+                {ulPoints.length >= 2 && (
+                  <div className="mx-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Subida — mediciones</p>
+                    </div>
+                    <LiveChart points={ulPoints} color="#10b981" id={`ulr-${cid}`} />
+                  </div>
                 )}
               </div>
             )}
 
             {activities.length > 0 && (
               <div>
-                <p className="text-xs text-gray-400 font-medium mb-2">¿Qué podés hacer con esta velocidad?</p>
-                <div className="grid grid-cols-2 gap-1.5">
+                <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-2.5">¿Qué podés hacer con esta velocidad?</p>
+                <div className="grid grid-cols-2 gap-2">
                   {activities.map(a => (
-                    <div key={a.name} className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs ${a.ok ? 'bg-green-500/10 text-green-300' : 'bg-gray-700/20 text-gray-500'}`}>
-                      <span>{a.icon}</span>
+                    <div key={a.name} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                      a.ok ? 'bg-emerald-500/8 border border-emerald-500/15 text-emerald-300' : 'bg-gray-700/15 border border-gray-700/10 text-gray-500'
+                    }`}>
+                      <span className="text-sm">{a.icon}</span>
                       <span className="truncate">{a.name}</span>
-                      <span className="ml-auto text-[10px]">{a.ok ? '✓' : '✗'}</span>
+                      <span className="ml-auto shrink-0">
+                        {a.ok
+                          ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                          : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        }
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -402,12 +499,12 @@ export default function SpeedTest() {
 
             {results.scores && Object.keys(results.scores).length > 0 && (
               <div>
-                <p className="text-xs text-gray-400 font-medium mb-2">AIM Scores (Cloudflare)</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-2.5">AIM Scores (Cloudflare)</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {Object.entries(results.scores).map(([k, v]) => (
-                    <div key={k} className="px-2.5 py-1.5 rounded-lg bg-gray-700/20 border border-gray-700/30 text-xs">
-                      <span className="text-gray-400">{k}: </span>
-                      <span className="text-white font-semibold">{typeof v === 'number' ? v.toFixed(0) : v}</span>
+                    <div key={k} className="px-3 py-2.5 rounded-xl bg-gray-700/15 border border-gray-700/15 text-center">
+                      <p className="text-[10px] text-gray-500 capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}</p>
+                      <p className="text-lg font-bold text-white tabular-nums mt-0.5">{typeof v === 'number' ? v.toFixed(0) : v}</p>
                     </div>
                   ))}
                 </div>
@@ -415,31 +512,37 @@ export default function SpeedTest() {
             )}
 
             <div className="flex gap-2">
-              <button onClick={() => setShowHistory(!showHistory)} className="flex-1 py-2.5 rounded-xl text-xs font-medium border border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600 transition-all">
-                {showHistory ? 'Ocultar' : `Historial (${history.length})`}
+              <button onClick={() => { setShowHistory(!showHistory); setShowShare(false); }}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-200 ${
+                  showHistory ? 'border-blue-500/30 bg-blue-500/10 text-blue-300' : 'border-gray-600/40 bg-gray-700/30 text-gray-300 hover:bg-gray-600/30'
+                }`}>
+                Historial ({history.length})
               </button>
-              <button onClick={() => setShowShare(!showShare)} className="flex-1 py-2.5 rounded-xl text-xs font-medium border border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600 transition-all">
-                {showShare ? 'Cerrar' : 'Compartir'}
+              <button onClick={() => { setShowShare(!showShare); setShowHistory(false); }}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition-all duration-200 ${
+                  showShare ? 'border-blue-500/30 bg-blue-500/10 text-blue-300' : 'border-gray-600/40 bg-gray-700/30 text-gray-300 hover:bg-gray-600/30'
+                }`}>
+                Compartir
               </button>
             </div>
 
             {showShare && (
-              <div className="p-3 rounded-xl bg-gray-700/20 border border-gray-700/30 space-y-2">
-                <div id="share-result" className="bg-gray-900 rounded-xl p-4 text-center space-y-2">
-                  <p className="text-sm font-bold text-white">FIBRAMAP Speed Test</p>
-                  <div className="flex justify-center gap-4">
-                    <div><p className="text-xl font-bold text-blue-400">{results.download ?? '--'}</p><p className="text-[10px] text-gray-500">↓ Mbps</p></div>
-                    <div><p className="text-xl font-bold text-green-400">{results.upload ?? '--'}</p><p className="text-[10px] text-gray-500">↑ Mbps</p></div>
-                    <div><p className="text-xl font-bold text-amber-400">{results.latency ?? '--'}</p><p className="text-[10px] text-gray-500">ms</p></div>
+              <div className="p-4 rounded-2xl bg-gray-700/15 border border-gray-700/20 space-y-3">
+                <div className="bg-gray-900/80 rounded-xl p-5 text-center space-y-3">
+                  <p className="text-sm font-bold text-white tracking-wide">FIBRAMAP</p>
+                  <div className="flex justify-center gap-6">
+                    <div><p className="text-2xl font-extrabold text-blue-400 tabular-nums">{results.download ?? '--'}</p><p className="text-[10px] text-gray-500 mt-0.5">↓ Mbps</p></div>
+                    <div><p className="text-2xl font-extrabold text-green-400 tabular-nums">{results.upload ?? '--'}</p><p className="text-[10px] text-gray-500 mt-0.5">↑ Mbps</p></div>
+                    <div><p className="text-2xl font-extrabold text-amber-400 tabular-nums">{results.latency ?? '--'}</p><p className="text-[10px] text-gray-500 mt-0.5">ms</p></div>
                   </div>
-                  {quality && <p className="text-xs" style={{ color: quality.color }}>{quality.emoji} {quality.label}</p>}
-                  <p className="text-[9px] text-gray-600">{new Date().toLocaleDateString('es-AR')} • fibramap.com</p>
+                  {quality && <p className="text-sm font-semibold" style={{ color: quality.color }}>{quality.emoji} {quality.label}</p>}
+                  <p className="text-[10px] text-gray-600">{new Date().toLocaleDateString('es-AR')} • fibramap.com</p>
                 </div>
                 <button onClick={() => {
                   navigator.clipboard?.writeText(
-                    `FIBRAMAP Speed Test\n↓ ${results.download ?? '--'} Mbps | ↑ ${results.upload ?? '--'} Mbps | ${results.latency ?? '--'} ms\n${quality ? quality.emoji + ' ' + quality.label : ''}\nhttps://alanmundler.github.io/fibramap-page/velocidad`
+                    `⚡ FIBRAMAP Speed Test\n↓ ${results.download ?? '--'} Mbps | ↑ ${results.upload ?? '--'} Mbps | ${results.latency ?? '--'} ms\n${quality ? quality.emoji + ' ' + quality.label : ''}\nhttps://alanmundler.github.io/fibramap-page/velocidad`
                   );
-                }} className="w-full py-2 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white transition-all">
+                }} className="w-full py-2.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all active:scale-[0.98]">
                   Copiar resultado
                 </button>
               </div>
@@ -448,45 +551,45 @@ export default function SpeedTest() {
         )}
 
         {state === 'idle' && (
-          <div className="text-center py-6 space-y-3">
-            <div className="text-4xl">⚡</div>
-            <p className="text-sm text-gray-400 max-w-xs mx-auto">
-              Test completo: descarga, subida, latencia, jitter, latencia bajo carga y calidad de conexión. Servidores Cloudflare.
+          <div className="text-center py-8 space-y-3">
+            <Gauge value={0} max={1000} phase="" color="#3b82f6" running={false} />
+            <p className="text-sm text-gray-400 max-w-xs mx-auto mt-4">
+              Test completo con gráfico en tiempo real. Servidores Cloudflare en Argentina.
             </p>
           </div>
         )}
 
         {state === 'error' && (
-          <div className="text-center py-6">
+          <div className="text-center py-8">
             <p className="text-sm text-red-400">Error al iniciar el test. Intentá de nuevo.</p>
           </div>
         )}
       </div>
 
       {showHistory && history.length > 0 && (
-        <div className="px-4 pb-3 max-h-48 overflow-y-auto">
+        <div className="px-5 pb-3 max-h-52 overflow-y-auto border-t border-gray-700/20 pt-3">
           <div className="flex justify-between items-center mb-2">
-            <p className="text-[11px] text-gray-400 font-medium">Últimas pruebas</p>
-            <button onClick={clearHistory} className="text-[10px] text-red-400 hover:text-red-300">Borrar</button>
+            <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Últimas pruebas</p>
+            <button onClick={clearHistory} className="text-[10px] text-red-400/70 hover:text-red-400 transition-colors">Borrar todo</button>
           </div>
-          <div className="space-y-1.5">
-            {history.slice(0, 10).map((h, i) => (
-              <div key={i} className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-gray-700/20 text-[11px]">
-                <span className="text-gray-500 shrink-0">{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>
-                <span className="text-blue-400 font-mono">{h.download ?? '--'}</span>
+          <div className="space-y-1">
+            {history.slice(0, 15).map((h, i) => (
+              <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-gray-700/10 text-[11px]">
+                <span className="text-gray-600 shrink-0 font-mono">{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>
+                <span className="text-blue-400 font-mono font-semibold">{h.download ?? '--'}</span>
                 <span className="text-gray-600">↓</span>
-                <span className="text-green-400 font-mono">{h.upload ?? '--'}</span>
+                <span className="text-green-400 font-mono font-semibold">{h.upload ?? '--'}</span>
                 <span className="text-gray-600">↑</span>
-                <span className="text-amber-400 font-mono">{h.latency ?? '--'}ms</span>
+                <span className="text-amber-400 font-mono font-semibold">{h.latency ?? '--'}<span className="text-gray-600">ms</span></span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div className="px-4 pb-4">
+      <div className="px-5 pb-5">
         {state === 'running' ? (
-          <button onClick={stop} className="w-full py-3 rounded-xl text-sm font-medium border border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600 hover:border-gray-500 hover:text-white active:scale-[0.98] transition-all duration-200">
+          <button onClick={stop} className="w-full py-3.5 rounded-xl text-sm font-semibold border border-gray-600/40 bg-gray-700/30 text-gray-300 hover:bg-gray-600/40 hover:border-gray-500/40 hover:text-white active:scale-[0.98] transition-all duration-200">
             Cancelar
           </button>
         ) : (
