@@ -17,8 +17,9 @@ const groups = [
   },
   {
     label: 'Herramientas',
-    active: isAnyActive(['/compare', '/calculadora', '/velocidad', '/leaderboard']),
+    active: isAnyActive(['/compare', '/calculadora', '/velocidad', '/leaderboard', '/quiz']),
     items: [
+      { href: '/quiz', label: '¿Qué plan me conviene?' },
       { href: '/compare', label: 'Comparar planes' },
       { href: '/calculadora', label: 'Costo real' },
       { href: '/velocidad', label: 'Test de velocidad' },

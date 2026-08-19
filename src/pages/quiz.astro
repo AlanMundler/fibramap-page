@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import QuizIsland from '../components/QuizIsland.jsx';
+---
+
+<Layout
+  title="FibraMap — ¿Qué plan de fibra óptica te conviene?"
+  description="Respondé 3 preguntas y descubrí cuál es el mejor plan de fibra óptica para tu hogar en Córdoba Capital. Recomendación personalizada."
+>
+  <div class="space-y-6 max-w-4xl mx-auto">
+    <div class="space-y-2 mb-6">
+      <h1 class="text-2xl sm:text-3xl font-bold">¿Qué plan te conviene?</h1>
+    </div>
+    <QuizIsland client:load />
+  </div>
+</Layout>
