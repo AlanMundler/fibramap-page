@@ -78,14 +78,13 @@ const CF_DOWN = 'https://speed.cloudflare.com/__down';
 const CF_UP = 'https://speed.cloudflare.com/__up';
 const DL_STREAMS = 6;
 const UL_STREAMS = 6;
-const UL_STREAM_SIZE = 10 * 1024 * 1024;
-const LATENCY_COUNT = 20;
+const UL_STREAM_SIZE = 8 * 1024 * 1024;
+const LATENCY_COUNT = 10;
 const DL_ROUNDS = [
-  { bytes: 1e5, count: 5 },
-  { bytes: 1e6, count: 4 },
-  { bytes: 1e7, count: 3 },
-  { bytes: 2.5e7, count: 3 },
-  { bytes: 7e7, count: 3 },
+  { bytes: 1e5, count: 3 },
+  { bytes: 1e6, count: 3 },
+  { bytes: 1e7, count: 2 },
+  { bytes: 5e7, count: 2 },
 ];
 
 function isMobileDevice() {
