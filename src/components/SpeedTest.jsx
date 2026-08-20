@@ -333,6 +333,7 @@ export default function SpeedTest() {
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [nic, setNic] = useState({ type: 'unknown', downlink: null, rtt: null, saveData: false });
   const [trace, setTrace] = useState(null);
   const engineRef = useRef(null);
@@ -340,6 +341,7 @@ export default function SpeedTest() {
   const cancelledRef = useRef(false);
   const smoothRef = useRef(0);
   const chartRef = useRef([]);
+  const nicRef = useRef(nic);
   const [cid] = useState(uid);
 
   useEffect(() => {
@@ -350,6 +352,8 @@ export default function SpeedTest() {
       .then(d => { if (d && d.ip) setTrace(d); })
       .catch(() => {});
   }, []);
+
+  useEffect(() => { nicRef.current = nic; }, [nic]);
 
   const nicInfo = NIC_LIMITS[nic.type] || NIC_LIMITS.unknown;
 
@@ -364,7 +368,7 @@ export default function SpeedTest() {
   const nicEfficiency = useMemo(() => {
     if (!results || !nicInfo.maxDown) return null;
     return Math.round((parseFloat(results.download) || 0) / nicInfo.maxDown * 100);
-  }, [results, nicInfo]);
+  }, [results, nic]);
 
   const activities = useMemo(() => {
     if (!results) return [];
@@ -428,9 +432,6 @@ export default function SpeedTest() {
         if (pollRef.current) clearInterval(pollRef.current);
         pollRef.current = null;
         const s = res.getSummary();
-        console.log('[SpeedTest] onFinish raw summary:', s);
-        console.log('[SpeedTest] download bps:', s.download, '→ Mbps:', s.download ? (s.download / 1e6).toFixed(1) : null);
-        console.log('[SpeedTest] upload bps:', s.upload, '→ Mbps:', s.upload ? (s.upload / 1e6).toFixed(1) : null);
         const r = {
           download: s.download ? (s.download / 1e6).toFixed(1) : null,
           upload: s.upload ? (s.upload / 1e6).toFixed(1) : null,
@@ -439,10 +440,10 @@ export default function SpeedTest() {
           loadedLatencyDown: s.downLoadedLatency ? s.downLoadedLatency.toFixed(0) : null,
           loadedLatencyUp: s.upLoadedLatency ? s.upLoadedLatency.toFixed(0) : null,
         };
-        console.log('[SpeedTest] parsed results:', r);
         setResults(r); setState('done'); setCurrentPhase(null);
         saveHistory(r); setHistory(loadHistory());
-        if (nic.type === 'unknown' || nic.type === 'wifi_generic' || nic.type === 'cellular') {
+        const curType = nicRef.current.type;
+        if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
           const inferred = inferNICFromSpeed(parseFloat(r.download));
           if (inferred) setNic(prev => ({ ...prev, type: inferred }));
         }
@@ -452,10 +453,8 @@ export default function SpeedTest() {
       engine.play();
 
       if (pollRef.current) clearInterval(pollRef.current);
-      let pollCount = 0;
       pollRef.current = setInterval(() => {
         if (!engine.results || cancelledRef.current) return;
-        pollCount++;
         try {
           const isUpload = phaseRef === 'upload';
 
@@ -470,10 +469,6 @@ export default function SpeedTest() {
               : engine.results.getDownloadBandwidthPoints?.();
             const lastBps = pts && pts.length > 0 ? pts[pts.length - 1].bps : 0;
             const lastMbps = lastBps > 0 ? Math.round(lastBps / 1e6) : 0;
-
-            if (pollCount % 5 === 1) {
-              console.log(`[SpeedTest] poll #${pollCount} ${phaseRef}: agg=${aggMbps}Mbps last=${lastMbps}Mbps points=${pts?.length || 0}`);
-            }
 
             const rawMbps = aggMbps > 0 ? aggMbps : lastMbps;
             if (rawMbps > 0) {
@@ -516,12 +511,11 @@ export default function SpeedTest() {
   const gaugeColor = currentPhase === 'upload' ? '#10b981' : currentPhase === 'latency' ? '#f59e0b' : '#3b82f6';
   const phaseLabel = PHASES.find(p => p.key === currentPhase)?.label || '';
 
-  const dlPoints = chartPoints.filter(p => p.t === 'download');
-  const ulPoints = chartPoints.filter(p => p.t === 'upload');
+  const dlPoints = useMemo(() => chartPoints.filter(p => p.t === 'download'), [chartPoints]);
+  const ulPoints = useMemo(() => chartPoints.filter(p => p.t === 'upload'), [chartPoints]);
 
   return (
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-gray-900/40">
-      <style>{`@keyframes gSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
 
       {/* NIC info — horizontal row, idle only */}
       {state === 'idle' && (
@@ -747,8 +741,12 @@ export default function SpeedTest() {
                 navigator.clipboard?.writeText(
                   `⚡ FIBRAMAP Speed Test\n↓ ${results.download ?? '—'} Mbps | ↑ ${results.upload ?? '—'} Mbps | ${results.latency ?? '—'} ms\n${quality ? quality.emoji + ' ' + quality.label : ''}\nhttps://alanmundler.github.io/fibramap-page/velocidad`
                 );
-              }} className="w-full py-2 rounded-xl text-[11px] font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all active:scale-[0.98]">
-                Copiar resultado
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }} className={`w-full py-2 rounded-xl text-[11px] font-semibold transition-all active:scale-[0.98] ${
+                copied ? 'bg-emerald-600 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white'
+              }`}>
+                {copied ? '✓ Copiado' : 'Copiar resultado'}
               </button>
             </div>
           )}
