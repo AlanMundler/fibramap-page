@@ -177,22 +177,6 @@ async function getTargets() {
   return await res.json();
 }
 
-function createXHR(url, method, headers) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open(method, url, true);
-    if (headers) {
-      for (const [k, v] of Object.entries(headers)) {
-        xhr.setRequestHeader(k, v);
-      }
-    }
-    xhr.onload = () => resolve(xhr);
-    xhr.onerror = () => reject(new Error('XHR error'));
-    xhr.onabort = () => reject(new DOMException('aborted', 'AbortError'));
-    resolve(xhr);
-  });
-}
-
 function measureDownload(targets, durationMs, onProgress) {
   return new Promise((resolve) => {
     const xhrs = [];
