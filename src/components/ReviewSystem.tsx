@@ -70,7 +70,7 @@ function ProviderCard({
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left bg-gray-800/80 rounded-xl border backdrop-blur-sm p-4 transition-all ${
+      className={`w-full text-left bg-gray-800/80 rounded-xl border backdrop-blur-sm p-4 transition-all flex flex-col ${
         isSelected ? `${c.border} ring-1 ring-offset-0 ${c.border}` : 'border-gray-700/50 hover:border-gray-600'
       }`}
     >
@@ -111,11 +111,13 @@ function ProviderCard({
         ))}
       </div>
 
-      {provider.recentIncidents.length > 0 && (
-        <div className="mt-3 text-xs text-orange-400/80">
-          {provider.recentIncidents.length} incidente{provider.recentIncidents.length > 1 ? 's' : ''} reciente{provider.recentIncidents.length > 1 ? 's' : ''}
-        </div>
-      )}
+      <div className="mt-auto pt-3 min-h-[1.25rem]">
+        {provider.recentIncidents.length > 0 ? (
+          <div className="text-xs text-orange-400/80">
+            {provider.recentIncidents.length} incidente{provider.recentIncidents.length > 1 ? 's' : ''} reciente{provider.recentIncidents.length > 1 ? 's' : ''}
+          </div>
+        ) : null}
+      </div>
     </button>
   );
 }
