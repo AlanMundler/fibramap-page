@@ -385,13 +385,12 @@ export default function SpeedTest() {
     const STREAMS = 6;
     const BYTES_PER_STREAM = 10 * 1024 * 1024;
     const startTime = performance.now();
+    const streamLoaded = new Array(STREAMS).fill(0);
 
     setCurrentPhase('upload');
     smoothRef.current = 0;
     chartRef.current = [];
     setChartPoints([]);
-
-    let globalUploadedBytes = 0;
 
     const uploadOneStream = (streamIndex) => {
       return new Promise((resolve) => {
@@ -401,10 +400,9 @@ export default function SpeedTest() {
         xhr.upload.onprogress = (e) => {
           if (cancelledRef.current || signal.aborted) { xhr.abort(); resolve(); return; }
           if (e.lengthComputable) {
+            streamLoaded[streamIndex] = e.loaded;
+            const totalBytes = streamLoaded.reduce((a, b) => a + b, 0);
             const elapsed = (performance.now() - startTime) / 1000;
-            const streamOffset = streamIndex * BYTES_PER_STREAM;
-            const currentStreamBytes = e.loaded;
-            const totalBytes = streamOffset + currentStreamBytes;
             if (elapsed > 0.1) {
               const mbps = Math.round((totalBytes * 8) / (elapsed * 1000000));
               const prev = smoothRef.current;
