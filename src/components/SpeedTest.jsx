@@ -197,9 +197,12 @@ async function measureLatency(signal, onTick) {
     if (signal.aborted) break;
     const t0 = performance.now();
     try {
-      await fetch(`${CF_DOWN}?bytes=0&_=${Date.now()}_${i}`, {
-        signal, cache: 'no-store',
-      });
+      await Promise.race([
+        fetch(`${CF_DOWN}?bytes=0&_=${Date.now()}_${i}`, {
+          signal, cache: 'no-store',
+        }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000)),
+      ]);
       const ms = performance.now() - t0;
       latencies.push(ms);
       onTick(ms, latencies);
@@ -210,18 +213,19 @@ async function measureLatency(signal, onTick) {
   return { median: median(latencies), jitter: jitterFromLatencies(latencies) };
 }
 
-async function fetchDownloadChunk(bytes, signal) {
-  const res = await fetch(`${CF_DOWN}?bytes=${bytes}&_=${Date.now()}`, {
-    signal, cache: 'no-store',
+function xhrDownload(bytes, signal) {
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `${CF_DOWN}?bytes=${bytes}&_=${Date.now()}`);
+    xhr.responseType = 'blob';
+    xhr.timeout = 20000;
+    xhr.onload = () => resolve(xhr.response?.size || 0);
+    xhr.onerror = () => resolve(0);
+    xhr.ontimeout = () => resolve(0);
+    xhr.onabort = () => resolve(0);
+    if (signal) signal.addEventListener('abort', () => { try { xhr.abort(); } catch {} }, { once: true });
+    xhr.send();
   });
-  const reader = res.body.getReader();
-  let total = 0;
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-  }
-  return total;
 }
 
 async function measureDownload(signal, onTick) {
@@ -234,9 +238,7 @@ async function measureDownload(signal, onTick) {
       if (signal.aborted) break;
       const t0 = performance.now();
       const bytesArr = await Promise.all(
-        Array.from({ length: DL_STREAMS }, () =>
-          fetchDownloadChunk(round.bytes, signal).catch(() => 0)
-        )
+        Array.from({ length: DL_STREAMS }, () => xhrDownload(round.bytes, signal))
       );
       const totalBytes = bytesArr.reduce((a, b) => a + b, 0);
       const elapsed = (performance.now() - t0) / 1000;
@@ -298,9 +300,12 @@ function createLoadedLatencyProbe(signal) {
     while (!stopped && !signal.aborted) {
       const t0 = performance.now();
       try {
-        await fetch(`${CF_DOWN}?bytes=0&_=${Date.now()}_ld`, {
-          signal, cache: 'no-store',
-        });
+        await Promise.race([
+          fetch(`${CF_DOWN}?bytes=0&_=${Date.now()}_ld`, {
+            signal, cache: 'no-store',
+          }),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000)),
+        ]);
         latencies.push(performance.now() - t0);
       } catch {
         if (signal.aborted) break;
