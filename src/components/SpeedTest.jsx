@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 
 const WORKER_URL = 'https://quiet-bird-94ce.alan-mundler.workers.dev';
-const SPEEDMETER_WS = 'wss://speedmeter.dev/ws';
 
 const COLO_MAP = {
   EZE: 'Buenos Aires, AR', SCL: 'Santiago, CL', MIA: 'Miami, US',
@@ -306,12 +305,13 @@ export default function SpeedTest() {
   const [copied, setCopied] = useState(false);
   const [nic, setNic] = useState({ type: 'unknown', downlink: null, rtt: null, saveData: false });
   const [trace, setTrace] = useState(null);
-  const wsRef = useRef(null);
-  const uploadIntervalRef = useRef(null);
+  const stateRef = useRef('idle');
+  const abortRef = useRef(null);
   const cancelledRef = useRef(false);
   const smoothRef = useRef(0);
   const chartRef = useRef([]);
   const nicRef = useRef(nic);
+  const pollRef = useRef(null);
   const [cid] = useState(uid);
 
   useEffect(() => {
@@ -324,6 +324,7 @@ export default function SpeedTest() {
   }, []);
 
   useEffect(() => { nicRef.current = nic; }, [nic]);
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   const nicInfo = NIC_LIMITS[nic.type] || NIC_LIMITS.unknown;
 
@@ -351,18 +352,19 @@ export default function SpeedTest() {
   const gaugeMax = liveSpeed > 0 ? Math.max(liveSpeed * 1.25, 100) : (nicInfo.maxDown ? Math.max(nicInfo.maxDown * 1.2, 200) : 200);
 
   const cleanup = useCallback(() => {
-    if (uploadIntervalRef.current) {
-      clearInterval(uploadIntervalRef.current);
-      uploadIntervalRef.current = null;
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
     }
-    if (wsRef.current) {
-      try { wsRef.current.close(); } catch (_) {}
-      wsRef.current = null;
+    if (abortRef.current) {
+      try { abortRef.current.abort(); } catch (_) {}
+      abortRef.current = null;
     }
   }, []);
 
   const run = useCallback(() => {
     setState('running');
+    stateRef.current = 'running';
     setResults(null);
     setCurrentPhase('latency');
     setLiveSpeed(0);
@@ -373,157 +375,159 @@ export default function SpeedTest() {
     setNic(detectNIC());
     cleanup();
 
-    let pingDone = false;
-    let savedPing = null;
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const signal = controller.signal;
 
-    try {
-      const ws = new WebSocket(SPEEDMETER_WS);
-      wsRef.current = ws;
+    async function executeTest() {
+      try {
+        // === Phase 1: Latency ===
+        setCurrentPhase('latency');
+        const pingCount = 20;
+        const pingTimes = [];
 
-      ws.onopen = () => {
-        if (cancelledRef.current) { cleanup(); return; }
-        ws.send(JSON.stringify({ type: 'start_complete_test' }));
-      };
-
-      ws.onmessage = (event) => {
-        if (cancelledRef.current) return;
-        if (event.data instanceof Blob) return;
-
-        let data;
-        try { data = JSON.parse(event.data); }
-        catch { return; }
-
-        switch (data.type) {
-          case 'ping_request':
-            ws.send(JSON.stringify({
-              type: 'ping_response',
-              sequence: data.sequence,
-              timestamp: data.timestamp,
-            }));
-            break;
-
-          case 'ping_complete': {
-            const pingVal = data.avg || data.ping || data.latency;
-            if (pingVal) {
-              savedPing = Math.round(parseFloat(pingVal));
-              setLiveSpeed(savedPing);
-            }
-            break;
+        for (let i = 0; i < pingCount; i++) {
+          if (cancelledRef.current || signal.aborted) return;
+          const url = `https://speed.cloudflare.com/__ping?_=${Date.now()}_${i}`;
+          const start = performance.now();
+          try {
+            await fetch(url, { method: 'HEAD', cache: 'no-store', signal });
+            const elapsed = performance.now() - start;
+            pingTimes.push(elapsed);
+            setLiveSpeed(Math.round(elapsed));
+          } catch {
+            if (cancelledRef.current || signal.aborted) return;
           }
+        }
 
-          case 'download_progress': {
-            if (!pingDone) {
-              pingDone = true;
-              setCurrentPhase('download');
-            }
-            const mbps = Math.round(data.mbps);
-            if (mbps > 0) {
-              const prev = smoothRef.current;
-              smoothRef.current = prev === 0 ? mbps : Math.round(prev * 0.6 + mbps * 0.4);
-              setLiveSpeed(Math.max(smoothRef.current, mbps));
-              chartRef.current = [...chartRef.current, { v: mbps, t: 'download' }];
-              if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
-              setChartPoints([...chartRef.current]);
-            }
-            break;
-          }
+        if (pingTimes.length === 0) throw new Error('Ping failed');
+        if (cancelledRef.current || signal.aborted) return;
 
-          case 'start_upload_confirmed': {
-            setCurrentPhase('upload');
-            smoothRef.current = 0;
-            const chunkSize = data.chunkSize || 1048576;
-            const testData = new ArrayBuffer(chunkSize);
-            const view = new Uint8Array(testData);
-            for (let i = 0; i < view.length; i++) view[i] = Math.floor(Math.random() * 256);
+        const avgLatency = pingTimes.reduce((a, b) => a + b, 0) / pingTimes.length;
+        const minLatency = Math.min(...pingTimes);
+        const jitter = Math.round(
+          pingTimes.reduce((sum, t) => sum + Math.abs(t - avgLatency), 0) / pingTimes.length
+        );
 
-            uploadIntervalRef.current = setInterval(() => {
-              if (ws.readyState === WebSocket.OPEN) ws.send(testData);
-            }, 50);
+        // === Phase 2: Download ===
+        setCurrentPhase('download');
+        smoothRef.current = 0;
+        let bestDown = 0;
 
-            setTimeout(() => {
-              if (uploadIntervalRef.current) {
-                clearInterval(uploadIntervalRef.current);
-                uploadIntervalRef.current = null;
+        for (let iter = 0; iter < 3; iter++) {
+          if (cancelledRef.current || signal.aborted) return;
+          chartRef.current = [];
+          setChartPoints([]);
+
+          const dlUrl = `https://speed.cloudflare.com/__down?bytes=25000000&_=${Date.now()}_${iter}`;
+          const dlStart = performance.now();
+          let totalBytes = 0;
+
+          try {
+            const response = await fetch(dlUrl, { cache: 'no-store', signal });
+            const reader = response.body.getReader();
+
+            while (true) {
+              if (cancelledRef.current || signal.aborted) { reader.cancel(); return; }
+              const { done, value } = await reader.read();
+              if (done) break;
+              totalBytes += value.length;
+              const elapsed = (performance.now() - dlStart) / 1000;
+              if (elapsed > 0) {
+                const mbps = Math.round((totalBytes * 8) / (elapsed * 1000000));
+                const prev = smoothRef.current;
+                smoothRef.current = prev === 0 ? mbps : Math.round(prev * 0.6 + mbps * 0.4);
+                setLiveSpeed(Math.max(smoothRef.current, mbps));
+                chartRef.current = [...chartRef.current, { v: mbps, t: 'download' }];
+                if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
+                setChartPoints([...chartRef.current]);
               }
-              if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'stop' }));
-            }, data.duration || 10000);
-            break;
-          }
+            }
 
-          case 'upload_progress': {
-            const mbps = Math.round(data.mbps);
-            if (mbps > 0) {
-              const prev = smoothRef.current;
-              smoothRef.current = prev === 0 ? mbps : Math.round(prev * 0.6 + mbps * 0.4);
-              setLiveSpeed(Math.max(smoothRef.current, mbps));
+            const finalElapsed = (performance.now() - dlStart) / 1000;
+            const finalMbps = Math.round((totalBytes * 8) / (finalElapsed * 1000000));
+            if (finalMbps > bestDown) bestDown = finalMbps;
+          } catch {
+            if (cancelledRef.current || signal.aborted) return;
+          }
+        }
+
+        if (cancelledRef.current || signal.aborted) return;
+
+        // === Phase 3: Upload ===
+        setCurrentPhase('upload');
+        smoothRef.current = 0;
+        let bestUp = 0;
+
+        for (let iter = 0; iter < 3; iter++) {
+          if (cancelledRef.current || signal.aborted) return;
+          chartRef.current = [];
+          setChartPoints([]);
+
+          const upUrl = `https://speed.cloudflare.com/__up?_=${Date.now()}_${iter}`;
+          const chunkSize = 5 * 1024 * 1024; // 5MB
+          const data = new ArrayBuffer(chunkSize);
+          new Uint8Array(data).fill(0xAB);
+
+          const upStart = performance.now();
+          try {
+            await fetch(upUrl, { method: 'POST', body: data, signal });
+            const elapsed = (performance.now() - upStart) / 1000;
+            if (elapsed > 0) {
+              const mbps = Math.round((data.byteLength * 8) / (elapsed * 1000000));
+              setLiveSpeed(mbps);
               chartRef.current = [...chartRef.current, { v: mbps, t: 'upload' }];
-              if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
               setChartPoints([...chartRef.current]);
+              if (mbps > bestUp) bestUp = mbps;
             }
-            break;
-          }
-
-          case 'test_complete': {
-            if (data.testType === 'download') {
-              setCurrentPhase('download');
-            }
-            break;
-          }
-
-          case 'complete_test_results': {
-            cleanup();
-            const r = {
-              download: data.results.download ? String(Math.round(data.results.download)) : null,
-              upload: data.results.upload ? String(Math.round(data.results.upload)) : null,
-              latency: data.results.ping ? String(Math.round(parseFloat(data.results.ping))) : null,
-              jitter: null,
-              loadedLatencyDown: null,
-              loadedLatencyUp: null,
-            };
-            if (cancelledRef.current) return;
-            setResults(r);
-            setState('done');
-            setCurrentPhase(null);
-            saveHistory(r);
-            setHistory(loadHistory());
-            const curType = nicRef.current.type;
-            if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
-              const inferred = inferNICFromSpeed(parseFloat(r.download));
-              if (inferred) setNic(prev => ({ ...prev, type: inferred }));
-            }
-            break;
+          } catch {
+            if (cancelledRef.current || signal.aborted) return;
           }
         }
-      };
 
-      ws.onerror = () => {
-        if (cancelledRef.current) return;
-        cleanup();
-        setState('error');
+        if (cancelledRef.current || signal.aborted) return;
+
+        // === Phase 4: Done ===
+        const finalResults = {
+          download: String(bestDown || 0),
+          upload: String(bestUp || 0),
+          latency: String(Math.round(avgLatency)),
+          jitter: String(jitter),
+          loadedLatencyDown: null,
+          loadedLatencyUp: null,
+        };
+
+        setResults(finalResults);
+        setState('done');
+        stateRef.current = 'done';
         setCurrentPhase(null);
-      };
+        saveHistory(finalResults);
+        setHistory(loadHistory());
 
-      ws.onclose = () => {
-        if (cancelledRef.current) return;
-        if (state === 'running') {
-          cleanup();
-          setState('error');
-          setCurrentPhase(null);
+        const curType = nicRef.current.type;
+        if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
+          const inferred = inferNICFromSpeed(parseFloat(finalResults.download));
+          if (inferred) setNic(prev => ({ ...prev, type: inferred }));
         }
-      };
-    } catch {
-      cleanup();
-      setState('error');
-      setCurrentPhase(null);
+      } catch (err) {
+        if (cancelledRef.current || signal.aborted) return;
+        setState('error');
+        stateRef.current = 'error';
+        setCurrentPhase(null);
+      }
     }
+
+    executeTest();
   }, [cleanup]);
 
   useEffect(() => () => { cancelledRef.current = true; cleanup(); }, [cleanup]);
 
   const stop = useCallback(() => {
     cancelledRef.current = true;
+    abortRef.current?.abort();
     cleanup();
     setState('idle');
+    stateRef.current = 'idle';
     setCurrentPhase(null);
     setLiveSpeed(0);
     setChartPoints([]);
@@ -590,7 +594,9 @@ export default function SpeedTest() {
                 <div className="w-px h-2.5 bg-gray-700/40 shrink-0" />
                 <div className="flex items-center gap-1 min-w-0">
                   <span className="text-gray-600 shrink-0">Servidor</span>
-                  <span className="text-gray-300 font-semibold truncate">SpeedMeter.dev</span>
+                  <span className="text-gray-300 font-semibold truncate">
+                    {trace.colo ? `Cloudflare ${trace.colo} ${COLO_MAP[trace.colo] || ''}` : 'Cloudflare'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -612,7 +618,7 @@ export default function SpeedTest() {
       <div className="px-4 sm:px-5 pb-2 min-h-[32px]">
         {state === 'idle' && (
           <p className="text-[10px] text-gray-500 text-center">
-            Test de velocidad con servidores SpeedMeter.dev
+            Test de velocidad con servidores Cloudflare
           </p>
         )}
 
@@ -652,7 +658,9 @@ export default function SpeedTest() {
                 <span className="text-gray-600">·</span>
                 <span className="text-gray-300 font-semibold">{trace.isp || '—'}</span>
                 <span className="text-gray-600">·</span>
-                <span className="text-gray-300 font-semibold">SpeedMeter.dev</span>
+                <span className="text-gray-300 font-semibold">
+                  {trace.colo ? `Cloudflare ${trace.colo} ${COLO_MAP[trace.colo] || ''}` : 'Cloudflare'}
+                </span>
               </div>
             </div>
           )}
