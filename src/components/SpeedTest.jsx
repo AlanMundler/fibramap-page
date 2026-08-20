@@ -388,10 +388,10 @@ export default function SpeedTest() {
 
         for (let i = 0; i < pingCount; i++) {
           if (cancelledRef.current || signal.aborted) return;
-          const url = `https://speed.cloudflare.com/__ping?_=${Date.now()}_${i}`;
+          const url = `https://speed.cloudflare.com/__down?bytes=0&_=${Date.now()}_${i}`;
           const start = performance.now();
           try {
-            await fetch(url, { method: 'HEAD', cache: 'no-store', signal });
+            await fetch(url, { cache: 'no-store', signal });
             const elapsed = performance.now() - start;
             pingTimes.push(elapsed);
             setLiveSpeed(Math.round(elapsed));
@@ -419,7 +419,7 @@ export default function SpeedTest() {
           chartRef.current = [];
           setChartPoints([]);
 
-          const dlUrl = `https://speed.cloudflare.com/__down?bytes=25000000&_=${Date.now()}_${iter}`;
+          const dlUrl = `https://speed.cloudflare.com/__down?bytes=100000000&_=${Date.now()}_${iter}`;
           const dlStart = performance.now();
           let totalBytes = 0;
 
@@ -464,8 +464,8 @@ export default function SpeedTest() {
           chartRef.current = [];
           setChartPoints([]);
 
-          const upUrl = `https://speed.cloudflare.com/__up?_=${Date.now()}_${iter}`;
-          const chunkSize = 5 * 1024 * 1024; // 5MB
+          const upUrl = `https://speed.cloudflare.com/__up`;
+          const chunkSize = 10 * 1024 * 1024; // 10MB
           const data = new ArrayBuffer(chunkSize);
           new Uint8Array(data).fill(0xAB);
 
