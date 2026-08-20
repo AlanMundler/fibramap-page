@@ -114,17 +114,6 @@ export const cordobaTests: SpeedTest[] = [
     methodology: 'Tests de usuarios reales contra nodos propios. Score: 30/100.',
   },
   {
-    provider: 'Movistar',
-    download: 189.5,
-    upload: 178.5,
-    latency: 161.6,
-    tests: 723,
-    source: 'Speedtest.net.ar',
-    sourceUrl: 'https://speedtest.net.ar/ranking',
-    period: 'Al 11/08/2026',
-    methodology: 'Tests de usuarios reales contra nodos propios. Score: 36/100.',
-  },
-  {
     provider: 'Claro',
     download: 118.4,
     upload: 95.2,

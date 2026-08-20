@@ -155,6 +155,9 @@ export default function SpeedLeaderboard() {
               <div className="text-xs text-gray-500">Ranking global</div>
             </div>
           </div>
+          <p className="text-xs text-gray-500 mt-3">
+            Solo se listan ISPs con cobertura de fibra en Córdoba Capital. Movistar, Telecentro y Starlink no tienen fibra FTTH en la ciudad.
+          </p>
         </div>
       )}
 
