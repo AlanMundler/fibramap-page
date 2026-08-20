@@ -2,6 +2,12 @@ const MODEL = 'gemini-3.6-flash';
 const SYSTEM = 'Sos un asistente de FibraMap, un portal independiente sobre fibra óptica en Córdoba, Argentina. Respondés en español, de forma breve y directa. Tu conocimiento se centra en proveedores de internet (Claro, Personal, IPLAN, Internet Córdoba, Batcom, Guabi), planes, precios, cobertura por barrios, y consejos para elegir proveedor. Conocés las herramientas del sitio: mapa de cobertura, comparador de planes, calculadora de costo real, leaderboard de velocidad, test de velocidad, guía de reclamos ENACOM, checklist de contratación y noticias. Si te preguntan algo que no sabés, decilo honestamente.';
 
 const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+const CORS_STRICT = {
   'Access-Control-Allow-Origin': 'https://alanmundler.github.io',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -56,7 +62,7 @@ async function handleRSS() {
   }
   all.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
   return new Response(JSON.stringify(all.slice(0, 30)), {
-    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS_STRICT },
   });
 }
 
@@ -73,7 +79,7 @@ export default {
         return await handleRSS();
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), {
-          status: 500, headers: { 'Content-Type': 'application/json', ...CORS },
+          status: 500, headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
         });
       }
     }
@@ -111,25 +117,130 @@ export default {
           tls: trace.tls || null,
           warp: trace.warp || null,
         }), {
-          headers: { 'Content-Type': 'application/json', ...CORS },
+          headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
         });
       } catch (e) {
         return new Response(JSON.stringify({ error: e.message }), {
-          status: 500, headers: { 'Content-Type': 'application/json', ...CORS },
+          status: 500, headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
         });
       }
     }
 
+    // === SPEEDTEST BACKEND ===
+
+    if (request.method === 'GET' && url.pathname === '/speedtest/garbage') {
+      const ckSize = Math.min(parseInt(url.searchParams.get('ckSize') || '100'), 500);
+      const totalBytes = ckSize * 1024 * 1024;
+      const chunkSize = 64 * 1024;
+      let sent = 0;
+
+      const stream = new ReadableStream({
+        pull(controller) {
+          if (sent >= totalBytes) {
+            controller.close();
+            return;
+          }
+          const size = Math.min(chunkSize, totalBytes - sent);
+          const buffer = new Uint8Array(size);
+          crypto.getRandomValues(buffer);
+          controller.enqueue(buffer);
+          sent += size;
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Length': totalBytes.toString(),
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          ...CORS,
+        },
+      });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/speedtest/empty') {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          ...CORS,
+        },
+      });
+    }
+
+    if (request.method === 'POST' && url.pathname === '/speedtest/empty') {
+      await request.arrayBuffer().catch(() => {});
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          ...CORS,
+        },
+      });
+    }
+
+    if (request.method === 'GET' && url.pathname === '/speedtest/getIP') {
+      try {
+        const [traceRes, ipRes] = await Promise.allSettled([
+          fetch('https://1.1.1.1/cdn-cgi/trace', { signal: AbortSignal.timeout(5000) }),
+          fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(5000) }),
+        ]);
+
+        const trace = {};
+        if (traceRes.status === 'fulfilled' && traceRes.value.ok) {
+          const text = await traceRes.value.text();
+          for (const line of text.split('\n')) {
+            const [k, v] = line.split('=');
+            if (k && v !== undefined) trace[k.trim()] = v.trim();
+          }
+        }
+
+        const ip = {};
+        if (ipRes.status === 'fulfilled' && ipRes.value.ok) {
+          Object.assign(ip, await ipRes.value.json());
+        }
+
+        const clientIp = trace.ip || ip.ip || 'unknown';
+        const isp = (ip.org || '').replace(/^AS\d+\s+/, '');
+        const city = ip.city || '';
+        const region = ip.region || '';
+
+        const processedString = `${clientIp} - ${isp}${city ? ' (' + city + (region ? ', ' + region : '') + ')' : ''}`;
+        const rawIspInfo = { ip: clientIp, org: ip.org || '', asn: trace.asn || '', city, region, country: ip.country || '', colo: trace.colo || '' };
+
+        return new Response(JSON.stringify({
+          processedString,
+          rawIspInfo,
+          ip: clientIp,
+          isp: ip.org || null,
+          city,
+          region,
+          country: ip.country || null,
+          colo: trace.colo || null,
+        }), {
+          headers: { 'Content-Type': 'application/json', ...CORS },
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ processedString: 'unknown', rawIspInfo: '' }), {
+          headers: { 'Content-Type': 'application/json', ...CORS },
+        });
+      }
+    }
+
+    // === EXISTING ENDPOINTS ===
+
     if (request.method !== 'POST') {
       return new Response(JSON.stringify({ error: 'Not found' }), {
-        status: 404, headers: { 'Content-Type': 'application/json', ...CORS },
+        status: 404, headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
       });
     }
 
     const API_KEY = env.GEMINI_API_KEY;
     if (!API_KEY) {
       return new Response(JSON.stringify({ error: 'API key not configured' }), {
-        status: 500, headers: { 'Content-Type': 'application/json', ...CORS },
+        status: 500, headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
       });
     }
 
@@ -137,7 +248,7 @@ export default {
       const { messages } = await request.json();
       if (!Array.isArray(messages) || messages.length === 0) {
         return new Response(JSON.stringify({ error: 'Messages array required' }), {
-          status: 400, headers: { 'Content-Type': 'application/json', ...CORS },
+          status: 400, headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
         });
       }
 
@@ -163,7 +274,7 @@ export default {
 
       if (!res.ok) {
         return new Response(JSON.stringify({ error: `Gemini API error ${res.status}` }), {
-          status: res.status, headers: { 'Content-Type': 'application/json', ...CORS },
+          status: res.status, headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
         });
       }
 
@@ -171,16 +282,16 @@ export default {
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) {
         return new Response(JSON.stringify({ error: 'Empty response' }), {
-          status: 502, headers: { 'Content-Type': 'application/json', ...CORS },
+          status: 502, headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
         });
       }
 
       return new Response(JSON.stringify({ text }), {
-        headers: { 'Content-Type': 'application/json', ...CORS },
+        headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
       });
     } catch (e) {
       return new Response(JSON.stringify({ error: e.message || 'Internal error' }), {
-        status: 500, headers: { 'Content-Type': 'application/json', ...CORS },
+        status: 500, headers: { 'Content-Type': 'application/json', ...CORS_STRICT },
       });
     }
   },

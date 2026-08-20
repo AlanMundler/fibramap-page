@@ -1,38 +1,14 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 
 const WORKER_URL = 'https://quiet-bird-94ce.alan-mundler.workers.dev';
+const SITE_BASE = '/fibramap-page';
 
 const COLO_MAP = {
-  EZE: 'Buenos Aires, AR',
-  SCL: 'Santiago, CL',
-  MIA: 'Miami, US',
-  IAD: 'Ashburn, US',
-  LAX: 'Los Angeles, US',
-  ORD: 'Chicago, US',
-  FRA: 'Frankfurt, DE',
-  LHR: 'Londres, GB',
-  AMS: 'Ámsterdam, NL',
-  CDG: 'París, FR',
-  NRT: 'Tokio, JP',
-  HKG: 'Hong Kong',
-  SIN: 'Singapur',
-  SYD: 'Sídney, AU',
-  GRU: 'São Paulo, BR',
-  BOG: 'Bogotá, CO',
-  LIM: 'Lima, PE',
-  MEX: 'México, MX',
-  GIG: 'Rio de Janeiro, BR',
-  BUE: 'Buenos Aires, AR',
-  CCT: 'Buenos Aires, AR',
-  AEP: 'Buenos Aires, AR',
-  COR: 'Córdoba, AR',
-  ROS: 'Rosario, AR',
-  MDE: 'Medellín, CO',
-  UIO: 'Quito, EC',
-  PTY: 'Panamá, PA',
-  MAD: 'Madrid, ES',
-  BCN: 'Barcelona, ES',
-  LIS: 'Lisboa, PT',
+  EZE: 'Buenos Aires, AR', SCL: 'Santiago, CL', MIA: 'Miami, US',
+  IAD: 'Ashburn, US', LAX: 'Los Angeles, US', ORD: 'Chicago, US',
+  FRA: 'Frankfurt, DE', LHR: 'Londres, GB', AMS: 'Ámsterdam, NL',
+  CDG: 'París, FR', GRU: 'São Paulo, BR', COR: 'Córdoba, AR',
+  ROS: 'Rosario, AR', BUE: 'Buenos Aires, AR', MAD: 'Madrid, ES',
 };
 
 const PHASES = [
@@ -82,14 +58,11 @@ function isMobileDevice() {
 function detectNIC() {
   if (typeof navigator === 'undefined') return { type: 'unknown', downlink: null, rtt: null, saveData: false };
   const c = navigator.connection;
-
   if (!c) {
-    const mobile = isMobileDevice();
-    return mobile
+    return isMobileDevice()
       ? { type: 'wifi_generic', downlink: null, rtt: null, saveData: false }
       : { type: 'unknown', downlink: null, rtt: null, saveData: false };
   }
-
   const downlink = c.downlink ?? null;
   const rtt = c.rtt ?? null;
   const saveData = !!c.saveData;
@@ -119,13 +92,11 @@ function detectNIC() {
     } else if (rtt != null && rtt > 0) {
       nicKey = rtt < 50 ? 'wifi_generic' : 'cellular';
     } else if (effectiveType) {
-      if (effectiveType === '4g') nicKey = 'wifi_generic';
-      else nicKey = 'cellular';
+      nicKey = effectiveType === '4g' ? 'wifi_generic' : 'cellular';
     } else {
       nicKey = isMobileDevice() ? 'wifi_generic' : 'unknown';
     }
   }
-
   return { type: nicKey, downlink, rtt, saveData };
 }
 
@@ -276,11 +247,11 @@ function Gauge({ value, max, phase, color, running, id }) {
           style={{ textShadow: `0 0 16px ${color}30` }}>
           {value}
         </span>
-        <span className="text-[9px] text-gray-500 mt-0.5 font-semibold tracking-[0.15em] uppercase">Mbps</span>
+        <span className="text-[9px] text-gray-500 mt-0.5 font-semibold tracking-[0.15em] uppercase">{phase === 'latency' ? 'ms' : 'Mbps'}</span>
         {phase && (
           <span className="mt-1 px-2.5 py-[2px] rounded-full text-[9px] font-bold tracking-wider"
             style={{ backgroundColor: color + '12', color, border: `1px solid ${color}20` }}>
-            {phase}
+            {PHASES.find(p => p.key === phase)?.label || ''}
           </span>
         )}
       </div>
@@ -337,11 +308,10 @@ export default function SpeedTest() {
   const [nic, setNic] = useState({ type: 'unknown', downlink: null, rtt: null, saveData: false });
   const [trace, setTrace] = useState(null);
   const engineRef = useRef(null);
-  const pollRef = useRef(null);
   const cancelledRef = useRef(false);
-  const smoothRef = useRef(0);
-  const chartRef = useRef([]);
   const nicRef = useRef(nic);
+  const chartRef = useRef([]);
+  const lastDataRef = useRef(null);
   const [cid] = useState(uid);
 
   useEffect(() => {
@@ -359,10 +329,7 @@ export default function SpeedTest() {
 
   const quality = useMemo(() => {
     if (!results) return null;
-    return getQuality(
-      results.download ? parseFloat(results.download) : 0,
-      results.latency ? parseInt(results.latency) : 999
-    );
+    return getQuality(parseFloat(results.download) || 0, parseInt(results.latency) || 999);
   }, [results]);
 
   const nicEfficiency = useMemo(() => {
@@ -381,67 +348,90 @@ export default function SpeedTest() {
   const gaugeMax = liveSpeed > 0 ? Math.max(liveSpeed * 1.25, 100) : (nicInfo.maxDown ? Math.max(nicInfo.maxDown * 1.2, 200) : 200);
 
   const run = useCallback(async () => {
+    try { engineRef.current?.abort(); } catch (_) {}
     setState('running');
     setResults(null);
     setCurrentPhase('latency');
     setLiveSpeed(0);
     setChartPoints([]);
     chartRef.current = [];
-    smoothRef.current = 0;
+    lastDataRef.current = null;
     cancelledRef.current = false;
     setNic(detectNIC());
 
     try {
-      const { default: SpeedTestEngine } = await import('@cloudflare/speedtest');
-      const ts = Date.now();
-      const engine = new SpeedTestEngine({
-        autoStart: false,
-        logAimApiUrl: null,
-        downloadApiUrl: `https://speed.cloudflare.com/__down?_=${ts}`,
-        uploadApiUrl: `https://speed.cloudflare.com/__up?_=${ts}`,
-        measurements: [
-          { type: 'latency', numPackets: 20 },
-          { type: 'download', bytes: 1e5, count: 9 },
-          { type: 'download', bytes: 1e6, count: 8 },
-          { type: 'download', bytes: 1e7, count: 6 },
-          { type: 'download', bytes: 2.5e7, count: 4 },
-          { type: 'download', bytes: 1e8, count: 3 },
-          { type: 'download', bytes: 2.5e8, count: 2 },
-          { type: 'upload', bytes: 1e5, count: 8 },
-          { type: 'upload', bytes: 1e6, count: 6 },
-          { type: 'upload', bytes: 1e7, count: 4 },
-          { type: 'upload', bytes: 5e7, count: 3 },
-        ],
-      });
+      if (!window.Speedtest) {
+        await new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = `${SITE_BASE}/speedtest/speedtest.js`;
+          s.onload = resolve;
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+      }
 
-      let phaseRef = 'latency';
+      const s = new window.Speedtest();
+      s.setWorkerPath(`${SITE_BASE}/speedtest/speedtest_worker.js`);
+      s.setParameter('url_dl', `${WORKER_URL}/speedtest/garbage`);
+      s.setParameter('url_ul', `${WORKER_URL}/speedtest/empty`);
+      s.setParameter('url_ping', `${WORKER_URL}/speedtest/empty`);
+      s.setParameter('url_getIp', `${WORKER_URL}/speedtest/getIP`);
+      s.setParameter('test_order', 'P_D_U');
+      s.setParameter('count_ping', 20);
+      s.setParameter('xhr_dlMultistream', 5);
+      s.setParameter('xhr_ulMultistream', 3);
+      s.setParameter('time_dl_max', 15);
+      s.setParameter('time_ul_max', 15);
 
-      engine.onResultsChange = ({ type }) => {
+      s.onupdate = (data) => {
         if (cancelledRef.current) return;
-        if (type === 'latency' && phaseRef === 'latency') {
-          phaseRef = 'download'; setCurrentPhase('download');
-        } else if (type === 'download' && phaseRef !== 'download') {
-          phaseRef = 'download'; setCurrentPhase('download');
-        } else if (type === 'upload' && phaseRef !== 'upload') {
-          phaseRef = 'upload'; setCurrentPhase('upload');
+        lastDataRef.current = data;
+
+        if (data.testState === 2) {
+          setCurrentPhase('latency');
+          const ping = parseFloat(data.pingStatus);
+          if (ping > 0) setLiveSpeed(Math.round(ping));
+        } else if (data.testState === 1) {
+          setCurrentPhase('download');
+          const dl = parseFloat(data.dlStatus);
+          if (dl > 0) {
+            setLiveSpeed(Math.round(dl));
+            chartRef.current = [...chartRef.current, { v: dl, t: 'download' }];
+            if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
+            setChartPoints([...chartRef.current]);
+          }
+        } else if (data.testState === 3) {
+          setCurrentPhase('upload');
+          const ul = parseFloat(data.ulStatus);
+          if (ul > 0) {
+            setLiveSpeed(Math.round(ul));
+            chartRef.current = [...chartRef.current, { v: ul, t: 'upload' }];
+            if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
+            setChartPoints([...chartRef.current]);
+          }
         }
       };
 
-      engine.onFinish = (res) => {
-        if (cancelledRef.current) return;
-        if (pollRef.current) clearInterval(pollRef.current);
-        pollRef.current = null;
-        const s = res.getSummary();
+      s.onend = (aborted) => {
+        if (cancelledRef.current || aborted) {
+          setState('idle');
+          setCurrentPhase(null);
+          return;
+        }
+        const d = lastDataRef.current;
         const r = {
-          download: s.download ? (s.download / 1e6).toFixed(1) : null,
-          upload: s.upload ? (s.upload / 1e6).toFixed(1) : null,
-          latency: s.latency ? s.latency.toFixed(0) : null,
-          jitter: s.jitter ? s.jitter.toFixed(0) : null,
-          loadedLatencyDown: s.downLoadedLatency ? s.downLoadedLatency.toFixed(0) : null,
-          loadedLatencyUp: s.upLoadedLatency ? s.upLoadedLatency.toFixed(0) : null,
+          download: d?.dlStatus && d.dlStatus !== 'Fail' ? d.dlStatus : null,
+          upload: d?.ulStatus && d.ulStatus !== 'Fail' ? d.ulStatus : null,
+          latency: d?.pingStatus ? parseFloat(d.pingStatus).toFixed(0) : null,
+          jitter: d?.jitterStatus ? parseFloat(d.jitterStatus).toFixed(0) : null,
         };
-        setResults(r); setState('done'); setCurrentPhase(null);
-        saveHistory(r); setHistory(loadHistory());
+
+        setResults(r);
+        setState('done');
+        setCurrentPhase(null);
+        saveHistory(r);
+        setHistory(loadHistory());
+
         const curType = nicRef.current.type;
         if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
           const inferred = inferNICFromSpeed(parseFloat(r.download));
@@ -449,67 +439,32 @@ export default function SpeedTest() {
         }
       };
 
-      engineRef.current = engine;
-      engine.play();
-
-      if (pollRef.current) clearInterval(pollRef.current);
-      pollRef.current = setInterval(() => {
-        if (!engine.results || cancelledRef.current) return;
-        try {
-          const isUpload = phaseRef === 'upload';
-
-          if (phaseRef === 'download' || phaseRef === 'upload') {
-            const aggBps = isUpload
-              ? engine.results.getUploadBandwidth?.()
-              : engine.results.getDownloadBandwidth?.();
-            const aggMbps = aggBps ? Math.round(aggBps / 1e6) : 0;
-
-            const pts = isUpload
-              ? engine.results.getUploadBandwidthPoints?.()
-              : engine.results.getDownloadBandwidthPoints?.();
-            const lastBps = pts && pts.length > 0 ? pts[pts.length - 1].bps : 0;
-            const lastMbps = lastBps > 0 ? Math.round(lastBps / 1e6) : 0;
-
-            const rawMbps = aggMbps > 0 ? aggMbps : lastMbps;
-            if (rawMbps > 0) {
-              const prev = smoothRef.current;
-              smoothRef.current = prev === 0 ? rawMbps : Math.round(prev * 0.6 + rawMbps * 0.4);
-              const display = Math.max(smoothRef.current, rawMbps);
-              setLiveSpeed(display);
-              chartRef.current = [...chartRef.current, { v: rawMbps, t: isUpload ? 'upload' : 'download' }];
-              if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
-              setChartPoints([...chartRef.current]);
-            }
-          }
-
-          if (phaseRef === 'latency') {
-            const latPts = engine.results.getUnloadedLatencyPoints?.();
-            if (latPts && latPts.length > 0) {
-              const lastLat = latPts[latPts.length - 1];
-              if (lastLat > 0) setLiveSpeed(Math.round(lastLat));
-            }
-          }
-        } catch (_) {}
-      }, 300);
+      engineRef.current = s;
+      s.start();
     } catch {
-      setState('error'); setCurrentPhase(null);
+      setState('error');
+      setCurrentPhase(null);
     }
   }, []);
 
-  useEffect(() => () => { engineRef.current?.stop(); if (pollRef.current) clearInterval(pollRef.current); }, []);
+  useEffect(() => () => {
+    try { engineRef.current?.abort(); } catch (_) {}
+  }, []);
 
   const stop = useCallback(() => {
     cancelledRef.current = true;
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = null;
-    try { engineRef.current?.stop(); } catch (_) {}
-    setState('idle'); setCurrentPhase(null); setLiveSpeed(0); setChartPoints([]);
+    try { engineRef.current?.abort(); } catch (_) {}
+    setState('idle');
+    setCurrentPhase(null);
+    setLiveSpeed(0);
+    setChartPoints([]);
   }, []);
 
   const clearHistory = useCallback(() => { localStorage.removeItem(HISTORY_KEY); setHistory([]); }, []);
 
   const gaugeColor = currentPhase === 'upload' ? '#10b981' : currentPhase === 'latency' ? '#f59e0b' : '#3b82f6';
   const phaseLabel = PHASES.find(p => p.key === currentPhase)?.label || '';
+  const isPingPhase = currentPhase === 'latency';
 
   const dlPoints = useMemo(() => chartPoints.filter(p => p.t === 'download'), [chartPoints]);
   const ulPoints = useMemo(() => chartPoints.filter(p => p.t === 'upload'), [chartPoints]);
@@ -517,11 +472,9 @@ export default function SpeedTest() {
   return (
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-gray-900/40">
 
-      {/* NIC info — horizontal row, idle only */}
       {state === 'idle' && (
         <div className="px-4 sm:px-5 pt-4 pb-2">
           <div className="flex gap-2">
-            {/* NIC detected */}
             <div className="flex-1 p-2.5 rounded-xl bg-gray-700/15 border border-gray-700/15 min-w-0">
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-xs">{NIC_LIMITS[nic.type]?.icon || '❓'}</span>
@@ -542,7 +495,6 @@ export default function SpeedTest() {
                 </div>
               </div>
             </div>
-            {/* NIC speed limits */}
             <div className="flex-1 p-2.5 rounded-xl bg-gray-700/15 border border-gray-700/15 min-w-0">
               <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1">Límites por red</p>
               <div className="text-[9px] text-gray-500 space-y-0">
@@ -555,7 +507,6 @@ export default function SpeedTest() {
               </div>
             </div>
           </div>
-          {/* ISP + Server info */}
           {trace && (
             <div className="mt-2 p-2 rounded-xl bg-gray-700/15 border border-gray-700/15">
               <div className="flex items-center gap-3 text-[9px]">
@@ -572,7 +523,7 @@ export default function SpeedTest() {
                 <div className="flex items-center gap-1 min-w-0">
                   <span className="text-gray-600 shrink-0">Servidor</span>
                   <span className="text-gray-300 font-semibold truncate">
-                    Cloudflare {trace.colo} {COLO_MAP[trace.colo] ? `(${COLO_MAP[trace.colo]})` : ''}
+                    FibraMap {trace.colo} {COLO_MAP[trace.colo] ? `(${COLO_MAP[trace.colo]})` : ''}
                   </span>
                 </div>
               </div>
@@ -581,23 +532,21 @@ export default function SpeedTest() {
         </div>
       )}
 
-      {/* Gauge — always mounted */}
       <div className="flex justify-center py-3">
         <Gauge
           value={state === 'running' ? liveSpeed : 0}
           max={gaugeMax}
-          phase={state === 'running' ? phaseLabel : ''}
+          phase={state === 'running' ? (isPingPhase ? 'latency' : currentPhase) : ''}
           color={state === 'running' ? gaugeColor : '#3b82f6'}
           running={state === 'running'}
           id={`g-${cid}`}
         />
       </div>
 
-      {/* Phase-specific content below gauge */}
       <div className="px-4 sm:px-5 pb-2 min-h-[32px]">
         {state === 'idle' && (
           <p className="text-[10px] text-gray-500 text-center">
-            Test de velocidad con servidores Cloudflare en Argentina.
+            Test de velocidad con servidores FibraMap (Cloudflare Worker).
           </p>
         )}
 
@@ -621,7 +570,6 @@ export default function SpeedTest() {
         )}
       </div>
 
-      {/* Results */}
       {state === 'done' && results && (
         <div className="px-4 sm:px-5 pb-2 space-y-3">
           {quality && (
@@ -638,7 +586,7 @@ export default function SpeedTest() {
                 <span className="text-gray-600">·</span>
                 <span className="text-gray-300 font-semibold">{trace.isp || '—'}</span>
                 <span className="text-gray-600">·</span>
-                <span className="text-gray-300 font-semibold">Cloudflare {trace.colo}{COLO_MAP[trace.colo] ? ` (${COLO_MAP[trace.colo]})` : ''}</span>
+                <span className="text-gray-300 font-semibold">FibraMap {trace.colo}{COLO_MAP[trace.colo] ? ` (${COLO_MAP[trace.colo]})` : ''}</span>
               </div>
             </div>
           )}
@@ -649,19 +597,6 @@ export default function SpeedTest() {
             <ResultCard label="Latencia" value={results.latency} unit="ms" color="#f59e0b" icon="↔" />
             <ResultCard label="Jitter" value={results.jitter} unit="ms" color="#a855f7" icon="∿" />
           </div>
-
-          {results.loadedLatencyDown && (
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 rounded-lg bg-gray-700/10 border border-gray-700/12 text-center">
-                <p className="text-[8px] text-gray-500 uppercase tracking-wider">↓ bajo carga</p>
-                <p className="text-sm font-bold text-white tabular-nums">{results.loadedLatencyDown} <span className="text-[9px] text-gray-600">ms</span></p>
-              </div>
-              <div className="p-2 rounded-lg bg-gray-700/10 border border-gray-700/12 text-center">
-                <p className="text-[8px] text-gray-500 uppercase tracking-wider">↑ bajo carga</p>
-                <p className="text-sm font-bold text-white tabular-nums">{results.loadedLatencyUp} <span className="text-[9px] text-gray-600">ms</span></p>
-              </div>
-            </div>
-          )}
 
           {nicInfo.maxDown && nicEfficiency != null && (
             <div className="p-2.5 rounded-xl bg-gray-700/10 border border-gray-700/15">
@@ -753,7 +688,6 @@ export default function SpeedTest() {
         </div>
       )}
 
-      {/* History */}
       {showHistory && history.length > 0 && (
         <div className="px-4 sm:px-5 pb-3 max-h-40 overflow-y-auto border-t border-gray-700/15 pt-3">
           <div className="flex justify-between items-center mb-2">
@@ -775,7 +709,6 @@ export default function SpeedTest() {
         </div>
       )}
 
-      {/* Bottom button */}
       <div className="px-4 sm:px-5 pb-4">
         {state === 'running' ? (
           <button onClick={stop} className="w-full py-2.5 rounded-xl text-xs font-semibold border border-red-500/30 bg-red-500/8 text-red-400 hover:bg-red-500/15 hover:text-red-300 active:scale-[0.98] transition-all">
