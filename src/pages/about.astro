@@ -1,17 +1,27 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const siteUrl = Astro.site?.href || 'https://alanmundler.github.io/fibramap-page';
 ---
 
 <Layout
   title="FibraMap — Sobre nosotros"
   description="FibraMap es un proyecto independiente que compara planes de fibra óptica en Córdoba Capital. No somos una empresa, no vendemos nada."
 >
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "FibraMap",
+    "url": siteUrl,
+    "description": "Comparador independiente de fibra óptica en Córdoba Capital, Argentina",
+    "sameAs": []
+  })} />
   <div class="space-y-6 max-w-4xl mx-auto">
     <div class="space-y-2">
       <h1 class="text-2xl sm:text-3xl font-bold">Sobre nosotros</h1>
     </div>
     <p class="text-gray-400 leading-relaxed">
-      FibraMap es un proyecto independiente que nació con la idea de ayudar a los cordobeses a elegir proveedor de fibra óptica. No somos una empresa, no vendemos nada. Solo juntamos información de los planes disponibles y la ponemos en un solo lugar para que sea más fácil decidir.
+      FibraMap compara planes de fibra óptica en Córdoba Capital. No somos una empresa, no vendemos nada. Recopilamos información de los planes disponibles y la ponemos en un solo lugar para que sea más fácil decidir.
     </p>
     <p class="text-gray-400 leading-relaxed">
       Si encontrás un error o querés sumar información, avisame.

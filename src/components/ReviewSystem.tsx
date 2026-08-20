@@ -180,7 +180,7 @@ export default function ReviewSystem() {
       <div className="space-y-2">
         <h1 className="text-2xl sm:text-3xl font-bold">Opiniones reales</h1>
         <p className="text-gray-400 max-w-2xl text-sm">
-          Sistema de opiniones compiladas de {allSources.length} fuentes independientes.
+          Opiniones compiladas de {allSources.length} fuentes independientes.
           Cada opinión tiene ubicación verificada y sentimiento analizado.
           Actualizado agosto 2026.
         </p>

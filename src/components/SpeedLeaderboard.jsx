@@ -92,8 +92,7 @@ export default function SpeedLeaderboard() {
       <div className="space-y-2">
         <h1 className="text-2xl sm:text-3xl font-bold">Leaderboard de Velocidad</h1>
         <p className="text-gray-400 max-w-2xl text-sm">
-          Datos reales de tests de velocidad por proveedor en Argentina y Córdoba.
-          Cada cifra tiene fuente verificable. Sin datos inventados.
+          Velocidad media por proveedor en Argentina y Córdoba. Cada cifra tiene fuente verificable.
         </p>
       </div>
 
@@ -143,7 +142,7 @@ export default function SpeedLeaderboard() {
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-3">
-            Solo ISPs de nuestra lista (servicios.ts) con datos de velocidad verificados. SpeedGeo Córdoba + Speedtest.net.ar.
+            ISPs de Córdoba con datos de velocidad verificados en SpeedGeo Córdoba y Speedtest.net.ar.
           </p>
         </div>
       )}
@@ -350,7 +349,7 @@ export default function SpeedLeaderboard() {
       </div>
 
       <p className="text-xs text-gray-500 text-center">
-        Todos los datos son verificables en las fuentes indicadas. Ninguna cifra es inventada.
+        Todos los datos son verificables en las fuentes indicadas.
         Los valores pueden variar según plan, horario y condiciones de la red.
       </p>
     </div>

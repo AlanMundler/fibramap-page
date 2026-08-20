@@ -1,12 +1,27 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ChatBot from '../components/ChatBot.jsx';
+import { SITE_BASE } from '../data/constants';
+
+const siteUrl = Astro.site?.href || 'https://alanmundler.github.io/fibramap-page';
 ---
 
 <Layout
   title="FibraMap — Compará fibra óptica en Córdoba Capital"
   description="Compará planes, precios y cobertura de fibra óptica en Córdoba Capital. Mapa interactivo, comparador de planes, test de velocidad y asistente IA. 6 proveedores FTTH verificados."
 >
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "FibraMap",
+    "url": siteUrl,
+    "description": "Compará planes, precios y cobertura de fibra óptica en Córdoba Capital",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": `${siteUrl}${SITE_BASE}/map?q={search_term_string}`,
+      "query-input": "required name=search_term_string"
+    }
+  })} />
   <div class="space-y-6">
     <div class="space-y-2 text-center mb-4">
       <h1 class="text-2xl sm:text-3xl font-bold">FibraMap</h1>
