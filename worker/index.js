@@ -131,7 +131,7 @@ export default {
     if (request.method === 'GET' && url.pathname === '/speedtest/garbage') {
       const ckSize = Math.min(parseInt(url.searchParams.get('ckSize') || '100'), 500);
       const totalBytes = ckSize * 1024 * 1024;
-      const chunkSize = 64 * 1024;
+      const chunkSize = 256 * 1024;
       let sent = 0;
 
       const stream = new ReadableStream({
@@ -171,13 +171,7 @@ export default {
     }
 
     if (request.method === 'POST' && url.pathname === '/speedtest/empty') {
-      if (request.body) {
-        const reader = request.body.getReader();
-        while (true) {
-          const { done } = await reader.read();
-          if (done) break;
-        }
-      }
+      try { await request.arrayBuffer(); } catch (_) {}
       return new Response(null, {
         status: 204,
         headers: {
