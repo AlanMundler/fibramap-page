@@ -1,17 +1,8 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-
-const WORKER_URL = 'https://quiet-bird-94ce.alan-mundler.workers.dev';
-const SITE_BASE = '/fibramap-page';
-
-const COLO_MAP = {
-  EZE: 'Buenos Aires, AR', SCL: 'Santiago, CL', MIA: 'Miami, US',
-  IAD: 'Ashburn, US', LAX: 'Los Angeles, US', ORD: 'Chicago, US',
-  FRA: 'Frankfurt, DE', LHR: 'Londres, GB', AMS: 'Ámsterdam, NL',
-  CDG: 'París, FR', GRU: 'São Paulo, BR', COR: 'Córdoba, AR',
-  ROS: 'Rosario, AR', BUE: 'Buenos Aires, AR', MAD: 'Madrid, ES',
-};
+import { SpeedTestService } from '@ginkohub/speedtest-js';
 
 const PHASES = [
+  { key: 'discovery', label: 'Buscando servidor', color: '#a855f7' },
   { key: 'latency', label: 'Latencia', color: '#f59e0b' },
   { key: 'download', label: 'Descarga', color: '#3b82f6' },
   { key: 'upload', label: 'Subida', color: '#10b981' },
@@ -247,7 +238,7 @@ function Gauge({ value, max, phase, color, running, id }) {
           style={{ textShadow: `0 0 16px ${color}30` }}>
           {value}
         </span>
-        <span className="text-[9px] text-gray-500 mt-0.5 font-semibold tracking-[0.15em] uppercase">{phase === 'latency' ? 'ms' : 'Mbps'}</span>
+        <span className="text-[9px] text-gray-500 mt-0.5 font-semibold tracking-[0.15em] uppercase">{phase === 'latency' || phase === 'discovery' ? 'ms' : 'Mbps'}</span>
         {phase && (
           <span className="mt-1 px-2.5 py-[2px] rounded-full text-[9px] font-bold tracking-wider"
             style={{ backgroundColor: color + '12', color, border: `1px solid ${color}20` }}>
@@ -306,21 +297,16 @@ export default function SpeedTest() {
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
   const [nic, setNic] = useState({ type: 'unknown', downlink: null, rtt: null, saveData: false });
-  const [trace, setTrace] = useState(null);
+  const [serverInfo, setServerInfo] = useState(null);
   const engineRef = useRef(null);
   const cancelledRef = useRef(false);
   const nicRef = useRef(nic);
   const chartRef = useRef([]);
-  const lastDataRef = useRef(null);
   const [cid] = useState(uid);
 
   useEffect(() => {
     setHistory(loadHistory());
     setNic(detectNIC());
-    fetch(`${WORKER_URL}/trace`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d && d.ip) setTrace(d); })
-      .catch(() => {});
   }, []);
 
   useEffect(() => { nicRef.current = nic; }, [nic]);
@@ -351,105 +337,104 @@ export default function SpeedTest() {
     try { engineRef.current?.abort(); } catch (_) {}
     setState('running');
     setResults(null);
-    setCurrentPhase('latency');
+    setCurrentPhase('discovery');
     setLiveSpeed(0);
     setChartPoints([]);
+    setServerInfo(null);
     chartRef.current = [];
-    lastDataRef.current = null;
     cancelledRef.current = false;
     setNic(detectNIC());
 
     try {
-      if (!window.Speedtest) {
-        await new Promise((resolve, reject) => {
-          const s = document.createElement('script');
-          s.src = `${SITE_BASE}/speedtest/speedtest.js`;
-          s.onload = resolve;
-          s.onerror = reject;
-          document.head.appendChild(s);
-        });
+      const service = new SpeedTestService();
+      engineRef.current = service;
+
+      await service.fetchClientInfo();
+      if (cancelledRef.current) return;
+
+      setCurrentPhase('discovery');
+      await service.fetchServers();
+      if (cancelledRef.current) return;
+
+      const bestServer = await service.findBestServer();
+      if (cancelledRef.current) return;
+
+      if (!bestServer) {
+        setState('error');
+        setCurrentPhase(null);
+        return;
       }
 
-      const s = new window.Speedtest();
-      s.setWorkerPath(`${SITE_BASE}/speedtest/speedtest_worker.js`);
-      s.setParameter('url_dl', `${WORKER_URL}/speedtest/garbage`);
-      s.setParameter('url_ul', `${WORKER_URL}/speedtest/empty`);
-      s.setParameter('url_ping', `${WORKER_URL}/speedtest/empty`);
-      s.setParameter('url_getIp', `${WORKER_URL}/speedtest/getIP`);
-      s.setParameter('test_order', 'P_D_U');
-      s.setParameter('count_ping', 20);
-      s.setParameter('xhr_dlMultistream', 5);
-      s.setParameter('xhr_ulMultistream', 6);
-      s.setParameter('xhr_multistreamDelay', 300);
-      s.setParameter('xhr_ul_blob_megabytes', 4);
-      s.setParameter('time_dl_max', 15);
-      s.setParameter('time_ul_max', 15);
+      setServerInfo({
+        name: bestServer.name,
+        sponsor: bestServer.sponsor,
+        country: bestServer.country || '',
+      });
 
-      s.onupdate = (data) => {
+      setCurrentPhase('latency');
+      setLiveSpeed(0);
+      const { latency, jitter } = await service.testLatency(bestServer, 20);
+      if (cancelledRef.current) return;
+      setLiveSpeed(Math.round(latency));
+
+      setCurrentPhase('download');
+      setLiveSpeed(0);
+      setChartPoints([]);
+      chartRef.current = [];
+      const dlSpeed = await service.testDownload(bestServer, (speed) => {
         if (cancelledRef.current) return;
-        lastDataRef.current = data;
+        const rounded = Math.round(speed);
+        setLiveSpeed(rounded);
+        chartRef.current = [...chartRef.current, { v: rounded, t: 'download' }];
+        if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
+        setChartPoints([...chartRef.current]);
+      }, { threads: 4, duration: 10000 });
 
-        if (data.testState === 2) {
-          setCurrentPhase('latency');
-          const ping = parseFloat(data.pingStatus);
-          if (ping > 0) setLiveSpeed(Math.round(ping));
-        } else if (data.testState === 1) {
-          setCurrentPhase('download');
-          const dl = parseFloat(data.dlStatus);
-          if (dl > 0) {
-            setLiveSpeed(Math.round(dl));
-            chartRef.current = [...chartRef.current, { v: dl, t: 'download' }];
-            if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
-            setChartPoints([...chartRef.current]);
-          }
-        } else if (data.testState === 3) {
-          setCurrentPhase('upload');
-          const ul = parseFloat(data.ulStatus);
-          if (ul > 0) {
-            setLiveSpeed(Math.round(ul));
-            chartRef.current = [...chartRef.current, { v: ul, t: 'upload' }];
-            if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
-            setChartPoints([...chartRef.current]);
-          }
-        }
+      if (cancelledRef.current) return;
+
+      setCurrentPhase('upload');
+      setLiveSpeed(0);
+      setChartPoints([]);
+      chartRef.current = [];
+      const ulSpeed = await service.testUpload(bestServer, (speed) => {
+        if (cancelledRef.current) return;
+        const rounded = Math.round(speed);
+        setLiveSpeed(rounded);
+        chartRef.current = [...chartRef.current, { v: rounded, t: 'upload' }];
+        if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
+        setChartPoints([...chartRef.current]);
+      }, { duration: 10000 });
+
+      if (cancelledRef.current) return;
+
+      const r = {
+        download: dlSpeed ? Math.round(dlSpeed * 100) / 100 : null,
+        upload: ulSpeed ? Math.round(ulSpeed * 100) / 100 : null,
+        latency: Math.round(latency),
+        jitter: Math.round(jitter),
       };
 
-      s.onend = (aborted) => {
-        if (cancelledRef.current || aborted) {
-          setState('idle');
-          setCurrentPhase(null);
-          return;
-        }
-        const d = lastDataRef.current;
-        const r = {
-          download: d?.dlStatus && d.dlStatus !== 'Fail' ? d.dlStatus : null,
-          upload: d?.ulStatus && d.ulStatus !== 'Fail' ? d.ulStatus : null,
-          latency: d?.pingStatus ? parseFloat(d.pingStatus).toFixed(0) : null,
-          jitter: d?.jitterStatus ? parseFloat(d.jitterStatus).toFixed(0) : null,
-        };
-
-        setResults(r);
-        setState('done');
-        setCurrentPhase(null);
-        saveHistory(r);
-        setHistory(loadHistory());
-
-        const curType = nicRef.current.type;
-        if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
-          const inferred = inferNICFromSpeed(parseFloat(r.download));
-          if (inferred) setNic(prev => ({ ...prev, type: inferred }));
-        }
-      };
-
-      engineRef.current = s;
-      s.start();
-    } catch {
-      setState('error');
+      setResults(r);
+      setState('done');
       setCurrentPhase(null);
+      saveHistory(r);
+      setHistory(loadHistory());
+
+      const curType = nicRef.current.type;
+      if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
+        const inferred = inferNICFromSpeed(parseFloat(r.download));
+        if (inferred) setNic(prev => ({ ...prev, type: inferred }));
+      }
+    } catch {
+      if (!cancelledRef.current) {
+        setState('error');
+        setCurrentPhase(null);
+      }
     }
   }, []);
 
   useEffect(() => () => {
+    cancelledRef.current = true;
     try { engineRef.current?.abort(); } catch (_) {}
   }, []);
 
@@ -464,9 +449,9 @@ export default function SpeedTest() {
 
   const clearHistory = useCallback(() => { localStorage.removeItem(HISTORY_KEY); setHistory([]); }, []);
 
-  const gaugeColor = currentPhase === 'upload' ? '#10b981' : currentPhase === 'latency' ? '#f59e0b' : '#3b82f6';
+  const gaugeColor = currentPhase === 'upload' ? '#10b981' : currentPhase === 'latency' ? '#f59e0b' : currentPhase === 'discovery' ? '#a855f7' : '#3b82f6';
   const phaseLabel = PHASES.find(p => p.key === currentPhase)?.label || '';
-  const isPingPhase = currentPhase === 'latency';
+  const isPingPhase = currentPhase === 'latency' || currentPhase === 'discovery';
 
   const dlPoints = useMemo(() => chartPoints.filter(p => p.t === 'download'), [chartPoints]);
   const ulPoints = useMemo(() => chartPoints.filter(p => p.t === 'upload'), [chartPoints]);
@@ -509,28 +494,11 @@ export default function SpeedTest() {
               </div>
             </div>
           </div>
-          {trace && (
-            <div className="mt-2 p-2 rounded-xl bg-gray-700/15 border border-gray-700/15">
-              <div className="flex items-center gap-3 text-[9px]">
-                <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-gray-600 shrink-0">IP</span>
-                  <span className="text-gray-300 font-mono font-semibold truncate">{trace.ip}</span>
-                </div>
-                <div className="w-px h-2.5 bg-gray-700/40 shrink-0" />
-                <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-gray-600 shrink-0">ISP</span>
-                  <span className="text-gray-300 font-semibold truncate">{trace.isp || '—'}</span>
-                </div>
-                <div className="w-px h-2.5 bg-gray-700/40 shrink-0" />
-                <div className="flex items-center gap-1 min-w-0">
-                  <span className="text-gray-600 shrink-0">Servidor</span>
-                  <span className="text-gray-300 font-semibold truncate">
-                    FibraMap {trace.colo} {COLO_MAP[trace.colo] ? `(${COLO_MAP[trace.colo]})` : ''}
-                  </span>
-                </div>
-              </div>
+          <div className="mt-2 p-2 rounded-xl bg-gray-700/15 border border-gray-700/15">
+            <div className="flex items-center justify-center text-[9px] text-gray-500">
+              Los servidores de prueba son proporcionados por Ookla (speedtest.net)
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -538,7 +506,7 @@ export default function SpeedTest() {
         <Gauge
           value={state === 'running' ? liveSpeed : 0}
           max={gaugeMax}
-          phase={state === 'running' ? (isPingPhase ? 'latency' : currentPhase) : ''}
+          phase={state === 'running' ? (isPingPhase ? currentPhase : currentPhase) : ''}
           color={state === 'running' ? gaugeColor : '#3b82f6'}
           running={state === 'running'}
           id={`g-${cid}`}
@@ -548,7 +516,7 @@ export default function SpeedTest() {
       <div className="px-4 sm:px-5 pb-2 min-h-[32px]">
         {state === 'idle' && (
           <p className="text-[10px] text-gray-500 text-center">
-            Test de velocidad con servidores FibraMap (Cloudflare Worker).
+            Test de velocidad con servidores Ookla (speedtest.net)
           </p>
         )}
 
@@ -581,14 +549,13 @@ export default function SpeedTest() {
             </div>
           )}
 
-          {trace && (
+          {serverInfo && (
             <div className="p-2 rounded-xl bg-gray-700/15 border border-gray-700/15">
               <div className="flex items-center justify-center gap-3 text-[9px]">
-                <span className="text-gray-500">{trace.ip}</span>
+                <span className="text-gray-300 font-semibold">{serverInfo.sponsor}</span>
                 <span className="text-gray-600">·</span>
-                <span className="text-gray-300 font-semibold">{trace.isp || '—'}</span>
-                <span className="text-gray-600">·</span>
-                <span className="text-gray-300 font-semibold">FibraMap {trace.colo}{COLO_MAP[trace.colo] ? ` (${COLO_MAP[trace.colo]})` : ''}</span>
+                <span className="text-gray-300 font-semibold">{serverInfo.name}</span>
+                {serverInfo.country && <><span className="text-gray-600">·</span><span className="text-gray-400">{serverInfo.country}</span></>}
               </div>
             </div>
           )}
