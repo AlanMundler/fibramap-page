@@ -127,7 +127,32 @@ export default {
       }
     }
 
-    // === SPEEDTEST BACKEND ===
+    // === FAST.COM SPEEDTEST ===
+
+    if (request.method === 'GET' && url.pathname === '/fastspeed/targets') {
+      try {
+        const count = Math.min(parseInt(url.searchParams.get('urlCount') || '5'), 10);
+        const res = await fetch(
+          `https://api.fast.com/netflix/speedtest?https=true&token=YXNkZmFzZGxmbnNkYWZoYXNkZmhrYWxm&urlCount=${count}`,
+          { signal: AbortSignal.timeout(10000) }
+        );
+        if (!res.ok) {
+          return new Response(JSON.stringify({ error: `Fast.com API error ${res.status}` }), {
+            status: 502, headers: { 'Content-Type': 'application/json', ...CORS },
+          });
+        }
+        const targets = await res.json();
+        return new Response(JSON.stringify(targets.map(t => t.url)), {
+          headers: { 'Content-Type': 'application/json', ...CORS },
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), {
+          status: 500, headers: { 'Content-Type': 'application/json', ...CORS },
+        });
+      }
+    }
+
+    // === LIBRESPEED BACKEND ===
 
     if (request.method === 'GET' && url.pathname === '/speedtest/garbage') {
       const ckSize = Math.min(parseInt(url.searchParams.get('ckSize') || '100'), 500);

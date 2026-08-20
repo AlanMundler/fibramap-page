@@ -1,0 +1,40 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FastSpeedTest from '../components/FastSpeedTest.jsx';
+---
+
+<Layout
+  title="Fibramap — Test de velocidad con servidores Netflix (fast.com)"
+  description="Test de velocidad independiente usando servidores Netflix CDN (fast.com). Mide descarga y subida contra los mismos servidores que usa Netflix."
+>
+  <div class="space-y-6 max-w-4xl mx-auto">
+    <div class="space-y-2 mb-6">
+      <h1 class="text-2xl sm:text-3xl font-bold">Test de Velocidad <span class="text-rose-400">Netflix CDN</span></h1>
+      <p class="text-gray-400 max-w-2xl">
+        Medición independiente usando los servidores de <strong class="text-white">Netflix</strong> (fast.com).
+        Compara estos resultados con nuestro <a href={`${import.meta.env.BASE_URL}velocidad`} class="text-blue-400 hover:underline">test de velocidad FibraMap</a> para validar tu conexión.
+      </p>
+    </div>
+    <FastSpeedTest client:load />
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+      <div class="p-4 rounded-xl bg-gray-800/50 border border-gray-700/30">
+        <h3 class="text-sm font-semibold text-white mb-2">¿Por qué Netflix CDN?</h3>
+        <ul class="text-xs text-gray-400 space-y-1">
+          <li>• Servidores de Netflix repartidos globalmente</li>
+          <li>• Misma infraestructura que usa fast.com</li>
+          <li>• Independiente de nuestro Worker Cloudflare</li>
+          <li>• Ideal para comparar con otros speedtests</li>
+        </ul>
+      </div>
+      <div class="p-4 rounded-xl bg-gray-800/50 border border-gray-700/30">
+        <h3 class="text-sm font-semibold text-white mb-2">Tips para un buen test</h3>
+        <ul class="text-xs text-gray-400 space-y-1">
+          <li>• Usá conexión <strong class="text-white">cable Ethernet</strong></li>
+          <li>• Cerrá otras pestañas y apps</li>
+          <li>• No bajés archivos durante el test</li>
+          <li>• Hacé el test en horarios variados</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</Layout>
