@@ -5,6 +5,7 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': '*',
+  'Access-Control-Max-Age': '86400',
 };
 
 const CORS_STRICT = {
@@ -171,7 +172,10 @@ export default {
     }
 
     if (request.method === 'POST' && url.pathname === '/speedtest/empty') {
-      try { await request.arrayBuffer(); } catch (_) {}
+      if (request.body) {
+        const noop = new WritableStream();
+        await request.body.pipeTo(noop).catch(() => {});
+      }
       return new Response(null, {
         status: 204,
         headers: {
