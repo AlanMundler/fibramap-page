@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+﻿import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 
 const WORKER_URL = 'https://quiet-bird-94ce.alan-mundler.workers.dev';
 
@@ -11,25 +11,25 @@ const COLO_MAP = {
   ORD: 'Chicago, US',
   FRA: 'Frankfurt, DE',
   LHR: 'Londres, GB',
-  AMS: 'Ámsterdam, NL',
-  CDG: 'París, FR',
+  AMS: '├ümsterdam, NL',
+  CDG: 'Par├¡s, FR',
   NRT: 'Tokio, JP',
   HKG: 'Hong Kong',
   SIN: 'Singapur',
-  SYD: 'Sídney, AU',
-  GRU: 'São Paulo, BR',
-  BOG: 'Bogotá, CO',
+  SYD: 'S├¡dney, AU',
+  GRU: 'S├úo Paulo, BR',
+  BOG: 'Bogot├í, CO',
   LIM: 'Lima, PE',
-  MEX: 'México, MX',
+  MEX: 'M├®xico, MX',
   GIG: 'Rio de Janeiro, BR',
   BUE: 'Buenos Aires, AR',
   CCT: 'Buenos Aires, AR',
   AEP: 'Buenos Aires, AR',
-  COR: 'Córdoba, AR',
+  COR: 'C├│rdoba, AR',
   ROS: 'Rosario, AR',
-  MDE: 'Medellín, CO',
+  MDE: 'Medell├¡n, CO',
   UIO: 'Quito, EC',
-  PTY: 'Panamá, PA',
+  PTY: 'Panam├í, PA',
   MAD: 'Madrid, ES',
   BCN: 'Barcelona, ES',
   LIS: 'Lisboa, PT',
@@ -42,28 +42,28 @@ const PHASES = [
 ];
 
 const ACTIVITIES = [
-  { name: 'Streaming 4K', icon: '🎬', minDown: 25, minUp: 0, maxLatency: 50 },
-  { name: 'Videollamada HD', icon: '📹', minDown: 5, minUp: 5, maxLatency: 80 },
-  { name: 'Gaming online', icon: '🎮', minDown: 10, minUp: 5, maxLatency: 30 },
-  { name: 'Work from home', icon: '💻', minDown: 10, minUp: 5, maxLatency: 60 },
-  { name: 'Descarga pesada', icon: '📦', minDown: 50, minUp: 0, maxLatency: 200 },
-  { name: 'Música HD', icon: '🎵', minDown: 3, minUp: 0, maxLatency: 100 },
-  { name: 'Redes sociales', icon: '📱', minDown: 2, minUp: 1, maxLatency: 150 },
-  { name: 'Smart Home', icon: '🏠', minDown: 2, minUp: 1, maxLatency: 200 },
+  { name: 'Streaming 4K', icon: '­ƒÄ¼', minDown: 25, minUp: 0, maxLatency: 50 },
+  { name: 'Videollamada HD', icon: '­ƒô╣', minDown: 5, minUp: 5, maxLatency: 80 },
+  { name: 'Gaming online', icon: '­ƒÄ«', minDown: 10, minUp: 5, maxLatency: 30 },
+  { name: 'Work from home', icon: '­ƒÆ╗', minDown: 10, minUp: 5, maxLatency: 60 },
+  { name: 'Descarga pesada', icon: '­ƒôª', minDown: 50, minUp: 0, maxLatency: 200 },
+  { name: 'M├║sica HD', icon: '­ƒÄÁ', minDown: 3, minUp: 0, maxLatency: 100 },
+  { name: 'Redes sociales', icon: '­ƒô▒', minDown: 2, minUp: 1, maxLatency: 150 },
+  { name: 'Smart Home', icon: '­ƒÅá', minDown: 2, minUp: 1, maxLatency: 200 },
 ];
 
 const NIC_LIMITS = {
-  ethernet_100:  { label: 'Ethernet Fast', icon: '🔌', maxDown: 100 },
-  wifi_4:        { label: 'Wi-Fi 4', icon: '📶', maxDown: 150 },
-  wifi_5:        { label: 'Wi-Fi 5', icon: '📶', maxDown: 500 },
-  wifi_6:        { label: 'Wi-Fi 6', icon: '📶', maxDown: 900 },
-  wifi_6e_7:     { label: 'Wi-Fi 6E/7', icon: '📶', maxDown: 2000 },
-  wifi_generic:  { label: 'Wi-Fi', icon: '📶', maxDown: null },
-  ethernet_1g:   { label: 'Ethernet 1G', icon: '🔌', maxDown: 1000 },
-  ethernet_2_5g: { label: 'Ethernet 2.5G', icon: '🔌', maxDown: 2500 },
-  ethernet_10g:  { label: 'Ethernet 10G', icon: '🔌', maxDown: 10000 },
-  cellular:      { label: 'Datos móviles', icon: '📱', maxDown: null },
-  unknown:       { label: 'Desconocido', icon: '❓', maxDown: null },
+  ethernet_100:  { label: 'Ethernet Fast', icon: '­ƒöî', maxDown: 100 },
+  wifi_4:        { label: 'Wi-Fi 4', icon: '­ƒôÂ', maxDown: 150 },
+  wifi_5:        { label: 'Wi-Fi 5', icon: '­ƒôÂ', maxDown: 500 },
+  wifi_6:        { label: 'Wi-Fi 6', icon: '­ƒôÂ', maxDown: 900 },
+  wifi_6e_7:     { label: 'Wi-Fi 6E/7', icon: '­ƒôÂ', maxDown: 2000 },
+  wifi_generic:  { label: 'Wi-Fi', icon: '­ƒôÂ', maxDown: null },
+  ethernet_1g:   { label: 'Ethernet 1G', icon: '­ƒöî', maxDown: 1000 },
+  ethernet_2_5g: { label: 'Ethernet 2.5G', icon: '­ƒöî', maxDown: 2500 },
+  ethernet_10g:  { label: 'Ethernet 10G', icon: '­ƒöî', maxDown: 10000 },
+  cellular:      { label: 'Datos m├│viles', icon: '­ƒô▒', maxDown: null },
+  unknown:       { label: 'Desconocido', icon: 'ÔØô', maxDown: null },
 };
 
 const NIC_TABLE = [
@@ -153,13 +153,13 @@ function saveHistory(r) {
 }
 
 function getQuality(d, l) {
-  if (d >= 100 && l < 15) return { label: 'Excepcional', color: '#22d3ee', emoji: '🏆', score: 100 };
-  if (d >= 50 && l < 25) return { label: 'Excelente', color: '#10b981', emoji: '⭐', score: 85 };
-  if (d >= 25 && l < 50) return { label: 'Muy buena', color: '#34d399', emoji: '✅', score: 70 };
-  if (d >= 10 && l < 80) return { label: 'Buena', color: '#fbbf24', emoji: '👍', score: 55 };
-  if (d >= 5 && l < 120) return { label: 'Regular', color: '#f97316', emoji: '⚠️', score: 40 };
-  if (d >= 1) return { label: 'Lenta', color: '#ef4444', emoji: '🐌', score: 20 };
-  return { label: 'Muy lenta', color: '#dc2626', emoji: '❌', score: 5 };
+  if (d >= 100 && l < 15) return { label: 'Excepcional', color: '#22d3ee', emoji: '­ƒÅå', score: 100 };
+  if (d >= 50 && l < 25) return { label: 'Excelente', color: '#10b981', emoji: 'Ô¡É', score: 85 };
+  if (d >= 25 && l < 50) return { label: 'Muy buena', color: '#34d399', emoji: 'Ô£à', score: 70 };
+  if (d >= 10 && l < 80) return { label: 'Buena', color: '#fbbf24', emoji: '­ƒæì', score: 55 };
+  if (d >= 5 && l < 120) return { label: 'Regular', color: '#f97316', emoji: 'ÔÜá´©Å', score: 40 };
+  if (d >= 1) return { label: 'Lenta', color: '#ef4444', emoji: '­ƒÉî', score: 20 };
+  return { label: 'Muy lenta', color: '#dc2626', emoji: 'ÔØî', score: 5 };
 }
 
 function uid() { return ++chartId; }
@@ -318,7 +318,7 @@ function ResultCard({ label, value, unit, color, icon }) {
   return (
     <div className="p-3 rounded-xl bg-gray-700/15 border border-gray-600/15 text-center">
       <p className="text-sm mb-0.5" style={{ color }}>{icon}</p>
-      <p className="text-xl sm:text-2xl font-extrabold text-white tabular-nums leading-none">{value ?? '—'}</p>
+      <p className="text-xl sm:text-2xl font-extrabold text-white tabular-nums leading-none">{value ?? 'ÔÇö'}</p>
       <p className="text-[9px] text-gray-500 mt-1 font-medium">{label} <span className="text-gray-600">({unit})</span></p>
     </div>
   );
@@ -517,34 +517,34 @@ export default function SpeedTest() {
   return (
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-gray-900/40">
 
-      {/* NIC info — horizontal row, idle only */}
+      {/* NIC info ÔÇö horizontal row, idle only */}
       {state === 'idle' && (
         <div className="px-4 sm:px-5 pt-4 pb-2">
           <div className="flex gap-2">
             {/* NIC detected */}
             <div className="flex-1 p-2.5 rounded-xl bg-gray-700/15 border border-gray-700/15 min-w-0">
               <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-xs">{NIC_LIMITS[nic.type]?.icon || '❓'}</span>
+                <span className="text-xs">{NIC_LIMITS[nic.type]?.icon || 'ÔØô'}</span>
                 <span className="text-[10px] font-semibold text-gray-300 truncate">{NIC_LIMITS[nic.type]?.label || 'Desconocido'}</span>
               </div>
               <div className="grid grid-cols-3 gap-1 text-center">
                 <div>
-                  <p className="text-[8px] text-gray-500 uppercase">↓ Est.</p>
-                  <p className="text-[10px] font-bold text-blue-400">{nic.downlink ? `${nic.downlink}` : '—'}</p>
+                  <p className="text-[8px] text-gray-500 uppercase">Ôåô Est.</p>
+                  <p className="text-[10px] font-bold text-blue-400">{nic.downlink ? `${nic.downlink}` : 'ÔÇö'}</p>
                 </div>
                 <div>
                   <p className="text-[8px] text-gray-500 uppercase">RTT</p>
-                  <p className="text-[10px] font-bold text-amber-400">{nic.rtt != null ? `${nic.rtt}` : '—'}</p>
+                  <p className="text-[10px] font-bold text-amber-400">{nic.rtt != null ? `${nic.rtt}` : 'ÔÇö'}</p>
                 </div>
                 <div>
                   <p className="text-[8px] text-gray-500 uppercase">Ahorro</p>
-                  <p className="text-[10px] font-bold text-gray-400">{nic.saveData ? 'Sí' : 'No'}</p>
+                  <p className="text-[10px] font-bold text-gray-400">{nic.saveData ? 'S├¡' : 'No'}</p>
                 </div>
               </div>
             </div>
             {/* NIC speed limits */}
             <div className="flex-1 p-2.5 rounded-xl bg-gray-700/15 border border-gray-700/15 min-w-0">
-              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1">Límites por red</p>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1">L├¡mites por red</p>
               <div className="text-[9px] text-gray-500 space-y-0">
                 {NIC_TABLE.map(([label, speed]) => (
                   <div key={label} className="flex justify-between">
@@ -566,7 +566,7 @@ export default function SpeedTest() {
                 <div className="w-px h-2.5 bg-gray-700/40 shrink-0" />
                 <div className="flex items-center gap-1 min-w-0">
                   <span className="text-gray-600 shrink-0">ISP</span>
-                  <span className="text-gray-300 font-semibold truncate">{trace.isp || '—'}</span>
+                  <span className="text-gray-300 font-semibold truncate">{trace.isp || 'ÔÇö'}</span>
                 </div>
                 <div className="w-px h-2.5 bg-gray-700/40 shrink-0" />
                 <div className="flex items-center gap-1 min-w-0">
@@ -581,7 +581,7 @@ export default function SpeedTest() {
         </div>
       )}
 
-      {/* Gauge — always mounted */}
+      {/* Gauge ÔÇö always mounted */}
       <div className="flex justify-center py-3">
         <Gauge
           value={state === 'running' ? liveSpeed : 0}
@@ -612,12 +612,12 @@ export default function SpeedTest() {
                 <div className="w-full"><LiveChart points={ulPoints} color="#10b981" id={`ul-${cid}`} /></div>
               )}
             </div>
-            <p className="text-[9px] text-gray-600 text-center">No cierres esta página</p>
+            <p className="text-[9px] text-gray-600 text-center">No cierres esta p├ígina</p>
           </div>
         )}
 
         {state === 'error' && (
-          <p className="text-sm text-red-400 text-center py-3">Error al iniciar el test. Intentá de nuevo.</p>
+          <p className="text-sm text-red-400 text-center py-3">Error al iniciar el test. Intent├í de nuevo.</p>
         )}
       </div>
 
@@ -635,29 +635,29 @@ export default function SpeedTest() {
             <div className="p-2 rounded-xl bg-gray-700/15 border border-gray-700/15">
               <div className="flex items-center justify-center gap-3 text-[9px]">
                 <span className="text-gray-500">{trace.ip}</span>
-                <span className="text-gray-600">·</span>
-                <span className="text-gray-300 font-semibold">{trace.isp || '—'}</span>
-                <span className="text-gray-600">·</span>
+                <span className="text-gray-600">┬À</span>
+                <span className="text-gray-300 font-semibold">{trace.isp || 'ÔÇö'}</span>
+                <span className="text-gray-600">┬À</span>
                 <span className="text-gray-300 font-semibold">Cloudflare {trace.colo}{COLO_MAP[trace.colo] ? ` (${COLO_MAP[trace.colo]})` : ''}</span>
               </div>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-2">
-            <ResultCard label="Descarga" value={results.download} unit="Mbps" color="#3b82f6" icon="↓" />
-            <ResultCard label="Subida" value={results.upload} unit="Mbps" color="#10b981" icon="↑" />
-            <ResultCard label="Latencia" value={results.latency} unit="ms" color="#f59e0b" icon="↔" />
-            <ResultCard label="Jitter" value={results.jitter} unit="ms" color="#a855f7" icon="∿" />
+            <ResultCard label="Descarga" value={results.download} unit="Mbps" color="#3b82f6" icon="Ôåô" />
+            <ResultCard label="Subida" value={results.upload} unit="Mbps" color="#10b981" icon="Ôåæ" />
+            <ResultCard label="Latencia" value={results.latency} unit="ms" color="#f59e0b" icon="Ôåö" />
+            <ResultCard label="Jitter" value={results.jitter} unit="ms" color="#a855f7" icon="Ôê┐" />
           </div>
 
           {results.loadedLatencyDown && (
             <div className="grid grid-cols-2 gap-2">
               <div className="p-2 rounded-lg bg-gray-700/10 border border-gray-700/12 text-center">
-                <p className="text-[8px] text-gray-500 uppercase tracking-wider">↓ bajo carga</p>
+                <p className="text-[8px] text-gray-500 uppercase tracking-wider">Ôåô bajo carga</p>
                 <p className="text-sm font-bold text-white tabular-nums">{results.loadedLatencyDown} <span className="text-[9px] text-gray-600">ms</span></p>
               </div>
               <div className="p-2 rounded-lg bg-gray-700/10 border border-gray-700/12 text-center">
-                <p className="text-[8px] text-gray-500 uppercase tracking-wider">↑ bajo carga</p>
+                <p className="text-[8px] text-gray-500 uppercase tracking-wider">Ôåæ bajo carga</p>
                 <p className="text-sm font-bold text-white tabular-nums">{results.loadedLatencyUp} <span className="text-[9px] text-gray-600">ms</span></p>
               </div>
             </div>
@@ -670,7 +670,7 @@ export default function SpeedTest() {
                   <span className="text-xs">{nicInfo.icon}</span>
                   <span className="text-[10px] font-semibold text-gray-300">{nicInfo.label}</span>
                 </div>
-                <span className="text-[10px] font-bold text-gray-400">{nicEfficiency}% del máximo</span>
+                <span className="text-[10px] font-bold text-gray-400">{nicEfficiency}% del m├íximo</span>
               </div>
               <div className="h-1.5 bg-gray-700/30 rounded-full overflow-hidden">
                 <div className="h-full bg-blue-500/50 rounded-full transition-all duration-1000"
@@ -731,22 +731,22 @@ export default function SpeedTest() {
               <div className="bg-gray-900/80 rounded-xl p-3 text-center space-y-1.5">
                 <p className="text-[10px] font-bold text-white tracking-widest uppercase">FIBRAMAP</p>
                 <div className="flex justify-center gap-4">
-                  <div><p className="text-lg font-extrabold text-blue-400 tabular-nums">{results.download ?? '—'}</p><p className="text-[8px] text-gray-500">↓ Mbps</p></div>
-                  <div><p className="text-lg font-extrabold text-green-400 tabular-nums">{results.upload ?? '—'}</p><p className="text-[8px] text-gray-500">↑ Mbps</p></div>
-                  <div><p className="text-lg font-extrabold text-amber-400 tabular-nums">{results.latency ?? '—'}</p><p className="text-[8px] text-gray-500">ms</p></div>
+                  <div><p className="text-lg font-extrabold text-blue-400 tabular-nums">{results.download ?? 'ÔÇö'}</p><p className="text-[8px] text-gray-500">Ôåô Mbps</p></div>
+                  <div><p className="text-lg font-extrabold text-green-400 tabular-nums">{results.upload ?? 'ÔÇö'}</p><p className="text-[8px] text-gray-500">Ôåæ Mbps</p></div>
+                  <div><p className="text-lg font-extrabold text-amber-400 tabular-nums">{results.latency ?? 'ÔÇö'}</p><p className="text-[8px] text-gray-500">ms</p></div>
                 </div>
                 {quality && <p className="text-[10px] font-semibold" style={{ color: quality.color }}>{quality.emoji} {quality.label}</p>}
               </div>
               <button onClick={() => {
                 navigator.clipboard?.writeText(
-                  `⚡ FIBRAMAP Speed Test\n↓ ${results.download ?? '—'} Mbps | ↑ ${results.upload ?? '—'} Mbps | ${results.latency ?? '—'} ms\n${quality ? quality.emoji + ' ' + quality.label : ''}\nhttps://alanmundler.github.io/fibramap-page/velocidad`
+                  `ÔÜí FIBRAMAP Speed Test\nÔåô ${results.download ?? 'ÔÇö'} Mbps | Ôåæ ${results.upload ?? 'ÔÇö'} Mbps | ${results.latency ?? 'ÔÇö'} ms\n${quality ? quality.emoji + ' ' + quality.label : ''}\nhttps://alanmundler.github.io/fibramap-page/velocidad`
                 );
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }} className={`w-full py-2 rounded-xl text-[11px] font-semibold transition-all active:scale-[0.98] ${
                 copied ? 'bg-emerald-600 text-white' : 'bg-blue-600 hover:bg-blue-500 text-white'
               }`}>
-                {copied ? '✓ Copiado' : 'Copiar resultado'}
+                {copied ? 'Ô£ô Copiado' : 'Copiar resultado'}
               </button>
             </div>
           )}
@@ -757,18 +757,18 @@ export default function SpeedTest() {
       {showHistory && history.length > 0 && (
         <div className="px-4 sm:px-5 pb-3 max-h-40 overflow-y-auto border-t border-gray-700/15 pt-3">
           <div className="flex justify-between items-center mb-2">
-            <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">Últimas pruebas</p>
+            <p className="text-[9px] text-gray-400 font-medium uppercase tracking-wider">├Ültimas pruebas</p>
             <button onClick={clearHistory} className="text-[9px] text-red-400/60 hover:text-red-400 transition-colors">Borrar</button>
           </div>
           <div className="space-y-1">
             {history.slice(0, 10).map((h, i) => (
               <div key={i} className="flex items-center gap-2 px-2 py-1 rounded-lg bg-gray-700/8 text-[10px]">
                 <span className="text-gray-600 shrink-0 font-mono text-[9px]">{new Date(h.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}</span>
-                <span className="text-blue-400 font-mono font-semibold">{h.download ?? '—'}</span>
-                <span className="text-gray-600">↓</span>
-                <span className="text-green-400 font-mono font-semibold">{h.upload ?? '—'}</span>
-                <span className="text-gray-600">↑</span>
-                <span className="text-amber-400 font-mono font-semibold">{h.latency ?? '—'}<span className="text-gray-600">ms</span></span>
+                <span className="text-blue-400 font-mono font-semibold">{h.download ?? 'ÔÇö'}</span>
+                <span className="text-gray-600">Ôåô</span>
+                <span className="text-green-400 font-mono font-semibold">{h.upload ?? 'ÔÇö'}</span>
+                <span className="text-gray-600">Ôåæ</span>
+                <span className="text-amber-400 font-mono font-semibold">{h.latency ?? 'ÔÇö'}<span className="text-gray-600">ms</span></span>
               </div>
             ))}
           </div>
