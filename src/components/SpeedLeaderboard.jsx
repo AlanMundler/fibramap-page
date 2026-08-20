@@ -2,10 +2,8 @@ import { useState, useMemo } from 'react';
 import {
   nationalOokla,
   cordobaTests,
-  ftthData,
   cordobaCity,
   localProviders,
-  netflixData,
   sources as dataSources,
 } from '../data/leaderboard-data';
 
@@ -85,10 +83,6 @@ export default function SpeedLeaderboard() {
     });
   }, [activeProvider, sortKey, sortDir]);
 
-  const ftthSorted = useMemo(() => {
-    return [...ftthData].sort((a, b) => b.download - a.download);
-  }, []);
-
   const allProviders = [...new Set(cordobaTests.map(r => r.provider))];
   const allNacional = [...new Set(nationalOokla.map(r => r.name))];
 
@@ -121,22 +115,7 @@ export default function SpeedLeaderboard() {
         >
           Nacional
         </button>
-        <button
-          onClick={() => { setTab('ftth'); setActiveProvider(null); }}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'ftth' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-gray-800 text-gray-400 border border-gray-700'
-          }`}
-        >
-          Solo FTTH
-        </button>
-        <button
-          onClick={() => { setTab('netflix'); setActiveProvider(null); }}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'netflix' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-gray-800 text-gray-400 border border-gray-700'
-          }`}
-        >
-          Netflix
-        </button>
+
       </div>
 
       {/* Córdoba city summary */}
@@ -193,71 +172,10 @@ export default function SpeedLeaderboard() {
         </div>
       )}
 
-      {/* FTTH comparison */}
-      {tab === 'ftth' && (
-        <div className="space-y-3">
-          {ftthSorted.map(p => (
-            <div key={p.name} className="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: p.color }} />
-                <span className="font-semibold text-gray-200">{p.name}</span>
-              </div>
-              <div className="grid grid-cols-2 gap-4 text-center mb-2">
-                <div>
-                  <div className="text-xl font-bold text-blue-400">{p.download}</div>
-                  <div className="text-xs text-gray-500">↓ Mbps</div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-emerald-400">{p.upload}</div>
-                  <div className="text-xs text-gray-500">↑ Mbps</div>
-                </div>
-              </div>
-              {p.notes && <p className="text-xs text-gray-400">{p.notes}</p>}
-              <div className="flex gap-1 mt-2">
-                {p.sources.map(s => <SourceBadge key={s} sourceId={s} />)}
-              </div>
-            </div>
-          ))}
-          <p className="text-xs text-gray-500">
-            FTTH = Fiber To The Home. Solo conexiones de fibra óptica directa al hogar.
-          </p>
-        </div>
-      )}
 
-      {/* Netflix ISP Speed Index */}
-      {tab === 'netflix' && (
-        <div className="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4">
-          <h3 className="font-medium text-gray-300 mb-3 text-sm">
-            Netflix ISP Speed Index — Argentina (julio 2026)
-          </h3>
-          <p className="text-xs text-gray-500 mb-4">
-            Velocidad promedio de streaming Netflix. Escala 1-3.8. Solo incluye ISPs con suficiente tráfico Netflix.
-          </p>
-          <div className="space-y-2">
-            {netflixData.map((p, i) => (
-              <div key={`${p.name}-${i}`} className="flex items-center gap-3">
-                <span className="text-xs text-gray-500 w-4">#{p.rank}</span>
-                <span className="text-sm text-gray-300 w-48">{p.name}</span>
-                <div className="flex-1 bg-gray-700/50 rounded-full h-2">
-                  <div
-                    className="h-2 rounded-full bg-red-500"
-                    style={{ width: `${(p.score / 3.8) * 100}%` }}
-                  />
-                </div>
-                <span className="text-sm font-mono text-blue-400 w-12 text-right">{p.score}</span>
-                <span className="text-xs text-gray-500 w-16 text-right">{p.tech}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mt-3">
-            Fuente: <a href="https://ispspeedindex.netflix.net/country/argentina/" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:text-blue-200">Netflix ISP Speed Index</a> — julio 2026
-          </p>
-        </div>
-      )}
 
       {/* Filters */}
-      {tab !== 'ftth' && tab !== 'netflix' && (
-        <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setActiveProvider(null)}
             className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
@@ -279,7 +197,6 @@ export default function SpeedLeaderboard() {
             </button>
           ))}
         </div>
-      )}
 
       {/* Table — Córdoba */}
       {tab === 'cordoba' && (
