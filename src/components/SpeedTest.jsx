@@ -396,6 +396,7 @@ export default function SpeedTest() {
       return new Promise((resolve) => {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', 'https://speed.cloudflare.com/__up');
+        xhr.timeout = 15000;
 
         xhr.upload.onprogress = (e) => {
           if (cancelledRef.current || signal.aborted) { xhr.abort(); resolve(); return; }
@@ -415,9 +416,10 @@ export default function SpeedTest() {
           }
         };
 
-        xhr.onload = () => { globalUploadedBytes += BYTES_PER_STREAM; resolve(); };
+        xhr.onload = () => resolve();
         xhr.onerror = () => resolve();
         xhr.onabort = () => resolve();
+        xhr.ontimeout = () => resolve();
 
         if (signal) {
           signal.addEventListener('abort', () => { try { xhr.abort(); } catch (_) {} }, { once: true });
