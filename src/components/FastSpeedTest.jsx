@@ -177,97 +177,116 @@ async function getTargets() {
   return await res.json();
 }
 
+function createXHR(url, method, headers) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url, true);
+    if (headers) {
+      for (const [k, v] of Object.entries(headers)) {
+        xhr.setRequestHeader(k, v);
+      }
+    }
+    xhr.onload = () => resolve(xhr);
+    xhr.onerror = () => reject(new Error('XHR error'));
+    xhr.onabort = () => reject(new DOMException('aborted', 'AbortError'));
+    resolve(xhr);
+  });
+}
+
 function measureDownload(targets, durationMs, onProgress) {
   return new Promise((resolve) => {
-    const startTime = performance.now();
-    let totalBytes = 0;
-    let aborted = false;
-    const controllers = [];
+    const xhrs = [];
+    let bytesInWindow = 0;
+    const samples = [];
+    let done = false;
 
-    const sample = () => {
-      const elapsed = performance.now() - startTime;
-      const speedBps = (totalBytes * 8) / (elapsed / 1000);
-      const speedMbps = speedBps / 1000000;
-      onProgress(Math.round(speedMbps), elapsed);
-    };
+    const interval = setInterval(() => {
+      if (done) return;
+      const speedMbps = (bytesInWindow * 8) / (SAMPLE_INTERVAL_MS / 1000) / 1000000;
+      samples.push(speedMbps);
+      bytesInWindow = 0;
+      const recent = samples.slice(-5);
+      const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+      onProgress(Math.round(avg));
+    }, SAMPLE_INTERVAL_MS);
 
-    const interval = setInterval(sample, SAMPLE_INTERVAL_MS);
-
-    targets.forEach(async (url) => {
-      const controller = new AbortController();
-      controllers.push(controller);
-      try {
-        const res = await fetch(url, { signal: controller.signal });
-        const reader = res.body.getReader();
-        while (!aborted) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          totalBytes += value.byteLength;
+    targets.forEach((url) => {
+      const xhr = new XMLHttpRequest();
+      xhrs.push(xhr);
+      let lastLoaded = 0;
+      xhr.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const delta = e.loaded - lastLoaded;
+          lastLoaded = e.loaded;
+          bytesInWindow += delta;
         }
-      } catch (e) {
-        if (e.name !== 'AbortError') console.warn('Download stream error:', e);
-      }
+      };
+      xhr.open('GET', url, true);
+      xhr.responseType = 'blob';
+      xhr.send();
     });
 
     setTimeout(() => {
-      aborted = true;
-      controllers.forEach(c => c.abort());
+      done = true;
       clearInterval(interval);
-      sample();
-      const elapsed = performance.now() - startTime;
-      const speedMbps = (totalBytes * 8) / (elapsed / 1000) / 1000000;
-      resolve(Math.round(speedMbps));
+      xhrs.forEach(x => { try { x.abort(); } catch (_){} });
+      const avg = samples.length > 0 ? samples.reduce((a, b) => a + b, 0) / samples.length : 0;
+      resolve(Math.round(avg));
     }, durationMs);
   });
 }
 
 function measureUpload(targets, sizeBytes, durationMs, onProgress) {
   return new Promise((resolve) => {
-    const startTime = performance.now();
-    let totalBytesSent = 0;
-    let aborted = false;
+    const xhrs = [];
+    let bytesInWindow = 0;
+    const samples = [];
+    let done = false;
 
-    const sample = () => {
-      const elapsed = performance.now() - startTime;
-      const speedBps = (totalBytesSent * 8) / (elapsed / 1000);
-      const speedMbps = speedBps / 1000000;
-      onProgress(Math.round(speedMbps), elapsed);
-    };
+    const interval = setInterval(() => {
+      if (done) return;
+      const speedMbps = (bytesInWindow * 8) / (SAMPLE_INTERVAL_MS / 1000) / 1000000;
+      samples.push(speedMbps);
+      bytesInWindow = 0;
+      const recent = samples.slice(-5);
+      const avg = recent.reduce((a, b) => a + b, 0) / recent.length;
+      onProgress(Math.round(avg));
+    }, SAMPLE_INTERVAL_MS);
 
-    const interval = setInterval(sample, SAMPLE_INTERVAL_MS);
-
-    const uploadOne = async (url) => {
+    function uploadLoop(url) {
       const blob = new Blob([crypto.getRandomValues(new Uint8Array(sizeBytes))]);
-      let sent = 0;
-      while (!aborted) {
-        try {
-          const res = await fetch(url, {
-            method: 'POST',
-            body: blob,
-            headers: { 'Content-Type': 'application/octet-stream' },
-          });
-          await res.blob();
-          sent += sizeBytes;
-          totalBytesSent += sizeBytes;
-        } catch (e) {
-          if (e.name === 'AbortError') break;
-          break;
-        }
-      }
-    };
+      const form = new FormData();
+      form.append('file', blob, 'speedtest.bin');
 
-    const workers = targets.map(t => uploadOne(t));
+      const xhr = new XMLHttpRequest();
+      xhrs.push(xhr);
+      let lastLoaded = 0;
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const delta = e.loaded - lastLoaded;
+          lastLoaded = e.loaded;
+          bytesInWindow += delta;
+        }
+      };
+      xhr.onload = () => {
+        if (!done) uploadLoop(url);
+      };
+      xhr.onerror = () => {
+        if (!done) setTimeout(() => uploadLoop(url), 100);
+      };
+      xhr.open('POST', url, true);
+      xhr.send(form);
+    }
+
+    targets.forEach(t => uploadLoop(t));
 
     setTimeout(() => {
-      aborted = true;
+      done = true;
       clearInterval(interval);
-      sample();
-      const elapsed = performance.now() - startTime;
-      const speedMbps = (totalBytesSent * 8) / (elapsed / 1000) / 1000000;
-      resolve(Math.round(speedMbps));
+      xhrs.forEach(x => { try { x.abort(); } catch (_){} });
+      const avg = samples.length > 0 ? samples.reduce((a, b) => a + b, 0) / samples.length : 0;
+      resolve(Math.round(avg));
     }, durationMs);
-
-    Promise.allSettled(workers);
   });
 }
 
