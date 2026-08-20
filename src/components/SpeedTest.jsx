@@ -74,6 +74,20 @@ const NIC_TABLE = [
   ['Ethernet 2.5G+', '2500+ Mbps'],
 ];
 
+const CF_DOWN = 'https://speed.cloudflare.com/__down';
+const CF_UP = 'https://speed.cloudflare.com/__up';
+const DL_STREAMS = 6;
+const UL_STREAMS = 6;
+const UL_STREAM_SIZE = 10 * 1024 * 1024;
+const LATENCY_COUNT = 20;
+const DL_ROUNDS = [
+  { bytes: 1e5, count: 5 },
+  { bytes: 1e6, count: 4 },
+  { bytes: 1e7, count: 3 },
+  { bytes: 2.5e7, count: 3 },
+  { bytes: 7e7, count: 3 },
+];
+
 function isMobileDevice() {
   if (typeof navigator === 'undefined') return false;
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -164,6 +178,142 @@ function getQuality(d, l) {
 
 function uid() { return ++chartId; }
 
+function median(arr) {
+  if (arr.length === 0) return 0;
+  const sorted = [...arr].sort((a, b) => a - b);
+  return sorted[Math.floor(sorted.length / 2)];
+}
+
+function jitterFromLatencies(arr) {
+  if (arr.length < 2) return 0;
+  let sum = 0;
+  for (let i = 1; i < arr.length; i++) sum += Math.abs(arr[i] - arr[i - 1]);
+  return Math.round(sum / (arr.length - 1));
+}
+
+async function measureLatency(signal, onTick) {
+  const latencies = [];
+  for (let i = 0; i < LATENCY_COUNT; i++) {
+    if (signal.aborted) break;
+    const t0 = performance.now();
+    try {
+      await fetch(`${CF_DOWN}?bytes=0&_=${Date.now()}_${i}`, {
+        signal, cache: 'no-store',
+      });
+      const ms = performance.now() - t0;
+      latencies.push(ms);
+      onTick(ms, latencies);
+    } catch {
+      if (signal.aborted) break;
+    }
+  }
+  return { median: median(latencies), jitter: jitterFromLatencies(latencies) };
+}
+
+async function fetchDownloadChunk(bytes, signal) {
+  const res = await fetch(`${CF_DOWN}?bytes=${bytes}&_=${Date.now()}`, {
+    signal, cache: 'no-store',
+  });
+  const reader = res.body.getReader();
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+  }
+  return total;
+}
+
+async function measureDownload(signal, onTick) {
+  const allMbps = [];
+  let lastUpdate = 0;
+
+  for (const round of DL_ROUNDS) {
+    if (signal.aborted) break;
+    for (let c = 0; c < round.count; c++) {
+      if (signal.aborted) break;
+      const t0 = performance.now();
+      const bytesArr = await Promise.all(
+        Array.from({ length: DL_STREAMS }, () =>
+          fetchDownloadChunk(round.bytes, signal).catch(() => 0)
+        )
+      );
+      const totalBytes = bytesArr.reduce((a, b) => a + b, 0);
+      const elapsed = (performance.now() - t0) / 1000;
+      if (elapsed > 0 && totalBytes > 0) {
+        const mbps = Math.round((totalBytes * 8) / (elapsed * 1e6));
+        allMbps.push(mbps);
+        const now = performance.now();
+        if (now - lastUpdate > 150) {
+          lastUpdate = now;
+          onTick(mbps, allMbps);
+        }
+      }
+    }
+  }
+
+  return { mbps: median(allMbps), points: allMbps };
+}
+
+async function measureUpload(signal, onTick) {
+  const startTime = performance.now();
+  const streamLoaded = new Array(UL_STREAMS).fill(0);
+
+  const uploadOne = (idx) => new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', CF_UP);
+    xhr.timeout = 30000;
+    xhr.upload.onprogress = (e) => {
+      if (signal.aborted) { try { xhr.abort(); } catch {} resolve(); return; }
+      if (e.lengthComputable) {
+        streamLoaded[idx] = e.loaded;
+        const totalBytes = streamLoaded.reduce((a, b) => a + b, 0);
+        const elapsed = (performance.now() - startTime) / 1000;
+        if (elapsed > 0.15) {
+          onTick(Math.round((totalBytes * 8) / (elapsed * 1e6)));
+        }
+      }
+    };
+    xhr.onload = () => resolve();
+    xhr.onerror = () => resolve();
+    xhr.onabort = () => resolve();
+    xhr.ontimeout = () => resolve();
+    signal.addEventListener('abort', () => { try { xhr.abort(); } catch {} }, { once: true });
+    const data = new ArrayBuffer(UL_STREAM_SIZE);
+    new Uint8Array(data).fill(0xAB);
+    xhr.send(data);
+  });
+
+  await Promise.allSettled(Array.from({ length: UL_STREAMS }, (_, i) => uploadOne(i)));
+  if (signal.aborted) return { mbps: 0 };
+  const elapsed = (performance.now() - startTime) / 1000;
+  const totalBytes = UL_STREAMS * UL_STREAM_SIZE;
+  return { mbps: elapsed > 0 ? Math.round((totalBytes * 8) / (elapsed * 1e6)) : 0 };
+}
+
+function createLoadedLatencyProbe(signal) {
+  const latencies = [];
+  let stopped = false;
+  (async () => {
+    while (!stopped && !signal.aborted) {
+      const t0 = performance.now();
+      try {
+        await fetch(`${CF_DOWN}?bytes=0&_=${Date.now()}_ld`, {
+          signal, cache: 'no-store',
+        });
+        latencies.push(performance.now() - t0);
+      } catch {
+        if (signal.aborted) break;
+      }
+      if (!stopped) await new Promise((r) => setTimeout(r, 500));
+    }
+  })();
+  return () => {
+    stopped = true;
+    return latencies.length > 0 ? median(latencies) : null;
+  };
+}
+
 function LiveChart({ points, color, id }) {
   const W = 500, H = 100;
   const pad = { t: 10, r: 8, b: 14, l: 36 };
@@ -216,7 +366,7 @@ function LiveChart({ points, color, id }) {
   );
 }
 
-function Gauge({ value, max, phase, color, running, id }) {
+function Gauge({ value, max, phase, color, running, id, unit = 'Mbps' }) {
   const size = 170, cx = 85, cy = 85;
   const r = 68, strokeW = 6;
   const arcStart = 140, arcEnd = 400, arcRange = arcEnd - arcStart;
@@ -276,7 +426,7 @@ function Gauge({ value, max, phase, color, running, id }) {
           style={{ textShadow: `0 0 16px ${color}30` }}>
           {value}
         </span>
-        <span className="text-[9px] text-gray-500 mt-0.5 font-semibold tracking-[0.15em] uppercase">Mbps</span>
+        <span className="text-[9px] text-gray-500 mt-0.5 font-semibold tracking-[0.15em] uppercase">{unit}</span>
         {phase && (
           <span className="mt-1 px-2.5 py-[2px] rounded-full text-[9px] font-bold tracking-wider"
             style={{ backgroundColor: color + '12', color, border: `1px solid ${color}20` }}>
@@ -336,14 +486,16 @@ export default function SpeedTest() {
   const [copied, setCopied] = useState(false);
   const [nic, setNic] = useState({ type: 'unknown', downlink: null, rtt: null, saveData: false });
   const [trace, setTrace] = useState(null);
-  const engineRef = useRef(null);
   const abortRef = useRef(null);
-  const pollRef = useRef(null);
   const cancelledRef = useRef(false);
   const smoothRef = useRef(0);
   const chartRef = useRef([]);
   const nicRef = useRef(nic);
+  const stateRef = useRef('idle');
   const [cid] = useState(uid);
+
+  useEffect(() => { stateRef.current = state; }, [state]);
+  useEffect(() => { nicRef.current = nic; }, [nic]);
 
   useEffect(() => {
     setHistory(loadHistory());
@@ -353,8 +505,6 @@ export default function SpeedTest() {
       .then(d => { if (d && d.ip) setTrace(d); })
       .catch(() => {});
   }, []);
-
-  useEffect(() => { nicRef.current = nic; }, [nic]);
 
   const nicInfo = NIC_LIMITS[nic.type] || NIC_LIMITS.unknown;
 
@@ -379,82 +529,19 @@ export default function SpeedTest() {
     return ACTIVITIES.map(a => ({ ...a, ok: d >= a.minDown && u >= a.minUp && l <= a.maxLatency }));
   }, [results]);
 
-  const gaugeMax = liveSpeed > 0 ? Math.max(liveSpeed * 1.25, 100) : (nicInfo.maxDown ? Math.max(nicInfo.maxDown * 1.2, 200) : 200);
+  const gaugeMax = useMemo(() => {
+    if (state !== 'running') return 200;
+    if (currentPhase === 'latency') return Math.max(liveSpeed * 2, 50);
+    return Math.max(liveSpeed * 1.25, 100, nicInfo.maxDown ? nicInfo.maxDown * 1.2 : 0);
+  }, [state, currentPhase, liveSpeed, nicInfo.maxDown]);
 
-  async function measureParallelUpload(signal) {
-    const STREAMS = 6;
-    const BYTES_PER_STREAM = 10 * 1024 * 1024;
-    const startTime = performance.now();
-    const streamLoaded = new Array(STREAMS).fill(0);
-
-    setCurrentPhase('upload');
-    smoothRef.current = 0;
-    chartRef.current = [];
-    setChartPoints([]);
-
-    const uploadOneStream = (streamIndex) => {
-      return new Promise((resolve) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://speed.cloudflare.com/__up');
-        xhr.timeout = 15000;
-
-        xhr.upload.onprogress = (e) => {
-          if (cancelledRef.current || signal.aborted) { xhr.abort(); resolve(); return; }
-          if (e.lengthComputable) {
-            streamLoaded[streamIndex] = e.loaded;
-            const totalBytes = streamLoaded.reduce((a, b) => a + b, 0);
-            const elapsed = (performance.now() - startTime) / 1000;
-            if (elapsed > 0.1) {
-              const mbps = Math.round((totalBytes * 8) / (elapsed * 1000000));
-              const prev = smoothRef.current;
-              smoothRef.current = prev === 0 ? mbps : Math.round(prev * 0.5 + mbps * 0.5);
-              setLiveSpeed(Math.max(smoothRef.current, mbps));
-              chartRef.current = [...chartRef.current, { v: mbps, t: 'upload' }];
-              if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
-              setChartPoints([...chartRef.current]);
-            }
-          }
-        };
-
-        xhr.onload = () => resolve();
-        xhr.onerror = () => resolve();
-        xhr.onabort = () => resolve();
-        xhr.ontimeout = () => resolve();
-
-        if (signal) {
-          signal.addEventListener('abort', () => { try { xhr.abort(); } catch (_) {} }, { once: true });
-        }
-
-        const data = new ArrayBuffer(BYTES_PER_STREAM);
-        new Uint8Array(data).fill(0xAB);
-        xhr.send(data);
-      });
-    };
-
-    const promises = [];
-    for (let i = 0; i < STREAMS; i++) {
-      promises.push(uploadOneStream(i));
-    }
-    await Promise.allSettled(promises);
-
-    if (cancelledRef.current || signal.aborted) return 0;
-
-    const elapsed = (performance.now() - startTime) / 1000;
-    const totalBytes = STREAMS * BYTES_PER_STREAM;
-    const mbps = elapsed > 0 ? Math.round((totalBytes * 8) / (elapsed * 1000000)) : 0;
-
-    setLiveSpeed(mbps);
-    chartRef.current = [{ v: mbps, t: 'upload' }];
-    setChartPoints([...chartRef.current]);
-
-    return mbps;
-  }
+  const gaugeUnit = currentPhase === 'latency' ? 'ms' : 'Mbps';
 
   const run = useCallback(async () => {
+    if (stateRef.current === 'running') return;
+    stateRef.current = 'running';
     setState('running');
     setResults(null);
-    setCurrentPhase('latency');
-    setLiveSpeed(0);
     setChartPoints([]);
     chartRef.current = [];
     smoothRef.current = 0;
@@ -466,123 +553,97 @@ export default function SpeedTest() {
     const signal = controller.signal;
 
     try {
-      const { default: SpeedTestEngine } = await import('@cloudflare/speedtest');
-      const ts = Date.now();
-      const engine = new SpeedTestEngine({
-        autoStart: false,
-        logAimApiUrl: null,
-        downloadApiUrl: `https://speed.cloudflare.com/__down?_=${ts}`,
-        uploadApiUrl: `https://speed.cloudflare.com/__up?_=${ts}`,
-        measurements: [
-          { type: 'latency', numPackets: 20 },
-          { type: 'download', bytes: 1e5, count: 9 },
-          { type: 'download', bytes: 1e6, count: 8 },
-          { type: 'download', bytes: 1e7, count: 6 },
-          { type: 'download', bytes: 2.5e7, count: 4 },
-          { type: 'download', bytes: 7e7, count: 5 },
-          { type: 'upload', bytes: 1e5, count: 1 },
-          { type: 'upload', bytes: 1e6, count: 1 },
-        ],
+      setCurrentPhase('latency');
+      setLiveSpeed(0);
+
+      const latResult = await measureLatency(signal, (ms) => {
+        setLiveSpeed(Math.round(ms));
       });
 
-      let phaseRef = 'latency';
-      let engineDownload = null;
-      let engineLatency = null;
-      let engineJitter = null;
+      if (signal.aborted) return;
 
-      engine.onResultsChange = ({ type }) => {
-        if (cancelledRef.current || signal.aborted) return;
-        if (type === 'latency' && phaseRef === 'latency') {
-          phaseRef = 'download'; setCurrentPhase('download');
-        } else if (type === 'download' && phaseRef !== 'download') {
-          phaseRef = 'download'; setCurrentPhase('download');
-        }
+      setCurrentPhase('download');
+      setLiveSpeed(0);
+      smoothRef.current = 0;
+      chartRef.current = [];
+      setChartPoints([]);
+
+      const getLoadedDown = createLoadedLatencyProbe(signal);
+
+      const dlResult = await measureDownload(signal, (mbps) => {
+        const prev = smoothRef.current;
+        smoothRef.current = prev === 0 ? mbps : Math.round(prev * 0.6 + mbps * 0.4);
+        setLiveSpeed(Math.max(smoothRef.current, mbps));
+        chartRef.current = [...chartRef.current, { v: mbps, t: 'download' }];
+        if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
+        setChartPoints([...chartRef.current]);
+      });
+
+      const loadedDown = getLoadedDown();
+
+      if (signal.aborted) return;
+
+      setCurrentPhase('upload');
+      setLiveSpeed(0);
+      smoothRef.current = 0;
+      chartRef.current = [];
+      setChartPoints([]);
+
+      const getLoadedUp = createLoadedLatencyProbe(signal);
+
+      const ulResult = await measureUpload(signal, (mbps) => {
+        setLiveSpeed(mbps);
+        chartRef.current = [...chartRef.current, { v: mbps, t: 'upload' }];
+        if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
+        setChartPoints([...chartRef.current]);
+      });
+
+      const loadedUp = getLoadedUp();
+
+      if (signal.aborted) return;
+
+      const r = {
+        download: dlResult.mbps > 0 ? String(dlResult.mbps) : null,
+        upload: ulResult.mbps > 0 ? String(ulResult.mbps) : null,
+        latency: latResult.median > 0 ? String(Math.round(latResult.median)) : null,
+        jitter: String(latResult.jitter),
+        loadedLatencyDown: loadedDown ? String(Math.round(loadedDown)) : null,
+        loadedLatencyUp: loadedUp ? String(Math.round(loadedUp)) : null,
       };
 
-      engine.onFinish = (res) => {
-        if (cancelledRef.current || signal.aborted) return;
-        if (pollRef.current) clearInterval(pollRef.current);
-        pollRef.current = null;
-        try { res.stop(); } catch (_) {}
+      setResults(r);
+      setState('done');
+      setCurrentPhase(null);
+      saveHistory(r);
+      setHistory(loadHistory());
 
-        const s = res.getSummary();
-        engineDownload = s.download ? (s.download / 1e6).toFixed(1) : null;
-        engineLatency = s.latency ? s.latency.toFixed(0) : null;
-        engineJitter = s.jitter ? s.jitter.toFixed(0) : null;
-
-        measureParallelUpload(signal).then((uploadMbps) => {
-          if (cancelledRef.current || signal.aborted) return;
-          const r = {
-            download: engineDownload,
-            upload: String(uploadMbps || 0),
-            latency: engineLatency,
-            jitter: engineJitter,
-            loadedLatencyDown: s.downLoadedLatency ? s.downLoadedLatency.toFixed(0) : null,
-            loadedLatencyUp: s.upLoadedLatency ? s.upLoadedLatency.toFixed(0) : null,
-          };
-          setResults(r); setState('done'); setCurrentPhase(null);
-          saveHistory(r); setHistory(loadHistory());
-          const curType = nicRef.current.type;
-          if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
-            const inferred = inferNICFromSpeed(parseFloat(r.download));
-            if (inferred) setNic(prev => ({ ...prev, type: inferred }));
-          }
-        }).catch(() => {
-          if (!cancelledRef.current && !signal.aborted) {
-            setState('error'); setCurrentPhase(null);
-          }
-        });
-      };
-
-      engineRef.current = engine;
-      engine.play();
-
-      if (pollRef.current) clearInterval(pollRef.current);
-      pollRef.current = setInterval(() => {
-        if (!engine.results || cancelledRef.current || signal.aborted) return;
-        try {
-          if (phaseRef === 'download') {
-            const aggBps = engine.results.getDownloadBandwidth?.();
-            const aggMbps = aggBps ? Math.round(aggBps / 1e6) : 0;
-            const pts = engine.results.getDownloadBandwidthPoints?.();
-            const lastBps = pts && pts.length > 0 ? pts[pts.length - 1].bps : 0;
-            const lastMbps = lastBps > 0 ? Math.round(lastBps / 1e6) : 0;
-            const rawMbps = aggMbps > 0 ? aggMbps : lastMbps;
-            if (rawMbps > 0) {
-              const prev = smoothRef.current;
-              smoothRef.current = prev === 0 ? rawMbps : Math.round(prev * 0.6 + rawMbps * 0.4);
-              setLiveSpeed(Math.max(smoothRef.current, rawMbps));
-              chartRef.current = [...chartRef.current, { v: rawMbps, t: 'download' }];
-              if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
-              setChartPoints([...chartRef.current]);
-            }
-          }
-
-          if (phaseRef === 'latency') {
-            const latPts = engine.results.getUnloadedLatencyPoints?.();
-            if (latPts && latPts.length > 0) {
-              const lastLat = latPts[latPts.length - 1];
-              if (lastLat > 0) setLiveSpeed(Math.round(lastLat));
-            }
-          }
-        } catch (_) {}
-      }, 300);
+      const curType = nicRef.current.type;
+      if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
+        const inferred = inferNICFromSpeed(dlResult.mbps);
+        if (inferred) setNic(prev => ({ ...prev, type: inferred }));
+      }
     } catch {
-      if (!cancelledRef.current && !signal.aborted) {
-        setState('error'); setCurrentPhase(null);
+      if (!signal.aborted) {
+        setState('error');
+        setCurrentPhase(null);
       }
     }
   }, []);
 
-  useEffect(() => () => { cancelledRef.current = true; abortRef.current?.abort(); engineRef.current?.stop(); if (pollRef.current) clearInterval(pollRef.current); }, []);
+  useEffect(() => () => {
+    cancelledRef.current = true;
+    abortRef.current?.abort();
+  }, []);
 
   const stop = useCallback(() => {
     cancelledRef.current = true;
     abortRef.current?.abort();
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = null;
-    try { engineRef.current?.stop(); } catch (_) {}
-    setState('idle'); setCurrentPhase(null); setLiveSpeed(0); setChartPoints([]);
+    setState('idle');
+    setCurrentPhase(null);
+    setLiveSpeed(0);
+    setChartPoints([]);
+    chartRef.current = [];
+    smoothRef.current = 0;
   }, []);
 
   const clearHistory = useCallback(() => { localStorage.removeItem(HISTORY_KEY); setHistory([]); }, []);
@@ -596,11 +657,9 @@ export default function SpeedTest() {
   return (
     <div className="bg-gray-800/80 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-gray-900/40">
 
-      {/* NIC info — horizontal row, idle only */}
       {state === 'idle' && (
         <div className="px-4 sm:px-5 pt-4 pb-2">
           <div className="flex gap-2">
-            {/* NIC detected */}
             <div className="flex-1 p-2.5 rounded-xl bg-gray-700/15 border border-gray-700/15 min-w-0">
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-xs">{NIC_LIMITS[nic.type]?.icon || '❓'}</span>
@@ -621,7 +680,6 @@ export default function SpeedTest() {
                 </div>
               </div>
             </div>
-            {/* NIC speed limits */}
             <div className="flex-1 p-2.5 rounded-xl bg-gray-700/15 border border-gray-700/15 min-w-0">
               <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider mb-1">Límites por red</p>
               <div className="text-[9px] text-gray-500 space-y-0">
@@ -634,7 +692,6 @@ export default function SpeedTest() {
               </div>
             </div>
           </div>
-          {/* ISP + Server info */}
           {trace && (
             <div className="mt-2 p-2 rounded-xl bg-gray-700/15 border border-gray-700/15">
               <div className="flex items-center gap-3 text-[9px]">
@@ -660,7 +717,6 @@ export default function SpeedTest() {
         </div>
       )}
 
-      {/* Gauge — always mounted */}
       <div className="flex justify-center py-3">
         <Gauge
           value={state === 'running' ? liveSpeed : 0}
@@ -669,10 +725,10 @@ export default function SpeedTest() {
           color={state === 'running' ? gaugeColor : '#3b82f6'}
           running={state === 'running'}
           id={`g-${cid}`}
+          unit={gaugeUnit}
         />
       </div>
 
-      {/* Phase-specific content below gauge */}
       <div className="px-4 sm:px-5 pb-2 min-h-[32px]">
         {state === 'idle' && (
           <p className="text-[10px] text-gray-500 text-center">
@@ -700,7 +756,6 @@ export default function SpeedTest() {
         )}
       </div>
 
-      {/* Results */}
       {state === 'done' && results && (
         <div className="px-4 sm:px-5 pb-2 space-y-3">
           {quality && (
@@ -832,7 +887,6 @@ export default function SpeedTest() {
         </div>
       )}
 
-      {/* History */}
       {showHistory && history.length > 0 && (
         <div className="px-4 sm:px-5 pb-3 max-h-40 overflow-y-auto border-t border-gray-700/15 pt-3">
           <div className="flex justify-between items-center mb-2">
@@ -854,7 +908,6 @@ export default function SpeedTest() {
         </div>
       )}
 
-      {/* Bottom button */}
       <div className="px-4 sm:px-5 pb-4">
         {state === 'running' ? (
           <button onClick={stop} className="w-full py-2.5 rounded-xl text-xs font-semibold border border-red-500/30 bg-red-500/8 text-red-400 hover:bg-red-500/15 hover:text-red-300 active:scale-[0.98] transition-all">
