@@ -379,7 +379,7 @@ export default function SpeedTest() {
       s.setParameter('test_order', 'P_D_U');
       s.setParameter('count_ping', 20);
       s.setParameter('xhr_dlMultistream', 5);
-      s.setParameter('xhr_ulMultistream', 3);
+      s.setParameter('xhr_ulMultistream', 6);
       s.setParameter('time_dl_max', 15);
       s.setParameter('time_ul_max', 15);
 
