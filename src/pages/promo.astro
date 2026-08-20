@@ -8,11 +8,12 @@ const iplan = servicios.filter(s => s.proveedor === 'IPLAN');
 const icba = servicios.filter(s => s.proveedor === 'Internet Córdoba');
 const batcom = servicios.filter(s => s.proveedor === 'Batcom');
 const guabi = servicios.filter(s => s.proveedor === 'Guabi');
+const telecentro = servicios.filter(s => s.proveedor === 'Telecentro');
 ---
 
 <Layout
   title="FibraMap — Promociones de fibra óptica Córdoba"
-  description="Promociones de fibra óptica en Córdoba Capital: Claro, Personal, IPLAN, Internet Córdoba, Batcom y Guabi. Precios verificados agosto 2026."
+  description="Promociones de fibra óptica en Córdoba Capital: Claro, Personal, IPLAN, Internet Córdoba, Batcom, Guabi y Telecentro. Precios verificados agosto 2026."
 >
   <div class="space-y-6 max-w-4xl mx-auto">
     <div class="space-y-2 mb-6">
@@ -137,6 +138,42 @@ const guabi = servicios.filter(s => s.proveedor === 'Guabi');
             <div class="text-[10px] sm:text-xs text-gray-400">Sin permanencia. TV opcional con Gigared o DGO.</div>
           </div>
         </div>
+      </div>
+
+      <!-- Telecentro -->
+      <div class="bg-gray-800/80 rounded-xl border border-gray-700/50 p-4 sm:p-5 space-y-3 backdrop-blur-sm">
+        <div class="flex items-center gap-2">
+          <h2 class="text-lg font-bold text-orange-400">Telecentro</h2>
+          <span class="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-300 border border-orange-500/30">35% OFF x6 meses + 1er mes gratis</span>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-400">FTTH en Nueva Córdoba, Centro y Alberdi. Internet + telefonía fija. WiFi en la calle gratis.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+          <div class="bg-gray-700/30 border border-gray-600/30 rounded-lg p-3">
+            <div class="text-[10px] sm:text-xs text-gray-400 font-medium mb-2">Solo Internet + Fijo</div>
+            <div class="space-y-1.5">
+              {telecentro.filter(s => s.plan.includes('+ Fijo')).map(s => (
+                <div class="flex justify-between text-xs sm:text-sm"><span>{s.plan}</span><span class="font-bold">{fmt(s.precioDesc)}</span></div>
+              ))}
+            </div>
+          </div>
+          <div class="bg-gray-700/30 border border-gray-600/30 rounded-lg p-3">
+            <div class="text-[10px] sm:text-xs text-gray-400 font-medium mb-2">Internet + TV 4K (Deco Android)</div>
+            <div class="space-y-1.5">
+              {telecentro.filter(s => s.plan.includes('TV 4K')).map(s => (
+                <div class="flex justify-between text-xs sm:text-sm"><span>{s.plan}</span><span class="font-bold">{fmt(s.precioDesc)}</span></div>
+              ))}
+            </div>
+          </div>
+          <div class="bg-gray-700/30 border border-gray-600/30 rounded-lg p-3">
+            <div class="text-[10px] sm:text-xs text-gray-400 font-medium mb-2">Internet + TV con Alexa</div>
+            <div class="space-y-1.5">
+              {telecentro.filter(s => s.plan.includes('Alexa')).map(s => (
+                <div class="flex justify-between text-xs sm:text-sm"><span>{s.plan}</span><span class="font-bold">{fmt(s.precioDesc)}</span></div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <p class="text-[10px] sm:text-xs text-gray-500">Asimétrico. Instalación gratuita. Combos con TV incluyen HBO Max, Disney+, Universal+, Prime Video.</p>
       </div>
 
     </section>
