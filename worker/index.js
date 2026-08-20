@@ -230,6 +230,38 @@ export default {
       }
     }
 
+    // === OOKLA PROXY ===
+
+    if (request.method === 'GET' && url.pathname === '/speedtest/ookla-config') {
+      try {
+        const res = await fetch('https://www.speedtest.net/speedtest-config.php', {
+          signal: AbortSignal.timeout(8000),
+          headers: { 'User-Agent': 'Mozilla/5.0' },
+        });
+        const text = await res.text();
+        return new Response(text, {
+          headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store', ...CORS },
+        });
+      } catch (e) {
+        return new Response('', { status: 502, headers: CORS });
+      }
+    }
+
+    if (request.method === 'GET' && url.pathname === '/speedtest/ookla-servers') {
+      try {
+        const res = await fetch('https://www.speedtest.net/api/js/servers', {
+          signal: AbortSignal.timeout(8000),
+          headers: { 'User-Agent': 'Mozilla/5.0' },
+        });
+        const text = await res.text();
+        return new Response(text, {
+          headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...CORS },
+        });
+      } catch (e) {
+        return new Response('[]', { status: 502, headers: CORS });
+      }
+    }
+
     // === EXISTING ENDPOINTS ===
 
     if (request.method !== 'POST') {

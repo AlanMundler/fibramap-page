@@ -349,6 +349,15 @@ export default function SpeedTest() {
       const service = new SpeedTestService();
       engineRef.current = service;
 
+      service.discoveryUrls = [`${WORKER_URL}/speedtest/ookla-servers`];
+      service.fetchClientInfo = async function () {
+        const res = await fetch(`${WORKER_URL}/speedtest/ookla-config`, { cache: 'no-store' });
+        const text = await res.text();
+        this.clientIp = text.match(/ip="([^"]+)"/)?.[1] || '-';
+        this.clientIsp = text.match(/isp="([^"]+)"/)?.[1] || '-';
+        return { ip: this.clientIp, isp: this.clientIsp };
+      };
+
       await service.fetchClientInfo();
       if (cancelledRef.current) return;
 
