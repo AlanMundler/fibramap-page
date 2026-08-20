@@ -384,9 +384,6 @@ export default function SpeedTest() {
   async function measureParallelUpload(signal) {
     const STREAMS = 6;
     const BYTES_PER_STREAM = 10 * 1024 * 1024;
-    const data = new ArrayBuffer(BYTES_PER_STREAM);
-    new Uint8Array(data).fill(0xAB);
-    let totalBytes = 0;
     const startTime = performance.now();
 
     setCurrentPhase('upload');
@@ -394,24 +391,56 @@ export default function SpeedTest() {
     chartRef.current = [];
     setChartPoints([]);
 
-    const uploadOne = async () => {
-      try {
-        await fetch('https://speed.cloudflare.com/__up', {
-          method: 'POST', body: data, signal,
-        });
-      } catch {}
+    let globalUploadedBytes = 0;
+
+    const uploadOneStream = (streamIndex) => {
+      return new Promise((resolve) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://speed.cloudflare.com/__up');
+
+        xhr.upload.onprogress = (e) => {
+          if (cancelledRef.current || signal.aborted) { xhr.abort(); resolve(); return; }
+          if (e.lengthComputable) {
+            const elapsed = (performance.now() - startTime) / 1000;
+            const streamOffset = streamIndex * BYTES_PER_STREAM;
+            const currentStreamBytes = e.loaded;
+            const totalBytes = streamOffset + currentStreamBytes;
+            if (elapsed > 0.1) {
+              const mbps = Math.round((totalBytes * 8) / (elapsed * 1000000));
+              const prev = smoothRef.current;
+              smoothRef.current = prev === 0 ? mbps : Math.round(prev * 0.5 + mbps * 0.5);
+              setLiveSpeed(Math.max(smoothRef.current, mbps));
+              chartRef.current = [...chartRef.current, { v: mbps, t: 'upload' }];
+              if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
+              setChartPoints([...chartRef.current]);
+            }
+          }
+        };
+
+        xhr.onload = () => { globalUploadedBytes += BYTES_PER_STREAM; resolve(); };
+        xhr.onerror = () => resolve();
+        xhr.onabort = () => resolve();
+
+        if (signal) {
+          signal.addEventListener('abort', () => { try { xhr.abort(); } catch (_) {} }, { once: true });
+        }
+
+        const data = new ArrayBuffer(BYTES_PER_STREAM);
+        new Uint8Array(data).fill(0xAB);
+        xhr.send(data);
+      });
     };
 
     const promises = [];
     for (let i = 0; i < STREAMS; i++) {
-      promises.push(uploadOne());
+      promises.push(uploadOneStream(i));
     }
     await Promise.allSettled(promises);
 
     if (cancelledRef.current || signal.aborted) return 0;
 
     const elapsed = (performance.now() - startTime) / 1000;
-    totalBytes = STREAMS * BYTES_PER_STREAM;
+    const totalBytes = STREAMS * BYTES_PER_STREAM;
     const mbps = elapsed > 0 ? Math.round((totalBytes * 8) / (elapsed * 1000000)) : 0;
 
     setLiveSpeed(mbps);
