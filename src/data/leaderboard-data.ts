@@ -89,7 +89,10 @@ export const nationalOokla: ProviderSummary[] = [
   { name: 'Starlink', color: '#eab308', download: 77.5, upload: 19.7, latency: 39, tests: 0, sources: ['speedgeo'] },
 ];
 
-// Córdoba: datos reales por ISP — Speedtest.net.ar
+// Córdoba: solo ISPs con fibra verificada y tests locales — Speedtest.net.ar
+// NOTA: Claro y Gigared NO se incluyen aquí. Claro tiene cobertura en Cba pero
+// los datos de SpeedGeo son nacionales (no separan por ciudad). Gigared no opera
+// en Córdoba (solo Litoral: Santa Fe, Entre Ríos, Corrientes, Chaco, Misiones).
 export const cordobaTests: SpeedTest[] = [
   {
     provider: 'IPLAN',
@@ -112,28 +115,6 @@ export const cordobaTests: SpeedTest[] = [
     sourceUrl: 'https://speedtest.net.ar/ranking',
     period: 'Al 11/08/2026',
     methodology: 'Tests de usuarios reales contra nodos propios. Score: 30/100.',
-  },
-  {
-    provider: 'Claro',
-    download: 118.4,
-    upload: 95.2,
-    latency: 27.8,
-    tests: 0,
-    source: 'SpeedGeo',
-    sourceUrl: 'https://www.speedgeo.net/statistics/argentina',
-    period: 'Q3 2025 – Q2 2026',
-    methodology: '270.308 tests nacionales. Datos nacionales (Córdoba no separada).',
-  },
-  {
-    provider: 'Gigared',
-    download: 107.3,
-    upload: 77.7,
-    latency: 87.7,
-    tests: 88,
-    source: 'Speedtest.net.ar',
-    sourceUrl: 'https://speedtest.net.ar/ranking',
-    period: 'Al 11/08/2026',
-    methodology: 'Tests de usuarios reales contra nodos propios. Score: 34/100.',
   },
 ];
 

@@ -16,7 +16,7 @@ const PROVIDER_COLORS = {
   'Claro FTTH': '#dc2626',
   'Movistar': '#2563eb',
   'Telecentro': '#f97316',
-  'Gigared': '#14b8a6',
+
   'Starlink': '#eab308',
   'Internet Córdoba': '#f59e0b',
   'Guabi': '#06b6d4',
@@ -156,7 +156,7 @@ export default function SpeedLeaderboard() {
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-3">
-            Solo se listan ISPs con cobertura de fibra en Córdoba Capital. Movistar, Telecentro y Starlink no tienen fibra FTTH en la ciudad.
+            Solo se listan ISPs con fibra verificada en Córdoba Capital y con tests locales. Movistar, Telecentro y Starlink no tienen fibra en la ciudad. Claro tiene cobertura pero los datos SpeedGeo son nacionales (no separados por ciudad). Gigared no opera en Córdoba (solo Litoral).
           </p>
         </div>
       )}
