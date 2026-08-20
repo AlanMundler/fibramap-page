@@ -76,15 +76,15 @@ const NIC_TABLE = [
 
 const CF_DOWN = 'https://speed.cloudflare.com/__down';
 const CF_UP = 'https://speed.cloudflare.com/__up';
-const DL_STREAMS = 6;
-const UL_STREAMS = 6;
-const UL_STREAM_SIZE = 8 * 1024 * 1024;
-const LATENCY_COUNT = 10;
+const DL_STREAMS = 4;
+const UL_STREAMS = 4;
+const UL_STREAM_SIZE = 5 * 1024 * 1024;
+const LATENCY_COUNT = 6;
 const DL_ROUNDS = [
-  { bytes: 1e5, count: 3 },
-  { bytes: 1e6, count: 3 },
+  { bytes: 1e5, count: 2 },
+  { bytes: 1e6, count: 2 },
   { bytes: 1e7, count: 2 },
-  { bytes: 5e7, count: 2 },
+  { bytes: 5e7, count: 1 },
 ];
 
 function isMobileDevice() {
@@ -217,7 +217,7 @@ function xhrDownload(bytes, signal) {
     const xhr = new XMLHttpRequest();
     xhr.open('GET', `${CF_DOWN}?bytes=${bytes}&_=${Date.now()}`);
     xhr.responseType = 'blob';
-    xhr.timeout = 20000;
+    xhr.timeout = 10000;
     xhr.onload = () => resolve(xhr.response?.size || 0);
     xhr.onerror = () => resolve(0);
     xhr.ontimeout = () => resolve(0);
@@ -263,7 +263,7 @@ async function measureUpload(signal, onTick) {
   const uploadOne = (idx) => new Promise((resolve) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', CF_UP);
-    xhr.timeout = 30000;
+    xhr.timeout = 10000;
     xhr.upload.onprogress = (e) => {
       if (signal.aborted) { try { xhr.abort(); } catch {} resolve(); return; }
       if (e.lengthComputable) {
