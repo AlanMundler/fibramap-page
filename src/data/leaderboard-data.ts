@@ -24,27 +24,36 @@ export interface ProviderSummary {
 
 // ──────────────────────────────────────────────
 // DATOS REALES — ninguna cifra inventada
-// Fuentes: Ookla Speedtest Intelligence H2 2025,
-// SpeedGeo Q3 2025–Q2 2026, nPerf 2026,
-// Speedtest.net.ar (11/08/2026), ENACOM T1 2025
+// Fuentes cruzadas: SpeedGeo Córdoba (jul 2025–jun 2026),
+// SpeedGeo Argentina, Ookla H2 2025, nPerf 2026,
+// Speedtest.net.ar (11/08/2026), Netflix ISP Index,
+// SpeedOf.Me H1 2026
 // ──────────────────────────────────────────────
 
 export const sources = [
+  {
+    id: 'speedgeo-cordoba',
+    name: 'SpeedGeo Córdoba',
+    period: 'Jul 2025 – Jun 2026 (12 meses)',
+    url: 'https://www.speedgeo.net/statistics/argentina/cordoba',
+    description: 'Tests de banda ancha fija en Córdoba. WiFi/conexión cableada.',
+    testCount: 'Córdoba',
+  },
+  {
+    id: 'speedgeo',
+    name: 'SpeedGeo Argentina',
+    period: 'Q3 2025 – Q2 2026 (jul 2025–jun 2026)',
+    url: 'https://www.speedgeo.net/statistics/argentina',
+    description: '270.308 tests nacionales de banda ancha fija y móvil.',
+    testCount: '270.308',
+  },
   {
     id: 'ookla',
     name: 'Ookla Speedtest Intelligence',
     period: 'H2 2025 (jul–dic 2025)',
     url: 'https://www.ookla.com/research/reports/argentina-speedtest-connectivity-report-h2-2025',
-    description: 'Medición global con tests de usuarios reales vía Speedtest.net. Ranking nacional.',
+    description: 'Medición global con tests de usuarios reales vía Speedtest.net.',
     testCount: 'Nacional',
-  },
-  {
-    id: 'speedgeo',
-    name: 'SpeedGeo / V-SPEED',
-    period: 'Q3 2025 – Q2 2026 (jul 2025–jun 2026)',
-    url: 'https://www.speedgeo.net/statistics/argentina',
-    description: '270.308 tests de banda ancha fija y móvil, WiFi/conexión cableada.',
-    testCount: '270.308',
   },
   {
     id: 'nperf',
@@ -71,29 +80,59 @@ export const sources = [
     testCount: 'Córdoba',
   },
   {
+    id: 'netflix',
+    name: 'Netflix ISP Speed Index',
+    period: 'Julio 2026',
+    url: 'https://ispspeedindex.netflix.net/country/argentina/',
+    description: 'Velocidad promedio de streaming Netflix por ISP. Escala 1-3.8.',
+    testCount: 'Nacional',
+  },
+  {
+    id: 'speedof-me',
+    name: 'SpeedOf.Me',
+    period: 'H1 2026',
+    url: 'https://speedof.me/internet-speed/argentina',
+    description: 'Tests vía navegador. Mediana de single-stream.',
+    testCount: 'Nacional',
+  },
+  {
     id: 'enacom',
     name: 'ENACOM — Indicadores TIC',
     period: 'T1 2025 (último dato disponible)',
     url: 'https://indicadores.enacom.gob.ar/',
-    description: 'Velocidad media de descarga nacional: 245,53 Mbps (dic 2025). Datos provinciales.',
+    description: 'Velocidad media de descarga nacional: 245,53 Mbps (dic 2025).',
     testCount: 'Nacional',
   },
 ];
 
-// Nacional: principales ISPs — Ookla H2 2025
-export const nationalOokla: ProviderSummary[] = [
-  { name: 'Personal Fibra', color: '#3b82f6', download: 216.62, upload: 189.65, latency: 0, tests: 0, sources: ['ookla'], notes: 'Mejor red fija de Argentina según Ookla H2 2025' },
-  { name: 'Movistar', color: '#2563eb', download: 177.2, upload: 164.1, latency: 20.5, tests: 0, sources: ['speedgeo'], notes: 'Ganador SpeedGeo Q2 2026 — 270.308 tests' },
-  { name: 'Claro', color: '#dc2626', download: 118.4, upload: 95.2, latency: 27.8, tests: 0, sources: ['speedgeo'], notes: 'En FTTH: 294,1 DL / 296,6 UL (nPerf)' },
-  { name: 'Telecentro', color: '#f97316', download: 178.2, upload: 93.3, latency: 154.1, tests: 0, sources: ['speedtest-ar'], notes: 'Mejor latencia del ranking nPerf (23,48 ms)' },
-  { name: 'Starlink', color: '#eab308', download: 77.5, upload: 19.7, latency: 39, tests: 0, sources: ['speedgeo'] },
-];
+// ═══════════════════════════════════════════
+// CÓRDOBA: Solo ISPs de nuestra lista (servicios.ts)
+// que aparecen en SpeedGeo Córdoba, más locales
+// ═══════════════════════════════════════════
 
-// Córdoba: ISPs con fibra verificada — Speedtest.net.ar + SpeedGeo (nacional)
-// NOTA: Gigared no opera en Córdoba (solo Litoral argentino).
-// Claro tiene cobertura verificada en Cba (servicios.ts), pero Speedtest.net.ar
-// no tiene tests locales separados. Se usa SpeedGeo nacional como referencia.
 export const cordobaTests: SpeedTest[] = [
+  {
+    provider: 'Personal',
+    download: 146.1,
+    upload: 107.4,
+    latency: 23,
+    tests: 0,
+    source: 'SpeedGeo Córdoba',
+    sourceUrl: 'https://www.speedgeo.net/statistics/argentina/cordoba',
+    period: 'Jul 2025 – Jun 2026',
+    methodology: 'Tests de banda ancha fija en Córdoba. WiFi/conexión cableada.',
+  },
+  {
+    provider: 'Claro',
+    download: 120.8,
+    upload: 93.3,
+    latency: 21,
+    tests: 0,
+    source: 'SpeedGeo Córdoba',
+    sourceUrl: 'https://www.speedgeo.net/statistics/argentina/cordoba',
+    period: 'Jul 2025 – Jun 2026',
+    methodology: 'Tests de banda ancha fija en Córdoba. WiFi/conexión cableada.',
+  },
   {
     provider: 'IPLAN',
     download: 188.8,
@@ -106,30 +145,32 @@ export const cordobaTests: SpeedTest[] = [
     methodology: 'Tests de usuarios reales contra nodos propios. Score: 68/100.',
   },
   {
-    provider: 'Personal',
-    download: 131.6,
-    upload: 97.2,
-    latency: 122.4,
-    tests: 1315,
-    source: 'Speedtest.net.ar',
-    sourceUrl: 'https://speedtest.net.ar/ranking',
-    period: 'Al 11/08/2026',
-    methodology: 'Tests de usuarios reales contra nodos propios. Score: 30/100.',
-  },
-  {
-    provider: 'Claro',
-    download: 118.4,
-    upload: 95.2,
-    latency: 27.8,
+    provider: 'Batcom',
+    download: 44.4,
+    upload: 20.0,
+    latency: 33,
     tests: 0,
-    source: 'SpeedGeo',
-    sourceUrl: 'https://www.speedgeo.net/statistics/argentina',
-    period: 'Q3 2025 – Q2 2026',
-    methodology: 'Datos nacionales SpeedGeo (270.308 tests). Claro tiene FTTH verificado en Cba (servicios.ts).',
+    source: 'SpeedGeo Córdoba',
+    sourceUrl: 'https://www.speedgeo.net/statistics/argentina/cordoba',
+    period: 'Jul 2025 – Jun 2026',
+    methodology: 'Tests de banda ancha fija en Córdoba. WiFi/conexión cableada.',
   },
 ];
 
-// nPerf FTTH específico — fibra al hogar
+// ═══════════════════════════════════════════
+// NACIONAL: Todos los ISPs de SpeedGeo Argentina
+// + Ookla + nPerf + Speedtest.net.ar + Netflix + SpeedOf.Me
+// ═══════════════════════════════════════════
+
+export const nationalOokla: ProviderSummary[] = [
+  { name: 'Movistar', color: '#2563eb', download: 177.2, upload: 164.1, latency: 20, tests: 270308, sources: ['speedgeo'], notes: 'Ganador SpeedGeo Q2 2026 — 270.308 tests' },
+  { name: 'Personal', color: '#3b82f6', download: 130.3, upload: 87.2, latency: 26, tests: 270308, sources: ['speedgeo', 'ookla'], notes: 'Ookla H2 2025: Mejor red fija (216.62 Mbps DL)' },
+  { name: 'Claro', color: '#dc2626', download: 118.4, upload: 95.2, latency: 28, tests: 270308, sources: ['speedgeo', 'nperf'], notes: 'nPerf FTTH: 294.1 DL / 296.6 UL' },
+  { name: 'Telecentro', color: '#f97316', download: 178.2, upload: 93.3, latency: 23.5, tests: 580, sources: ['speedtest-ar', 'nperf'], notes: 'nPerf: Mejor latencia (23.48 ms) por 5to año' },
+  { name: 'IPLAN', color: '#ec4899', download: 213, upload: 0, latency: 0, tests: 0, sources: ['speedof-me'], notes: 'SpeedOf.Me H1 2026: Más rápido de Argentina (213 Mbps)' },
+  { name: 'Starlink', color: '#eab308', download: 77.5, upload: 19.7, latency: 39, tests: 270308, sources: ['speedgeo', 'speedtest-ar'], notes: 'Satelital. Speedtest.net.ar: 79.6 DL' },
+];
+
 export const ftthData: ProviderSummary[] = [
   { name: 'Claro FTTH', color: '#dc2626', download: 294.1, upload: 296.6, latency: 0, tests: 0, sources: ['nperf'], notes: 'nPerf 2026: mejora +96% interanual en subida' },
   { name: 'Personal FTTH', color: '#3b82f6', download: 216.62, upload: 189.65, latency: 0, tests: 0, sources: ['ookla', 'nperf'], notes: 'Mejor score FTTH en nPerf (133.800 nPoints)' },
@@ -148,28 +189,33 @@ export const enacomCordoba = {
   source: 'https://indicadores.enacom.gob.ar/',
 };
 
-// Proveedores locales sin datos de velocidad verificables públicos
-// Estos ISPs operan en Córdoba pero no aparecen en rankings nacionales
+// Netflix ISP Speed Index — Argentina julio 2026
+export const netflixData = [
+  { name: 'Claro Fibra', score: 3.0, tech: 'Fiber', rank: 1 },
+  { name: 'Movistar Fibra', score: 3.0, tech: 'Fiber', rank: 1 },
+  { name: 'Movistar DSL', score: 3.0, tech: 'DSL', rank: 1 },
+  { name: 'Personal ex Fibertel', score: 3.0, tech: 'Fiber|Cable', rank: 1 },
+  { name: 'Personal ex Fibertel Lite', score: 3.0, tech: 'DSL', rank: 1 },
+  { name: 'TeleCentro', score: 3.0, tech: 'Cable', rank: 1 },
+  { name: 'Gigared', score: 2.8, tech: 'Cable', rank: 2 },
+  { name: 'SuperCanal', score: 2.6, tech: 'Fiber|Cable', rank: 3 },
+  { name: 'TeleRed', score: 2.6, tech: 'Cable', rank: 3 },
+];
+
+// Proveedores locales en servicios.ts sin datos SpeedGeo Córdoba
 export const localProviders = [
   {
     name: 'Internet Córdoba',
     color: '#f59e0b',
-    note: 'ISP local (AS270099). No aparece en rankings nacionales de Ookla/nPerf/SpeedGeo por volumen insuficiente de tests.',
+    note: 'ISP local (AS270099). 73 barrios. No aparece en rankings de SpeedGeo por volumen insuficiente de tests.',
     website: 'https://www.internetcordoba.com.ar',
-    coverage: '67 barrios',
+    coverage: '73 barrios',
   },
   {
     name: 'Guabi',
     color: '#06b6d4',
-    note: 'ISP local sin presencia en rankings nacionales. Datos de velocidad no disponibles públicamente.',
+    note: 'ISP local. Zona Sur exclusivamente. No aparece en rankings de SpeedGeo.',
     website: 'https://www.guabi.com.ar',
-    coverage: 'Córdoba Capital',
-  },
-  {
-    name: 'Batcom',
-    color: '#8b5cf6',
-    note: 'ISP local (ISO 9001:2015). No aparece en rankings nacionales.',
-    website: 'https://batcom.com.ar',
-    coverage: 'Zona oeste',
+    coverage: 'Zona Sur',
   },
 ];

@@ -5,6 +5,7 @@ import {
   ftthData,
   cordobaCity,
   localProviders,
+  netflixData,
   sources as dataSources,
 } from '../data/leaderboard-data';
 
@@ -16,7 +17,6 @@ const PROVIDER_COLORS = {
   'Claro FTTH': '#dc2626',
   'Movistar': '#2563eb',
   'Telecentro': '#f97316',
-
   'Starlink': '#eab308',
   'Internet Córdoba': '#f59e0b',
   'Guabi': '#06b6d4',
@@ -104,7 +104,7 @@ export default function SpeedLeaderboard() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <button
           onClick={() => { setTab('cordoba'); setActiveProvider(null); }}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -128,6 +128,14 @@ export default function SpeedLeaderboard() {
           }`}
         >
           Solo FTTH
+        </button>
+        <button
+          onClick={() => { setTab('netflix'); setActiveProvider(null); }}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            tab === 'netflix' ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-gray-800 text-gray-400 border border-gray-700'
+          }`}
+        >
+          Netflix
         </button>
       </div>
 
@@ -156,7 +164,7 @@ export default function SpeedLeaderboard() {
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-3">
-            Solo se listan ISPs con fibra verificada en Córdoba Capital. Movistar, Telecentro y Starlink no tienen fibra en la ciudad. Gigared no opera en Córdoba (solo Litoral). Claro tiene FTTH verificado pero los datos de velocidad son nacionales (SpeedGeo).
+            Solo ISPs de nuestra lista (servicios.ts) con datos de velocidad verificados. SpeedGeo Córdoba + Speedtest.net.ar.
           </p>
         </div>
       )}
@@ -180,7 +188,7 @@ export default function SpeedLeaderboard() {
             ))}
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Fuente: Ookla H2 2025 / SpeedGeo Q2 2026 / Speedtest.net.ar
+            Fuentes: SpeedGeo Q2 2026 / Ookla H2 2025 / nPerf 2026 / Speedtest.net.ar / SpeedOf.Me
           </p>
         </div>
       )}
@@ -211,13 +219,44 @@ export default function SpeedLeaderboard() {
             </div>
           ))}
           <p className="text-xs text-gray-500">
-            FTTH = Fiber To The Home. Solo incluye conexiones de fibra óptica directa al hogar, no coaxial.
+            FTTH = Fiber To The Home. Solo conexiones de fibra óptica directa al hogar.
+          </p>
+        </div>
+      )}
+
+      {/* Netflix ISP Speed Index */}
+      {tab === 'netflix' && (
+        <div className="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4">
+          <h3 className="font-medium text-gray-300 mb-3 text-sm">
+            Netflix ISP Speed Index — Argentina (julio 2026)
+          </h3>
+          <p className="text-xs text-gray-500 mb-4">
+            Velocidad promedio de streaming Netflix. Escala 1-3.8. Solo incluye ISPs con suficiente tráfico Netflix.
+          </p>
+          <div className="space-y-2">
+            {netflixData.map((p, i) => (
+              <div key={`${p.name}-${i}`} className="flex items-center gap-3">
+                <span className="text-xs text-gray-500 w-4">#{p.rank}</span>
+                <span className="text-sm text-gray-300 w-48">{p.name}</span>
+                <div className="flex-1 bg-gray-700/50 rounded-full h-2">
+                  <div
+                    className="h-2 rounded-full bg-red-500"
+                    style={{ width: `${(p.score / 3.8) * 100}%` }}
+                  />
+                </div>
+                <span className="text-sm font-mono text-blue-400 w-12 text-right">{p.score}</span>
+                <span className="text-xs text-gray-500 w-16 text-right">{p.tech}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-3">
+            Fuente: <a href="https://ispspeedindex.netflix.net/country/argentina/" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:text-blue-200">Netflix ISP Speed Index</a> — julio 2026
           </p>
         </div>
       )}
 
       {/* Filters */}
-      {tab !== 'ftth' && (
+      {tab !== 'ftth' && tab !== 'netflix' && (
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setActiveProvider(null)}
@@ -334,7 +373,7 @@ export default function SpeedLeaderboard() {
                     </span>
                   </td>
                   <td className="px-4 py-3 font-mono font-semibold text-blue-400">{r.download}</td>
-                  <td className="px-4 py-3 font-mono font-semibold text-emerald-400">{r.upload}</td>
+                  <td className="px-4 py-3 font-mono font-semibold text-emerald-400">{r.upload || '—'}</td>
                   <td className="px-4 py-3 font-mono text-amber-400">{r.latency || '—'}</td>
                 </tr>
               ))}
@@ -343,28 +382,29 @@ export default function SpeedLeaderboard() {
         </div>
       )}
 
-      {/* Local providers — sin datos verificables */}
-      <div className="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4">
-        <h3 className="font-medium text-gray-300 mb-3 text-sm">Proveedores locales sin datos de velocidad públicos</h3>
-        <p className="text-xs text-gray-500 mb-3">
-          Estos ISPs operan en Córdoba pero no aparecen en rankings nacionales (Ookla, nPerf, SpeedGeo, Speedtest.net.ar)
-          por volumen insuficiente de tests o por no medir contra nodos independientes.
-        </p>
-        <div className="space-y-2">
-          {localProviders.map(p => (
-            <div key={p.name} className="flex items-start gap-3 p-3 rounded-lg bg-gray-700/30">
-              <span className="w-2.5 h-2.5 rounded-full mt-0.5 flex-shrink-0" style={{ backgroundColor: p.color }} />
-              <div>
-                <div className="font-medium text-sm text-gray-200">{p.name}</div>
-                <div className="text-xs text-gray-400">{p.note}</div>
-                <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-300 hover:text-blue-200">
-                  {p.website} →
-                </a>
+      {/* Local providers — sin datos SpeedGeo */}
+      {tab === 'cordoba' && (
+        <div className="bg-gray-800/60 rounded-xl border border-gray-700/50 p-4">
+          <h3 className="font-medium text-gray-300 mb-3 text-sm">Proveedores locales sin datos SpeedGeo</h3>
+          <p className="text-xs text-gray-500 mb-3">
+            Estos ISPs están en nuestra lista de servicios (servicios.ts) pero no aparecen en SpeedGeo Córdoba por volumen insuficiente de tests.
+          </p>
+          <div className="space-y-2">
+            {localProviders.map(p => (
+              <div key={p.name} className="flex items-start gap-3 p-3 rounded-lg bg-gray-700/30">
+                <span className="w-2.5 h-2.5 rounded-full mt-0.5 flex-shrink-0" style={{ backgroundColor: p.color }} />
+                <div>
+                  <div className="font-medium text-sm text-gray-200">{p.name}</div>
+                  <div className="text-xs text-gray-400">{p.note}</div>
+                  <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-300 hover:text-blue-200">
+                    {p.website} →
+                  </a>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Sources */}
       <div>
