@@ -122,3 +122,27 @@ img { max-width: 100%; height: auto; }
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* Global print styles */
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+  body {
+    background: white !important;
+    color: #111 !important;
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+  nav, footer, .print\:hidden, button {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  h1, h2, h3 {
+    color: #111 !important;
+  }
+}
