@@ -156,7 +156,7 @@ export default function SpeedLeaderboard() {
             </div>
           </div>
           <p className="text-xs text-gray-500 mt-3">
-            Solo se listan ISPs con fibra verificada en Córdoba Capital y con tests locales. Movistar, Telecentro y Starlink no tienen fibra en la ciudad. Claro tiene cobertura pero los datos SpeedGeo son nacionales (no separados por ciudad). Gigared no opera en Córdoba (solo Litoral).
+            Solo se listan ISPs con fibra verificada en Córdoba Capital. Movistar, Telecentro y Starlink no tienen fibra en la ciudad. Gigared no opera en Córdoba (solo Litoral). Claro tiene FTTH verificado pero los datos de velocidad son nacionales (SpeedGeo).
           </p>
         </div>
       )}
