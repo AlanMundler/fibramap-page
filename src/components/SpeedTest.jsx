@@ -337,6 +337,7 @@ export default function SpeedTest() {
   const [nic, setNic] = useState({ type: 'unknown', downlink: null, rtt: null, saveData: false });
   const [trace, setTrace] = useState(null);
   const engineRef = useRef(null);
+  const abortRef = useRef(null);
   const pollRef = useRef(null);
   const cancelledRef = useRef(false);
   const smoothRef = useRef(0);
@@ -380,6 +381,46 @@ export default function SpeedTest() {
 
   const gaugeMax = liveSpeed > 0 ? Math.max(liveSpeed * 1.25, 100) : (nicInfo.maxDown ? Math.max(nicInfo.maxDown * 1.2, 200) : 200);
 
+  async function measureParallelUpload(signal) {
+    const STREAMS = 6;
+    const BYTES_PER_STREAM = 10 * 1024 * 1024;
+    const data = new ArrayBuffer(BYTES_PER_STREAM);
+    new Uint8Array(data).fill(0xAB);
+    let totalBytes = 0;
+    const startTime = performance.now();
+
+    setCurrentPhase('upload');
+    smoothRef.current = 0;
+    chartRef.current = [];
+    setChartPoints([]);
+
+    const uploadOne = async () => {
+      try {
+        await fetch('https://speed.cloudflare.com/__up', {
+          method: 'POST', body: data, signal,
+        });
+      } catch {}
+    };
+
+    const promises = [];
+    for (let i = 0; i < STREAMS; i++) {
+      promises.push(uploadOne());
+    }
+    await Promise.allSettled(promises);
+
+    if (cancelledRef.current || signal.aborted) return 0;
+
+    const elapsed = (performance.now() - startTime) / 1000;
+    totalBytes = STREAMS * BYTES_PER_STREAM;
+    const mbps = elapsed > 0 ? Math.round((totalBytes * 8) / (elapsed * 1000000)) : 0;
+
+    setLiveSpeed(mbps);
+    chartRef.current = [{ v: mbps, t: 'upload' }];
+    setChartPoints([...chartRef.current]);
+
+    return mbps;
+  }
+
   const run = useCallback(async () => {
     setState('running');
     setResults(null);
@@ -390,6 +431,10 @@ export default function SpeedTest() {
     smoothRef.current = 0;
     cancelledRef.current = false;
     setNic(detectNIC());
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const signal = controller.signal;
 
     try {
       const { default: SpeedTestEngine } = await import('@cloudflare/speedtest');
@@ -405,48 +450,59 @@ export default function SpeedTest() {
           { type: 'download', bytes: 1e6, count: 8 },
           { type: 'download', bytes: 1e7, count: 6 },
           { type: 'download', bytes: 2.5e7, count: 4 },
-          { type: 'download', bytes: 1e8, count: 3 },
-          { type: 'download', bytes: 2.5e8, count: 2 },
-          { type: 'upload', bytes: 1e5, count: 8 },
-          { type: 'upload', bytes: 1e6, count: 6 },
-          { type: 'upload', bytes: 1e7, count: 4 },
-          { type: 'upload', bytes: 5e7, count: 3 },
+          { type: 'download', bytes: 7e7, count: 5 },
+          { type: 'upload', bytes: 1e5, count: 1 },
+          { type: 'upload', bytes: 1e6, count: 1 },
         ],
       });
 
       let phaseRef = 'latency';
+      let engineDownload = null;
+      let engineLatency = null;
+      let engineJitter = null;
 
       engine.onResultsChange = ({ type }) => {
-        if (cancelledRef.current) return;
+        if (cancelledRef.current || signal.aborted) return;
         if (type === 'latency' && phaseRef === 'latency') {
           phaseRef = 'download'; setCurrentPhase('download');
         } else if (type === 'download' && phaseRef !== 'download') {
           phaseRef = 'download'; setCurrentPhase('download');
-        } else if (type === 'upload' && phaseRef !== 'upload') {
-          phaseRef = 'upload'; setCurrentPhase('upload');
         }
       };
 
       engine.onFinish = (res) => {
-        if (cancelledRef.current) return;
+        if (cancelledRef.current || signal.aborted) return;
         if (pollRef.current) clearInterval(pollRef.current);
         pollRef.current = null;
+        try { res.stop(); } catch (_) {}
+
         const s = res.getSummary();
-        const r = {
-          download: s.download ? (s.download / 1e6).toFixed(1) : null,
-          upload: s.upload ? (s.upload / 1e6).toFixed(1) : null,
-          latency: s.latency ? s.latency.toFixed(0) : null,
-          jitter: s.jitter ? s.jitter.toFixed(0) : null,
-          loadedLatencyDown: s.downLoadedLatency ? s.downLoadedLatency.toFixed(0) : null,
-          loadedLatencyUp: s.upLoadedLatency ? s.upLoadedLatency.toFixed(0) : null,
-        };
-        setResults(r); setState('done'); setCurrentPhase(null);
-        saveHistory(r); setHistory(loadHistory());
-        const curType = nicRef.current.type;
-        if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
-          const inferred = inferNICFromSpeed(parseFloat(r.download));
-          if (inferred) setNic(prev => ({ ...prev, type: inferred }));
-        }
+        engineDownload = s.download ? (s.download / 1e6).toFixed(1) : null;
+        engineLatency = s.latency ? s.latency.toFixed(0) : null;
+        engineJitter = s.jitter ? s.jitter.toFixed(0) : null;
+
+        measureParallelUpload(signal).then((uploadMbps) => {
+          if (cancelledRef.current || signal.aborted) return;
+          const r = {
+            download: engineDownload,
+            upload: String(uploadMbps || 0),
+            latency: engineLatency,
+            jitter: engineJitter,
+            loadedLatencyDown: s.downLoadedLatency ? s.downLoadedLatency.toFixed(0) : null,
+            loadedLatencyUp: s.upLoadedLatency ? s.upLoadedLatency.toFixed(0) : null,
+          };
+          setResults(r); setState('done'); setCurrentPhase(null);
+          saveHistory(r); setHistory(loadHistory());
+          const curType = nicRef.current.type;
+          if (curType === 'unknown' || curType === 'wifi_generic' || curType === 'cellular') {
+            const inferred = inferNICFromSpeed(parseFloat(r.download));
+            if (inferred) setNic(prev => ({ ...prev, type: inferred }));
+          }
+        }).catch(() => {
+          if (!cancelledRef.current && !signal.aborted) {
+            setState('error'); setCurrentPhase(null);
+          }
+        });
       };
 
       engineRef.current = engine;
@@ -454,29 +510,20 @@ export default function SpeedTest() {
 
       if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = setInterval(() => {
-        if (!engine.results || cancelledRef.current) return;
+        if (!engine.results || cancelledRef.current || signal.aborted) return;
         try {
-          const isUpload = phaseRef === 'upload';
-
-          if (phaseRef === 'download' || phaseRef === 'upload') {
-            const aggBps = isUpload
-              ? engine.results.getUploadBandwidth?.()
-              : engine.results.getDownloadBandwidth?.();
+          if (phaseRef === 'download') {
+            const aggBps = engine.results.getDownloadBandwidth?.();
             const aggMbps = aggBps ? Math.round(aggBps / 1e6) : 0;
-
-            const pts = isUpload
-              ? engine.results.getUploadBandwidthPoints?.()
-              : engine.results.getDownloadBandwidthPoints?.();
+            const pts = engine.results.getDownloadBandwidthPoints?.();
             const lastBps = pts && pts.length > 0 ? pts[pts.length - 1].bps : 0;
             const lastMbps = lastBps > 0 ? Math.round(lastBps / 1e6) : 0;
-
             const rawMbps = aggMbps > 0 ? aggMbps : lastMbps;
             if (rawMbps > 0) {
               const prev = smoothRef.current;
               smoothRef.current = prev === 0 ? rawMbps : Math.round(prev * 0.6 + rawMbps * 0.4);
-              const display = Math.max(smoothRef.current, rawMbps);
-              setLiveSpeed(display);
-              chartRef.current = [...chartRef.current, { v: rawMbps, t: isUpload ? 'upload' : 'download' }];
+              setLiveSpeed(Math.max(smoothRef.current, rawMbps));
+              chartRef.current = [...chartRef.current, { v: rawMbps, t: 'download' }];
               if (chartRef.current.length > 200) chartRef.current = chartRef.current.slice(-200);
               setChartPoints([...chartRef.current]);
             }
@@ -492,14 +539,17 @@ export default function SpeedTest() {
         } catch (_) {}
       }, 300);
     } catch {
-      setState('error'); setCurrentPhase(null);
+      if (!cancelledRef.current && !signal.aborted) {
+        setState('error'); setCurrentPhase(null);
+      }
     }
   }, []);
 
-  useEffect(() => () => { engineRef.current?.stop(); if (pollRef.current) clearInterval(pollRef.current); }, []);
+  useEffect(() => () => { cancelledRef.current = true; abortRef.current?.abort(); engineRef.current?.stop(); if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   const stop = useCallback(() => {
     cancelledRef.current = true;
+    abortRef.current?.abort();
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = null;
     try { engineRef.current?.stop(); } catch (_) {}
