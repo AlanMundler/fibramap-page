@@ -172,13 +172,6 @@ export default {
     }
 
     if (request.method === 'POST' && url.pathname === '/speedtest/empty') {
-      if (request.body) {
-        const reader = request.body.getReader();
-        while (true) {
-          const { done } = await reader.read();
-          if (done) break;
-        }
-      }
       return new Response(null, {
         status: 204,
         headers: {

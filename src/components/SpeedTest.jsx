@@ -381,6 +381,7 @@ export default function SpeedTest() {
       s.setParameter('xhr_dlMultistream', 5);
       s.setParameter('xhr_ulMultistream', 6);
       s.setParameter('xhr_multistreamDelay', 300);
+      s.setParameter('xhr_ul_blob_megabytes', 4);
       s.setParameter('time_dl_max', 15);
       s.setParameter('time_ul_max', 15);
 
