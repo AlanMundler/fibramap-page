@@ -4,7 +4,7 @@ const SYSTEM = 'Sos un asistente de FibraMap, un portal independiente sobre fibr
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': '*',
 };
 
 const CORS_STRICT = {
@@ -171,11 +171,11 @@ export default {
     }
 
     if (request.method === 'POST' && url.pathname === '/speedtest/empty') {
-      await request.arrayBuffer().catch(() => {});
       return new Response(null, {
-        status: 200,
+        status: 204,
         headers: {
           'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Connection': 'keep-alive',
           ...CORS,
         },
       });
