@@ -61,6 +61,12 @@ export const servicios: Servicio[] = [
   { id: 'guabi-150-ho', proveedor: 'Guabi', plan: '150 HO', download: 150, upload: '75 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 32780, precioLista: 50430, instalacion: 0, promoMeses: 6, mesesGratis: 0, descuento: '35% OFF x6 meses', detalle: 'Zona Sur. HomeOffice. Prioridad de tráfico: Media Alta.', cobertura: 'Zona Sur', atencionCl: 'WhatsApp 351-366-7959', descripcion: 'ISP local. Plan HomeOffice.', destacado: false },
   { id: 'guabi-300-ho', proveedor: 'Guabi', plan: '300 HO', download: 300, upload: '150 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 38259, precioLista: 58860, instalacion: 0, promoMeses: 6, mesesGratis: 0, descuento: '35% OFF x6 meses', detalle: 'Zona Sur. HomeOffice. Prioridad de tráfico: Media Alta.', cobertura: 'Zona Sur', atencionCl: 'WhatsApp 351-366-7959', descripcion: 'ISP local. Plan HomeOffice.', destacado: false },
   { id: 'guabi-600-ho', proveedor: 'Guabi', plan: '600 HO', download: 600, upload: '300 Mbps', tecnologia: 'FTTH', simetrico: false, precioDesc: 43550, precioLista: 67000, instalacion: 0, promoMeses: 6, mesesGratis: 0, descuento: '35% OFF x6 meses', detalle: 'Zona Sur. HomeOffice. Prioridad de tráfico: Media Alta.', cobertura: 'Zona Sur', atencionCl: 'WhatsApp 351-366-7959', descripcion: 'ISP local. Plan HomeOffice. Mayor velocidad.', destacado: false },
+
+  // ── Telecentro (confirmado por usuario: cobertura en Nueva Córdoba, Centro, Alberdi) ──
+  // ASIMÉTRICO. HFC/fibra. Precios de selectra.com.ar (jun 2026).
+  { id: 'telecentro-150', proveedor: 'Telecentro', plan: '150 Mbps + Fijo', download: 150, upload: '15 Mbps', tecnologia: 'HFC/Fibra', simetrico: false, precioDesc: 17999, precioLista: 17999, instalacion: 0, promoMeses: 0, mesesGratis: 0, descuento: 'Sin promo', detalle: 'Incluye telefonía fija (2500 min). Instalación gratuita. Primer mes bonificado.', cobertura: 'Nueva Córdoba/Centro/Alberdi', atencionCl: '0800-322-9500', descripcion: 'ISP con cobertura en zona centro.', destacado: false },
+  { id: 'telecentro-300', proveedor: 'Telecentro', plan: '300 Mbps + Fijo', download: 300, upload: '20 Mbps', tecnologia: 'HFC/Fibra', simetrico: false, precioDesc: 13999, precioLista: 17999, instalacion: 0, promoMeses: 6, mesesGratis: 1, descuento: 'Descuento x6 meses + 1er mes gratis', detalle: 'Incluye telefonía fija (2500 min). Instalación gratuita. Mejor relación calidad-precio.', cobertura: 'Nueva Córdoba/Centro/Alberdi', atencionCl: '0800-322-9500', descripcion: 'ISP con cobertura en zona centro. Plan más popular.', destacado: true },
+  { id: 'telecentro-1000', proveedor: 'Telecentro', plan: '1000 Mbps + Fijo', download: 1000, upload: '30 Mbps', tecnologia: 'HFC/Fibra', simetrico: false, precioDesc: 26999, precioLista: 26999, instalacion: 0, promoMeses: 0, mesesGratis: 0, descuento: 'Sin promo', detalle: 'Incluye telefonía fija (2500 min). Instalación gratuita. Plan premium.', cobertura: 'Nueva Córdoba/Centro/Alberdi', atencionCl: '0800-322-9500', descripcion: 'ISP con cobertura en zona centro. Máxima velocidad.', destacado: false },
 ];
 
 export const proveedores = [
@@ -70,6 +76,7 @@ export const proveedores = [
   'Internet Córdoba',
   'Batcom',
   'Guabi',
+  'Telecentro',
 ];
 
 export const fmt = (n: number) => n ? `$${n.toLocaleString('es-AR')}` : 'Consultar';

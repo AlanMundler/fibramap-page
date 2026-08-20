@@ -13,6 +13,7 @@ const colorMap: Record<string, { border: string; text: string; bg: string; bar: 
   red: { border: 'border-red-500/30', text: 'text-red-400', bg: 'bg-red-500/10', bar: 'bg-red-500' },
   blue: { border: 'border-blue-500/30', text: 'text-blue-400', bg: 'bg-blue-500/10', bar: 'bg-blue-500' },
   purple: { border: 'border-purple-500/30', text: 'text-purple-400', bg: 'bg-purple-500/10', bar: 'bg-purple-500' },
+  orange: { border: 'border-orange-500/30', text: 'text-orange-400', bg: 'bg-orange-500/10', bar: 'bg-orange-500' },
 };
 
 const sourceColors: Record<string, string> = {

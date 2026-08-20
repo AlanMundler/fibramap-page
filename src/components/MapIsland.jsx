@@ -12,6 +12,7 @@ const SPEED_TIERS = {
   'Internet Córdoba': 'Hasta 300 Mbps',
   'Batcom': 'Hasta 500 Mbps',
   'Guabi': 'Hasta 600 Mbps',
+  'Telecentro': 'Hasta 1.000 Mbps',
 };
 
 const providers = [
@@ -21,6 +22,7 @@ const providers = [
   { name: 'Internet Córdoba', color: '#f59e0b' },
   { name: 'Batcom', color: '#8b5cf6' },
   { name: 'Guabi', color: '#06b6d4' },
+  { name: 'Telecentro', color: '#f97316' },
 ];
 
 const colorMap = Object.fromEntries(providers.map(p => [p.name, p.color]));

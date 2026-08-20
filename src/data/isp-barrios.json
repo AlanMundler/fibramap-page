@@ -979,5 +979,10 @@
     "UNIVERSITARIO DE HORIZONTE",
     "VALLE CERCANO",
     "VILLA SAN CARLOS"
+  ],
+  "Telecentro": [
+    "ALBERDI",
+    "CENTRO",
+    "NUEVA CORDOBA"
   ]
 }

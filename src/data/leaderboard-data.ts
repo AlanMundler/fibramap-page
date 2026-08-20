@@ -218,4 +218,11 @@ export const localProviders = [
     website: 'https://www.guabi.com.ar',
     coverage: 'Zona Sur',
   },
+  {
+    name: 'Telecentro',
+    color: '#f97316',
+    note: 'Cobertura confirmada en Nueva Córdoba, Centro y Alberdi. No aparece en rankings de SpeedGeo Córdoba.',
+    website: 'https://telecentro.com.ar',
+    coverage: 'Nueva Córdoba/Centro/Alberdi',
+  },
 ];

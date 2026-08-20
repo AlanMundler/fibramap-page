@@ -108,6 +108,16 @@ export const providers: ProviderReviews[] = [
     sentimentBreakdown: { positive: 6, neutral: 5, negative: 11 },
     recentIncidents: [],
     sources: ['TuQuejaSuma', 'Reddit', 'Facebook', 'Google Reviews']
+  },
+  {
+    name: 'Telecentro',
+    color: 'orange',
+    overallScore: 3.5,
+    categoryScores: { speed: 3.8, support: 3.0, price: 3.5, stability: 3.5, coverage: 2.5 },
+    totalReviews: 15,
+    sentimentBreakdown: { positive: 8, neutral: 4, negative: 3 },
+    recentIncidents: [],
+    sources: ['Selectra', 'Reddit', 'Google Reviews']
   }
 ];
 
@@ -339,5 +349,26 @@ export const reviews: Review[] = [
     date: '2025-08',
     sentiment: 0.6,
     categories: { support: 4 }
+  },
+  // Telecentro
+  {
+    id: 'telecentro-1',
+    provider: 'Telecentro',
+    author: 'Reddit User',
+    text: 'Tengo 300 megas con Telecentro en Centro. Anda bien, el precio es competitivo. Lo malo es que el upload es muy bajo, apenas 20 megas.',
+    source: 'Reddit',
+    date: '2026-05',
+    sentiment: 0.4,
+    categories: { speed: 4, price: 4, stability: 3 }
+  },
+  {
+    id: 'telecentro-2',
+    provider: 'Telecentro',
+    author: 'Google Reviews',
+    text: 'Instalación rápida y sin costo. El técnico fue puntual. Lleva 2 meses y no tuve cortes.',
+    source: 'Google Reviews',
+    date: '2026-06',
+    sentiment: 0.8,
+    categories: { speed: 4, support: 4, stability: 5 }
   }
 ];
